@@ -1,0 +1,163 @@
+{
+  "risk_cases": [
+    {
+      "name": "no deterministic signals",
+      "transaction": {
+        "transaction_id": "eval-risk-low",
+        "amount": 100.0,
+        "account_age_days": 365,
+        "new_payee": false,
+        "average_transaction_amount": 100.0,
+        "transactions_last_24h": 2,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "eval-low-origin",
+        "destination_account_id": "eval-low-destination"
+      },
+      "expected_score": 0,
+      "expected_level": "LOW"
+    },
+    {
+      "name": "amount threshold is strict",
+      "transaction": {
+        "transaction_id": "eval-risk-boundary",
+        "amount": 5000.0,
+        "account_age_days": 30,
+        "new_payee": false,
+        "average_transaction_amount": 1000.0,
+        "transactions_last_24h": 10,
+        "origin_country": "GB",
+        "destination_country": "FR"
+      },
+      "expected_score": 0,
+      "expected_level": "LOW"
+    },
+    {
+      "name": "unusual amount medium risk",
+      "transaction": {
+        "transaction_id": "eval-risk-medium",
+        "amount": 5000.01,
+        "account_age_days": 365,
+        "new_payee": false,
+        "average_transaction_amount": 1000.0,
+        "transactions_last_24h": 2,
+        "origin_country": "GB",
+        "destination_country": "DE"
+      },
+      "expected_score": 30,
+      "expected_level": "MEDIUM"
+    },
+    {
+      "name": "all deterministic signals",
+      "transaction": {
+        "transaction_id": "eval-risk-high",
+        "amount": 6000.0,
+        "account_age_days": 10,
+        "new_payee": true,
+        "average_transaction_amount": 1000.0,
+        "transactions_last_24h": 11,
+        "origin_country": "GB",
+        "destination_country": "ES"
+      },
+      "expected_score": 85,
+      "expected_level": "HIGH"
+    }
+  ],
+  "retrieval_cases": [
+    {
+      "name": "unusual amount and new payee",
+      "query": "materially unusual transaction amount new payee beneficiary young account",
+      "expected_policy_id": "DEMO-AML-001",
+      "top_k": 3
+    },
+    {
+      "name": "rapid transaction velocity",
+      "query": "rapid burst velocity many transactions within twenty-four hours split payments",
+      "expected_policy_id": "DEMO-AML-002",
+      "top_k": 3
+    },
+    {
+      "name": "shared counterparty network",
+      "query": "network repeated direct transactions shared counterparties high concentration",
+      "expected_policy_id": "DEMO-AML-003",
+      "top_k": 3
+    },
+    {
+      "name": "insufficient evidence review",
+      "query": "insufficient evidence low confidence conflicting signals human review",
+      "expected_policy_id": "DEMO-AML-005",
+      "top_k": 3
+    }
+  ],
+  "investigation_cases": [
+    {
+      "name": "low risk clear recommendation",
+      "transaction": {
+        "transaction_id": "eval-investigate-low",
+        "amount": 100.0,
+        "account_age_days": 365,
+        "new_payee": false,
+        "average_transaction_amount": 100.0,
+        "transactions_last_24h": 2,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "eval-clean-origin",
+        "destination_account_id": "eval-clean-destination"
+      },
+      "expected_recommendation": "CLEAR",
+      "expect_human_review": false
+    },
+    {
+      "name": "medium risk requests information",
+      "transaction": {
+        "transaction_id": "eval-investigate-medium",
+        "amount": 5000.01,
+        "account_age_days": 365,
+        "new_payee": false,
+        "average_transaction_amount": 1000.0,
+        "transactions_last_24h": 2,
+        "origin_country": "GB",
+        "destination_country": "DE",
+        "origin_account_id": "eval-medium-origin",
+        "destination_account_id": "eval-medium-destination"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expect_human_review": false
+    },
+    {
+      "name": "high risk requires human review",
+      "transaction": {
+        "transaction_id": "eval-investigate-high",
+        "amount": 6000.0,
+        "account_age_days": 10,
+        "new_payee": true,
+        "average_transaction_amount": 1000.0,
+        "transactions_last_24h": 11,
+        "origin_country": "GB",
+        "destination_country": "ES",
+        "origin_account_id": "eval-high-origin",
+        "destination_account_id": "eval-high-destination"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expect_human_review": true
+    },
+    {
+      "name": "conflicting graph signal requires review",
+      "transaction": {
+        "transaction_id": "eval-investigate-graph",
+        "amount": 100.0,
+        "account_age_days": 365,
+        "new_payee": false,
+        "average_transaction_amount": 100.0,
+        "transactions_last_24h": 2,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "acct-demo-origin",
+        "destination_account_id": "acct-demo-dest"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expect_human_review": true
+    }
+  ]
+}
+

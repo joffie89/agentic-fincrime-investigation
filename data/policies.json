@@ -1,0 +1,29 @@
+{
+  "policies": [
+    {
+      "policy_id": "DEMO-AML-001",
+      "title": "Unusual transaction amount and new beneficiary review",
+      "text": "This synthetic demo policy requires investigators to consider a payment unusual when its amount is materially higher than the account's established transaction pattern. A payment to a new payee is an additional risk indicator, especially for a young account. Investigators should request contextual information where the purpose, beneficiary relationship, or source of funds is not supported. A rule signal begins an investigation; it does not by itself authorize blocking, rejecting, or reporting a transaction."
+    },
+    {
+      "policy_id": "DEMO-AML-002",
+      "title": "Transaction velocity and rapid movement",
+      "text": "This synthetic demo policy treats a rapid burst of transactions within twenty-four hours as a velocity indicator. Review should consider whether multiple transfers show rapid movement through the account, whether amounts are split across payments, and whether the activity differs from the known historical pattern. Velocity evidence should be combined with validated transaction facts and recorded in the investigation rationale."
+    },
+    {
+      "policy_id": "DEMO-AML-003",
+      "title": "Account network and shared counterparty indicators",
+      "text": "This synthetic demo policy directs investigators to review network relationships when accounts have many counterparties, repeated direct transactions, counterparties shared by both sides of a payment, or a high concentration of value sent to one counterparty. These graph indicators are explainable leads rather than proof of wrongdoing. The reviewer should preserve the relevant account identifiers, counts, and concentration measure as evidence."
+    },
+    {
+      "policy_id": "DEMO-AML-004",
+      "title": "Cross-border and geographic context",
+      "text": "This synthetic demo policy requires geographic context to be assessed for cross-border payments. Country names alone do not establish risk. Investigators should use current approved screening sources, validate the parties and payment purpose, and avoid inventing sanctions or jurisdiction claims that are not present in supplied evidence. Any possible sanctions match must be escalated to an authorized human reviewer."
+    },
+    {
+      "policy_id": "DEMO-AML-005",
+      "title": "Evidence sufficiency and human review",
+      "text": "This synthetic demo policy requires human review when deterministic risk is high, retrieved evidence is insufficient, model confidence is low, or transaction and network signals conflict. Automated output is a recommendation only and must not claim that a person reviewed the case. Policy references must identify evidence actually retrieved for the investigation. Missing information and persistence failures must be reported rather than silently ignored."
+    }
+  ]
+}

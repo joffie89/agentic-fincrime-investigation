@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fincrime}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-fincrime}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+    restart: unless-stopped
+    environment:
+      APP_ENV: container
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      SERVICE_MODE: ${SERVICE_MODE:-local}
+      PERSISTENCE_BACKEND: postgres
+      DATABASE_URL: postgresql://${POSTGRES_USER:-fincrime}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-fincrime}
+      POLICY_INDEX_PATH: ${POLICY_INDEX_PATH:-data/policy_index.json}
+      RETRIEVAL_TOP_K: ${RETRIEVAL_TOP_K:-3}
+      HUMAN_REVIEW_CONFIDENCE_THRESHOLD: ${HUMAN_REVIEW_CONFIDENCE_THRESHOLD:-0.70}
+      AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT:-}
+      AZURE_OPENAI_API_KEY: ${AZURE_OPENAI_API_KEY:-}
+      AZURE_OPENAI_CHAT_DEPLOYMENT: ${AZURE_OPENAI_CHAT_DEPLOYMENT:-}
+      AZURE_OPENAI_EMBEDDING_DEPLOYMENT: ${AZURE_OPENAI_EMBEDDING_DEPLOYMENT:-}
+      AZURE_OPENAI_API_VERSION: ${AZURE_OPENAI_API_VERSION:-2024-10-21}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

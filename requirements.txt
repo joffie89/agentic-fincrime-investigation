@@ -1,0 +1,14 @@
+# Runtime
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+pydantic>=2.9,<3.0
+pydantic-settings>=2.6,<3.0
+python-dotenv>=1.0,<2.0
+langgraph>=0.2.50,<2.0
+networkx>=3.3,<4.0
+openai>=1.55,<3.0
+psycopg[binary]>=3.2,<4.0
+
+# Test and API smoke-test support
+pytest>=8.3,<10.0
+httpx>=0.27,<1.0
