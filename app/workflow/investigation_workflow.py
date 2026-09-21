@@ -16,11 +16,13 @@ from app.models.domain import (
     PersistenceResult,
     PolicyAssessment,
     Recommendation,
+    RelationshipAnomalyResult,
     RiskAssessment,
     RiskLevel,
 )
 from app.models.transaction import Transaction
 from app.services.policy_assessment import PolicyAssessmentError, PolicyAssessmentService
+from app.services.relationship_anomaly_scorer import RelationshipAnomalyScorer
 from app.workflow.state import InvestigationState
 
 logger = logging.getLogger(__name__)
@@ -32,6 +34,10 @@ class GraphAnalyzerProtocol(Protocol):
 
 class PolicyRetrieverProtocol(Protocol):
     def retrieve(self, query: str, top_k: int = 3) -> list[Any]: ...
+
+
+class RelationshipAnomalyScorerProtocol(Protocol):
+    def score(self, graph_analysis_result: Any) -> tuple[float, bool]: ...
 
 
 class InvestigationRepositoryProtocol(Protocol):
@@ -51,6 +57,7 @@ class InvestigationWorkflow:
         repository: InvestigationRepositoryProtocol,
         retrieval_top_k: int = 3,
         human_review_confidence_threshold: float = 0.6,
+        relationship_anomaly_scorer: RelationshipAnomalyScorerProtocol | None = None,
     ) -> None:
         if retrieval_top_k < 1:
             raise ValueError("retrieval_top_k must be at least 1")
@@ -63,12 +70,21 @@ class InvestigationWorkflow:
         self._repository = repository
         self._retrieval_top_k = retrieval_top_k
         self._confidence_threshold = human_review_confidence_threshold
+        self._relationship_anomaly_scorer = (
+            relationship_anomaly_scorer
+            if relationship_anomaly_scorer is not None
+            else RelationshipAnomalyScorer()
+        )
         self.graph = self._compile_graph()
 
     def _compile_graph(self) -> Any:
         builder = StateGraph(InvestigationState)
         builder.add_node("risk_assessment", self._risk_assessment_node)
         builder.add_node("graph_analysis", self._graph_analysis_node)
+        builder.add_node(
+            "relationship_anomaly_scoring",
+            self._relationship_anomaly_scoring_node,
+        )
         builder.add_node("policy_retrieval", self._policy_retrieval_node)
         builder.add_node("policy_validation", self._policy_validation_node)
         builder.add_node("human_review_required", self._human_review_node)
@@ -77,7 +93,8 @@ class InvestigationWorkflow:
 
         builder.add_edge(START, "risk_assessment")
         builder.add_edge("risk_assessment", "graph_analysis")
-        builder.add_edge("graph_analysis", "policy_retrieval")
+        builder.add_edge("graph_analysis", "relationship_anomaly_scoring")
+        builder.add_edge("relationship_anomaly_scoring", "policy_retrieval")
         builder.add_edge("policy_retrieval", "policy_validation")
         builder.add_conditional_edges(
             "policy_validation",
@@ -104,6 +121,25 @@ class InvestigationWorkflow:
         return {
             "graph_analysis": result,
             "audit_events": [*state.get("audit_events", []), "graph_analysis_completed"],
+        }
+
+    def _relationship_anomaly_scoring_node(
+        self,
+        state: InvestigationState,
+    ) -> dict[str, Any]:
+        anomaly_score, is_anomalous = self._relationship_anomaly_scorer.score(
+            state["graph_analysis"]
+        )
+        result = RelationshipAnomalyResult(
+            anomaly_score=float(anomaly_score),
+            is_anomalous=bool(is_anomalous),
+        )
+        return {
+            "relationship_anomaly": result,
+            "audit_events": [
+                *state.get("audit_events", []),
+                "relationship_anomaly_scoring_completed",
+            ],
         }
 
     def _policy_retrieval_node(self, state: InvestigationState) -> dict[str, Any]:
@@ -152,14 +188,27 @@ class InvestigationWorkflow:
         graph = state["graph_analysis"]
         assessment = state["policy_assessment"]
         conflicting_signals = graph.suspicious and risk.risk_level is RiskLevel.LOW
+        relationship_anomaly_disagreement = self._relationship_anomaly_disagreement(
+            state
+        )
         requires_review = (
             risk.risk_level is RiskLevel.HIGH
             or assessment.confidence < self._confidence_threshold
             or not assessment.evidence_sufficient
             or assessment.requires_human_review
             or conflicting_signals
+            or relationship_anomaly_disagreement
         )
         return "human_review" if requires_review else "complete"
+
+    @staticmethod
+    def _relationship_anomaly_disagreement(state: InvestigationState) -> bool:
+        return (
+            state["risk_assessment"].risk_level
+            in {RiskLevel.LOW, RiskLevel.MEDIUM}
+            and not state["graph_analysis"].suspicious
+            and state["relationship_anomaly"].is_anomalous
+        )
 
     def _human_review_node(self, state: InvestigationState) -> dict[str, Any]:
         assessment = state["policy_assessment"]
@@ -175,6 +224,11 @@ class InvestigationWorkflow:
             and state["risk_assessment"].risk_level is RiskLevel.LOW
         ):
             reasons.append("Graph and deterministic risk signals conflict.")
+        if self._relationship_anomaly_disagreement(state):
+            reasons.append(
+                "Relationship anomaly model flags atypical structure despite "
+                "low or medium deterministic risk."
+            )
         recommendation_value = assessment.recommendation
         if state["risk_assessment"].risk_level is RiskLevel.HIGH:
             recommendation_value = Recommendation.ESCALATE_TO_HUMAN
@@ -289,6 +343,7 @@ class InvestigationWorkflow:
             transaction_id=transaction.transaction_id,
             risk_assessment=final_state["risk_assessment"],
             graph_analysis=final_state["graph_analysis"],
+            relationship_anomaly=final_state["relationship_anomaly"],
             retrieved_policies=final_state.get("retrieved_policies", []),
             policy_assessment=final_state["policy_assessment"],
             recommendation=recommendation.recommendation,
@@ -298,4 +353,3 @@ class InvestigationWorkflow:
             persistence=final_state["persistence"],
             created_at=final_state["created_at"],
         )
-

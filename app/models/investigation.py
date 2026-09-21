@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Annotated
 
-from pydantic import AwareDatetime, Field, StrictBool, model_validator
+from pydantic import AwareDatetime, Field, StrictBool, StrictFloat, model_validator
 
 from app.models.base import (
     DomainModel,
@@ -88,6 +88,13 @@ class GraphAnalysisResult(DomainModel):
     suspicious: StrictBool
 
 
+class RelationshipAnomalyResult(DomainModel):
+    """Unsupervised second opinion over graph-derived relationship features."""
+
+    anomaly_score: Annotated[StrictFloat, Field(allow_inf_nan=False)]
+    is_anomalous: StrictBool
+
+
 class RetrievedPolicy(DomainModel):
     """A policy chunk returned by retrieval with its relevance score."""
 
@@ -135,6 +142,7 @@ class InvestigationResponse(DomainModel):
     transaction_id: Identifier
     risk_assessment: RiskAssessment
     graph_analysis: GraphAnalysisResult
+    relationship_anomaly: RelationshipAnomalyResult | None = None
     retrieved_policies: list[RetrievedPolicy]
     policy_assessment: PolicyAssessment
     recommendation: Recommendation

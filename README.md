@@ -115,6 +115,18 @@ No graph ML, external graph database, or real customer data is used. Optional
 account IDs preserve compatibility with the original transaction shape; stable
 role-prefixed demo IDs are derived when they are absent.
 
+### Relationship anomaly scoring
+
+`RelationshipAnomalyScorer` fits an unsupervised scikit-learn `IsolationForest`
+over the graph metrics using a fixed-seed synthetic training set. It provides a
+reproducible second opinion on relationship structure; it does not replace or
+alter the deterministic risk rules and has not been validated against real fraud
+data.
+
+When deterministic risk is `LOW` or `MEDIUM`, graph analysis is not already
+`suspicious`, and the model flags the structure as anomalous, the workflow routes
+the investigation to human review.
+
 ### Policy RAG
 
 Ingestion and query are separate operations:
@@ -350,6 +362,7 @@ is a design, not evidence of a completed deployment.
 | Orchestration | Compiled typed LangGraph with a real conditional branch | Distributed workers, durable graph checkpoints |
 | Risk | Four preserved deterministic rules and boundary tests | Calibrated production rules/model governance |
 | Graph | In-process NetworkX over synthetic relationships | Live graph store, entity resolution, temporal analytics |
+| ML anomaly signal | IsolationForest over graph features, fixed-seed synthetic training set, routes to human review on disagreement | Trained on real historical data, periodic retraining, drift monitoring |
 | RAG | Synthetic corpus, chunking, local vectors, JSON index, Top-K | Managed vector database, policy lifecycle/approval workflow |
 | AI | Deterministic local assessor; Azure chat and embedding adapters; mocked tests | Live Azure validation, monitoring, prompt/version registry |
 | Human review | Explicit pending status and fail-safe routing | Reviewer UI, assignment, approval/override audit events |
@@ -370,4 +383,3 @@ is a design, not evidence of a completed deployment.
   deployments and were not called by the test suite.
 - No authentication, authorization, PII controls, sanctions data, case-management
   UI, human-review completion endpoint, or actual cloud deployment is included.
-

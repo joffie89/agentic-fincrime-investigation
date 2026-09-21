@@ -26,6 +26,14 @@ class StaticGraphAnalyzer:
         return self.result
 
 
+class StaticRelationshipAnomalyScorer:
+    def __init__(self, result: tuple[float, bool]) -> None:
+        self.result = result
+
+    def score(self, _graph_analysis_result):
+        return self.result
+
+
 class StaticRetriever:
     def __init__(self, policies) -> None:
         self.policies = policies
@@ -65,6 +73,7 @@ def build_workflow(
     assessor=None,
     repository=None,
     threshold=0.6,
+    anomaly_result=(-0.1, False),
 ):
     return InvestigationWorkflow(
         risk_assessor=assess_transaction,
@@ -74,6 +83,9 @@ def build_workflow(
         repository=repository or InMemoryInvestigationRepository(),
         retrieval_top_k=3,
         human_review_confidence_threshold=threshold,
+        relationship_anomaly_scorer=StaticRelationshipAnomalyScorer(
+            anomaly_result
+        ),
     )
 
 
@@ -90,6 +102,7 @@ def test_compiled_graph_contains_real_nodes(
     assert {
         "risk_assessment",
         "graph_analysis",
+        "relationship_anomaly_scoring",
         "policy_retrieval",
         "policy_validation",
         "human_review_required",
@@ -113,6 +126,9 @@ def test_low_risk_routes_to_completed(
     assert result.status is InvestigationStatus.COMPLETED
     assert result.recommendation is Recommendation.CLEAR
     assert result.requires_human_review is False
+    assert result.relationship_anomaly is not None
+    assert result.relationship_anomaly.anomaly_score == -0.1
+    assert result.relationship_anomaly.is_anomalous is False
     assert result.persistence.succeeded is True
     assert len(repository.records) == 1
 
@@ -207,6 +223,34 @@ def test_conflicting_graph_signal_routes_to_human_review(
     assert any("conflict" in reason.lower() for reason in result.reasons)
 
 
+def test_relationship_anomaly_disagreement_routes_to_human_review(
+    transaction_factory, clean_graph_result, retrieved_policy
+):
+    assessment = PolicyAssessment(
+        recommendation=Recommendation.CLEAR,
+        reasons=["Policy evidence alone does not trigger escalation."],
+        confidence=0.95,
+        policy_references=[retrieved_policy.policy_id],
+        missing_information=[],
+        requires_human_review=False,
+        evidence_sufficient=True,
+    )
+    workflow = build_workflow(
+        graph_result=clean_graph_result,
+        policies=[retrieved_policy],
+        assessor=StaticAssessor(assessment),
+        anomaly_result=(0.2, True),
+    )
+
+    result = workflow.invoke(transaction_factory())
+
+    assert result.status is InvestigationStatus.PENDING_HUMAN_REVIEW
+    assert result.requires_human_review is True
+    assert result.relationship_anomaly is not None
+    assert result.relationship_anomaly.is_anomalous is True
+    assert any("anomaly model" in reason.lower() for reason in result.reasons)
+
+
 def test_provider_failure_uses_safe_validated_fallback(
     transaction_factory, clean_graph_result, retrieved_policy
 ):
@@ -239,4 +283,3 @@ def test_persistence_failure_is_reported_truthfully(
     assert result.persistence.succeeded is False
     assert result.persistence.backend == "postgres"
     assert result.persistence.error == "database unavailable"
-

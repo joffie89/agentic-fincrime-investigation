@@ -11,6 +11,7 @@ from app.models.domain import (
     InvestigationStatus,
     PersistenceResult,
     PolicyAssessment,
+    RelationshipAnomalyResult,
     RetrievedPolicy,
     RiskAssessment,
 )
@@ -25,6 +26,7 @@ class InvestigationState(TypedDict, total=False):
     transaction: Transaction
     risk_assessment: RiskAssessment
     graph_analysis: GraphAnalysisResult
+    relationship_anomaly: RelationshipAnomalyResult
     retrieved_policies: list[RetrievedPolicy]
     policy_assessment: PolicyAssessment
     recommendation: InvestigationRecommendation
@@ -33,4 +35,3 @@ class InvestigationState(TypedDict, total=False):
     persistence: PersistenceResult
     audit_events: list[str]
     errors: list[str]
-

@@ -29,6 +29,11 @@ class CleanGraphAnalyzer:
         )
 
 
+class StaticRelationshipAnomalyScorer:
+    def score(self, _graph_analysis_result):
+        return -0.1, False
+
+
 class StaticRetriever:
     def retrieve(self, _query: str, top_k: int = 3):
         policies = [
@@ -82,6 +87,7 @@ def service(repository=None) -> InvestigationService:
         repository=repository or InMemoryInvestigationRepository(),
         retrieval_top_k=3,
         human_review_confidence_threshold=0.6,
+        relationship_anomaly_scorer=StaticRelationshipAnomalyScorer(),
     )
     return InvestigationService(workflow)
 
@@ -134,6 +140,10 @@ def test_investigate_low_risk_executes_workflow():
     assert body["requires_human_review"] is False
     assert body["persistence"]["succeeded"] is True
     assert body["retrieved_policies"][0]["policy_id"] == "DEMO-AML-001"
+    assert body["relationship_anomaly"] == {
+        "anomaly_score": -0.1,
+        "is_anomalous": False,
+    }
 
 
 def test_investigate_high_risk_routes_to_human_review():
@@ -198,4 +208,3 @@ def test_unexpected_workflow_error_returns_sanitized_500():
     assert response.status_code == 500
     assert response.json() == {"detail": "Investigation could not be completed"}
     assert "internal details" not in response.text
-
