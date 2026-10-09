@@ -1,19 +1,31 @@
-# Agentic Financial Crime Investigation Platform
+# Financial Crime Investigation Workflow
 
-An interview-sized, enterprise-style Python prototype showing how deterministic
-risk rules, explainable relationship analysis, policy retrieval, structured model
-reasoning, human-review controls, and audit persistence can fit into one coherent
-financial-crime investigation workflow.
+An interview-sized, enterprise-style Python prototype of a LangGraph investigation
+workflow with rule-based and Azure OpenAI assessment modes. It combines
+deterministic risk rules, explainable relationship analysis, policy retrieval,
+human-review controls, and audit persistence.
 
 This is a portfolio demonstration—not a production AML decision system. It uses
 only synthetic data, produces recommendations rather than consequential actions,
 and never claims that a human reviewed a case when they did not.
 
+## What's implemented now
+
+- Strict transaction validation returns HTTP 422; a reused transaction ID with
+  different historical details returns HTTP 409.
+- Required API-key authentication protects `/assess-risk` and `/investigate`,
+  while `/health` remains public.
+- Request IDs are generated or propagated in `X-Request-ID`, with one structured
+  status and duration log for each HTTP request.
+- A network-free suite of 120+ unit, workflow, persistence, evaluation, and API
+  tests runs locally and in CI.
+- Docker/Compose packaging and GitHub Actions CI are included.
+
 ## What problem it demonstrates
 
 Financial-crime investigations often need several kinds of evidence at once:
 transparent transaction rules, relationship patterns, relevant policy text, and a
-reasoned recommendation. This project keeps each concern independent and makes
+policy-grounded assessment. This project keeps each concern independent and makes
 LangGraph responsible for the actual execution and escalation path. The result is
 small enough to explain component by component while still demonstrating service
 boundaries, validation, testing, failure handling, and auditability.
@@ -26,7 +38,8 @@ flowchart LR
     API --> LG[Compiled LangGraph]
     LG --> Risk[Deterministic risk rules]
     Risk --> Graph[NetworkX analysis]
-    Graph --> Retrieve[Policy vector retrieval]
+    Graph --> Anomaly[IsolationForest relationship signal]
+    Anomaly --> Retrieve[Policy retrieval - lexical hash by default]
     Retrieve --> Assess[Structured policy assessment]
     Assess --> Route{Review required?}
     Route -->|No| Complete[Complete recommendation]
@@ -36,9 +49,10 @@ flowchart LR
     Audit --> Memory[(In-memory demo store)]
     Audit --> Postgres[(PostgreSQL)]
     Policies[Synthetic policy JSON] --> Ingest[Offline chunk + embed]
-    Ingest --> Index[(JSON vector index)]
+    Ingest --> Index[(JSON embedding index)]
     Index --> Retrieve
-    Azure[Azure OpenAI-compatible API] -. optional .-> Assess
+    Azure[Azure OpenAI-compatible API] -. optional assessment .-> Assess
+    Azure -. optional embeddings .-> Ingest
 ```
 
 Request flow:
@@ -47,6 +61,7 @@ Request flow:
 FastAPI request -> Pydantic validation -> compiled LangGraph
   -> deterministic risk assessment
   -> NetworkX graph analysis
+  -> relationship anomaly scoring
   -> Top-K policy retrieval
   -> validated policy assessment
   -> conditional complete/human-review route
@@ -61,6 +76,8 @@ FastAPI request -> Pydantic validation -> compiled LangGraph
 ├── app/
 │   ├── main.py                         # FastAPI factory and routes
 │   ├── config.py                       # environment-backed settings
+│   ├── auth.py                         # X-API-Key dependency
+│   ├── middleware.py                   # request IDs and HTTP timing logs
 │   ├── logging_config.py               # JSON structured logging
 │   ├── models/                         # strict Pydantic domain contracts
 │   ├── services/
@@ -111,9 +128,9 @@ relationships and temporarily adds the request transaction to a copy. It returns
 - direct-counterparty value concentration; and
 - named, explainable signals plus a `suspicious` flag.
 
-No graph ML, external graph database, or real customer data is used. Optional
-account IDs preserve compatibility with the original transaction shape; stable
-role-prefixed demo IDs are derived when they are absent.
+`GraphAnalyzer` itself uses no ML, external graph database, or real customer data.
+Optional account IDs preserve compatibility with the original transaction shape;
+stable role-prefixed demo IDs are derived when they are absent.
 
 ### Relationship anomaly scoring
 
@@ -140,9 +157,10 @@ Ingestion and query are separate operations:
 
 The default `LocalHashEmbeddingService` is a deterministic lexical hashing
 baseline, not a semantic ML model. It keeps the complete demo offline and
-repeatable. An injected `AzureOpenAIEmbeddingService` adapter is implemented and
-mock-tested for separately generated Azure-compatible indexes; the bundled index
-and default application composition remain local.
+repeatable. Its cosine similarity measures overlap in hashed lexical features,
+not semantic search. An injected `AzureOpenAIEmbeddingService` adapter is
+implemented and mock-tested for separately generated Azure-compatible indexes;
+the bundled index and default application composition remain local.
 
 Rebuild the bundled index explicitly:
 
@@ -162,7 +180,7 @@ The hosted prompt instructs the model to:
 - use only supplied policy evidence for policy claims;
 - report insufficient evidence;
 - never fabricate policy identifiers;
-- avoid autonomous consequential actions; and
+- avoid consequential actions; and
 - return structured output.
 
 The adapter rejects references that were not among the retrieved chunks. Provider
@@ -177,8 +195,10 @@ following is true:
 - deterministic risk is `HIGH`;
 - assessment confidence is below the configured threshold;
 - policy evidence is insufficient;
-- the assessment itself requests human review; or
-- suspicious graph signals conflict with a `LOW` deterministic score.
+- the assessment itself requests human review;
+- suspicious graph signals conflict with a `LOW` deterministic score; or
+- the relationship anomaly model flags an otherwise non-suspicious `LOW` or
+  `MEDIUM` case.
 
 The response status is `PENDING_HUMAN_REVIEW`. This means review is required—not
 that a person has reviewed the case. There is deliberately no fake review UI or
@@ -193,8 +213,9 @@ complete JSON audit record.
 
 Every save returns a validated `PersistenceResult`. A database connection/write
 failure produces `succeeded: false`, sets the investigation status to `FAILED`, and
-makes `/investigate` return HTTP 503 with that truthful response body. The service
-does not silently switch from PostgreSQL to memory.
+makes `/investigate` return HTTP 503 with the fixed, non-sensitive error
+`Investigation could not be saved`. The service does not silently switch from
+PostgreSQL to memory.
 
 ## Local setup
 
@@ -206,6 +227,7 @@ python -m venv .venv
 python -m pip install --upgrade pip
 python -m pip install --requirement requirements.txt
 Copy-Item .env.example .env
+# Set API_KEY in .env to a non-placeholder local value.
 python -m app.rag.ingestion
 python -m uvicorn app.main:app --reload
 ```
@@ -221,20 +243,24 @@ Open `http://127.0.0.1:8000/docs` for the generated OpenAPI UI.
 |---|---|---|
 | `APP_ENV` | `development` | Environment label |
 | `LOG_LEVEL` | `INFO` | Root JSON log level |
-| `SERVICE_MODE` | `local` | `local` deterministic assessor or `azure` LLM adapter |
+| `API_KEY` | none; required | Key accepted in `X-API-Key` on protected endpoints |
+| `SERVICE_MODE` | `local` | `local` rule-based or `azure` Azure OpenAI assessment |
+| `EMBEDDING_MODE` | `local` | `local` lexical hashing baseline or `azure` embedding adapter |
 | `PERSISTENCE_BACKEND` | `memory` | `memory` or `postgres` |
 | `DATABASE_URL` | unset | Required for PostgreSQL mode |
 | `POLICY_INDEX_PATH` | `data/policy_index.json` | Stored vector index |
 | `RETRIEVAL_TOP_K` | `3` | Returned policy chunk count |
+| `RETRIEVAL_MIN_RELEVANCE_SCORE` | `0.05` | Minimum cosine-similarity score for returned chunks |
 | `HUMAN_REVIEW_CONFIDENCE_THRESHOLD` | `0.70` | Conditional-route threshold |
-| `AZURE_OPENAI_ENDPOINT` | unset | Required in Azure mode |
-| `AZURE_OPENAI_API_KEY` | unset | Required in Azure mode; never committed |
-| `AZURE_OPENAI_CHAT_DEPLOYMENT` | unset | Azure chat deployment name |
-| `AZURE_OPENAI_EMBEDDING_DEPLOYMENT` | unset | Reserved for the Azure embedding adapter |
+| `AZURE_OPENAI_ENDPOINT` | unset | Required when `SERVICE_MODE=azure` or `EMBEDDING_MODE=azure` |
+| `AZURE_OPENAI_API_KEY` | unset | Required when `SERVICE_MODE=azure` or `EMBEDDING_MODE=azure`; never committed |
+| `AZURE_OPENAI_CHAT_DEPLOYMENT` | unset | Required when `SERVICE_MODE=azure` |
+| `AZURE_OPENAI_EMBEDDING_DEPLOYMENT` | unset | Required when `EMBEDDING_MODE=azure` |
+| `AZURE_OPENAI_EMBEDDING_DIMENSIONS` | `1536` | Expected Azure embedding vector size |
 | `AZURE_OPENAI_API_VERSION` | `2024-10-21` | Azure API version |
 
-`Settings` validates selected backends at startup. No credentials are hard-coded,
-and `.env` is ignored by Git and Docker.
+`Settings` requires `API_KEY` and validates selected backends at startup. No
+credentials are hard-coded, and `.env` is ignored by Git and Docker.
 
 ## API examples
 
@@ -244,11 +270,15 @@ Health/liveness:
 curl http://127.0.0.1:8000/health
 ```
 
+Use the value configured as `API_KEY` in the `X-API-Key` header for protected
+endpoints.
+
 Legacy deterministic endpoint:
 
 ```bash
 curl -X POST http://127.0.0.1:8000/assess-risk \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: replace-with-your-api-key" \
   -d '{"transaction_id":"demo-high-001","amount":6000.0,"account_age_days":10,"new_payee":true,"average_transaction_amount":1000.0,"transactions_last_24h":11,"origin_country":"GB","destination_country":"ES"}'
 ```
 
@@ -257,6 +287,7 @@ Full investigation:
 ```bash
 curl -X POST http://127.0.0.1:8000/investigate \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: replace-with-your-api-key" \
   -d '{"transaction_id":"demo-high-001","amount":6000.0,"account_age_days":10,"new_payee":true,"average_transaction_amount":1000.0,"transactions_last_24h":11,"origin_country":"GB","destination_country":"ES","origin_account_id":"demo-origin","destination_account_id":"demo-destination"}'
 ```
 
@@ -289,8 +320,8 @@ Abridged local-mode response (IDs/timestamps vary):
 }
 ```
 
-The real response also contains the full graph result and structured policy
-assessment; the OpenAPI schema is authoritative.
+The real response also contains the full graph result, relationship-anomaly
+result, and structured policy assessment; the OpenAPI schema is authoritative.
 
 ## Tests and evaluation
 
@@ -300,10 +331,11 @@ Run the complete network-free suite:
 python -m pytest -q
 ```
 
-Tests cover rule boundaries, model validation, graph metrics, policy ingestion and
-Top-K retrieval, mocked Azure embedding/LLM output, LangGraph routes, escalation,
-persistence success/failure, API behavior, and evaluation execution. They require
-neither Azure credentials nor paid API calls.
+The suite contains 120+ tests covering rule boundaries, model validation, graph
+metrics, lexical-hash policy retrieval, mocked Azure embedding/LLM output,
+LangGraph routes, escalation, persistence, API-key authentication, request
+correlation/logging, and evaluation execution. It requires neither Azure
+credentials nor paid API calls.
 
 Run the evaluation:
 
@@ -319,11 +351,13 @@ performance.
 
 ## Docker and PostgreSQL
 
-Create `.env`, replace the demo password, then start the API and PostgreSQL:
+Create `.env`, replace the placeholder password and API key, then start the API
+and PostgreSQL:
 
 ```powershell
 Copy-Item .env.example .env
 # Set POSTGRES_PASSWORD in .env to a local, non-placeholder value.
+# Set API_KEY in .env to a local, non-placeholder value.
 docker compose config
 docker compose up --build
 ```
@@ -358,16 +392,16 @@ is a design, not evidence of a completed deployment.
 
 | Area | Implemented here | Designed/future only |
 |---|---|---|
-| API | FastAPI health, legacy risk, and full investigation endpoints | Authentication, authorization, quotas |
+| API | FastAPI health, legacy risk, and full investigation endpoints; validation responses; API-key authentication | Role-based authorization, quotas |
 | Orchestration | Compiled typed LangGraph with a real conditional branch | Distributed workers, durable graph checkpoints |
 | Risk | Four preserved deterministic rules and boundary tests | Calibrated production rules/model governance |
 | Graph | In-process NetworkX over synthetic relationships | Live graph store, entity resolution, temporal analytics |
 | ML anomaly signal | IsolationForest over graph features, fixed-seed synthetic training set, routes to human review on disagreement | Trained on real historical data, periodic retraining, drift monitoring |
-| RAG | Synthetic corpus, chunking, local vectors, JSON index, Top-K | Managed vector database, policy lifecycle/approval workflow |
-| AI | Deterministic local assessor; Azure chat and embedding adapters; mocked tests | Live Azure validation, monitoring, prompt/version registry |
+| RAG | Synthetic corpus, chunking, local lexical-hash vectors, JSON index, Top-K | Managed vector database, policy lifecycle/approval workflow |
+| AI | Rule-based local assessor; Azure chat and embedding adapters; mocked tests | Live Azure validation, monitoring, prompt/version registry |
 | Human review | Explicit pending status and fail-safe routing | Reviewer UI, assignment, approval/override audit events |
 | Persistence | Memory demo repository and PostgreSQL implementation | Migrations, pooling, retention, encryption policy, HA |
-| Operations | JSON logs, Docker/Compose, GitHub Actions CI | Actual Azure resources/deployment, observability backend |
+| Operations | JSON logs with request IDs and timing, Docker/Compose, GitHub Actions CI | Actual Azure resources/deployment, observability backend |
 
 ## Limitations
 
@@ -381,5 +415,5 @@ is a design, not evidence of a completed deployment.
   versioned migrations and a connection pool.
 - Azure adapters are mock-tested but require the user's compatible Azure
   deployments and were not called by the test suite.
-- No authentication, authorization, PII controls, sanctions data, case-management
-  UI, human-review completion endpoint, or actual cloud deployment is included.
+- No role-based authorization, PII controls, sanctions data, case-management UI,
+  human-review completion endpoint, or actual cloud deployment is included.
