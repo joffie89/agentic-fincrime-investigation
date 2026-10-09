@@ -2,12 +2,21 @@
 
 from __future__ import annotations
 
+import os
 from collections.abc import Mapping
 
 import pytest
 
+TEST_API_KEY = "test-api-key"
+os.environ["API_KEY"] = TEST_API_KEY
+
 from app.models.domain import GraphAnalysisResult, RetrievedPolicy
 from app.models.transaction import Transaction
+
+
+@pytest.fixture
+def api_key_headers() -> dict[str, str]:
+    return {"X-API-Key": TEST_API_KEY}
 
 
 @pytest.fixture

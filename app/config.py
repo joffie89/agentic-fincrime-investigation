@@ -6,7 +6,7 @@ from enum import Enum
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     service_mode: ServiceMode = ServiceMode.LOCAL
     embedding_mode: EmbeddingMode = EmbeddingMode.LOCAL
     persistence_backend: PersistenceBackend = PersistenceBackend.MEMORY
+    api_key: SecretStr = Field(repr=False, exclude=True)
     database_url: str | None = Field(default=None, repr=False, exclude=True)
 
     policy_index_path: Path = Path("data/policy_index.json")
@@ -82,6 +83,13 @@ class Settings(BaseSettings):
         if normalized not in allowed:
             raise ValueError(f"LOG_LEVEL must be one of {sorted(allowed)}")
         return normalized
+
+    @field_validator("api_key")
+    @classmethod
+    def api_key_must_not_be_blank(cls, value: SecretStr) -> SecretStr:
+        if not value.get_secret_value().strip():
+            raise ValueError("API_KEY must not be empty")
+        return value
 
     @field_validator(
         "database_url",

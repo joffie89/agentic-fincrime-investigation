@@ -5,7 +5,9 @@ from __future__ import annotations
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 import app.repositories.postgres as postgres_module
 from app.config import Settings
@@ -96,7 +98,19 @@ def client_for(investigation_service) -> TestClient:
     )
 
 
-def test_health_endpoint():
+def test_api_key_setting_is_required(monkeypatch):
+    monkeypatch.delenv("API_KEY")
+
+    with pytest.raises(ValidationError, match="api_key"):
+        Settings(
+            _env_file=None,
+            service_mode="local",
+            embedding_mode="local",
+            persistence_backend="memory",
+        )
+
+
+def test_health_endpoint_works_without_api_key():
     response = client_for(service()).get("/health")
 
     assert response.status_code == 200
@@ -107,7 +121,38 @@ def test_health_endpoint():
     }
 
 
-def test_assess_risk_preserves_legacy_contract():
+@pytest.mark.parametrize("path", ["/assess-risk", "/investigate"])
+def test_missing_api_key_returns_401(path):
+    response = client_for(service()).post(path, json=transaction_payload())
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid or missing API key"}
+
+
+@pytest.mark.parametrize("path", ["/assess-risk", "/investigate"])
+def test_wrong_api_key_returns_401(path):
+    response = client_for(service()).post(
+        path,
+        json=transaction_payload(),
+        headers={"X-API-Key": "wrong-api-key"},
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid or missing API key"}
+
+
+@pytest.mark.parametrize("path", ["/assess-risk", "/investigate"])
+def test_correct_api_key_works(path, api_key_headers):
+    response = client_for(service()).post(
+        path,
+        json=transaction_payload(),
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 200
+
+
+def test_assess_risk_preserves_legacy_contract(api_key_headers):
     response = client_for(service()).post(
         "/assess-risk",
         json=transaction_payload(
@@ -117,6 +162,7 @@ def test_assess_risk_preserves_legacy_contract():
             new_payee=True,
             transactions_last_24h=11,
         ),
+        headers=api_key_headers,
     )
 
     assert response.status_code == 200
@@ -127,8 +173,12 @@ def test_assess_risk_preserves_legacy_contract():
     assert len(body["reasons"]) == 4
 
 
-def test_investigate_low_risk_executes_workflow():
-    response = client_for(service()).post("/investigate", json=transaction_payload())
+def test_investigate_low_risk_executes_workflow(api_key_headers):
+    response = client_for(service()).post(
+        "/investigate",
+        json=transaction_payload(),
+        headers=api_key_headers,
+    )
 
     assert response.status_code == 200
     body = response.json()
@@ -143,7 +193,7 @@ def test_investigate_low_risk_executes_workflow():
     }
 
 
-def test_investigate_high_risk_routes_to_human_review():
+def test_investigate_high_risk_routes_to_human_review(api_key_headers):
     response = client_for(service()).post(
         "/investigate",
         json=transaction_payload(
@@ -154,6 +204,7 @@ def test_investigate_high_risk_routes_to_human_review():
             new_payee=True,
             transactions_last_24h=11,
         ),
+        headers=api_key_headers,
     )
 
     assert response.status_code == 200
@@ -164,21 +215,23 @@ def test_investigate_high_risk_routes_to_human_review():
     assert body["requires_human_review"] is True
 
 
-def test_invalid_transaction_returns_422():
+def test_invalid_transaction_returns_422(api_key_headers):
     response = client_for(service()).post(
         "/investigate",
         json=transaction_payload(amount=0.0),
+        headers=api_key_headers,
     )
 
     assert response.status_code == 422
 
 
-def test_same_origin_and_destination_account_returns_422():
+def test_same_origin_and_destination_account_returns_422(api_key_headers):
     response = client_for(service()).post(
         "/investigate",
         json=transaction_payload(
             destination_account_id="acct-api-origin",
         ),
+        headers=api_key_headers,
     )
 
     assert response.status_code == 422
@@ -188,7 +241,7 @@ def test_same_origin_and_destination_account_returns_422():
     )
 
 
-def test_reused_transaction_id_with_different_details_returns_409():
+def test_reused_transaction_id_with_different_details_returns_409(api_key_headers):
     analyzer = GraphAnalyzer(
         [
             AccountTransactionEdge(
@@ -203,6 +256,7 @@ def test_reused_transaction_id_with_different_details_returns_409():
     response = client_for(service(graph_analyzer=analyzer)).post(
         "/investigate",
         json=transaction_payload(),
+        headers=api_key_headers,
     )
 
     assert response.status_code == 409
@@ -211,16 +265,17 @@ def test_reused_transaction_id_with_different_details_returns_409():
     }
 
 
-def test_unknown_transaction_field_returns_422():
+def test_unknown_transaction_field_returns_422(api_key_headers):
     response = client_for(service()).post(
         "/investigate",
         json={**transaction_payload(), "secret_extra": "ignored-no-longer"},
+        headers=api_key_headers,
     )
 
     assert response.status_code == 422
 
 
-def test_postgres_failure_returns_sanitized_503(monkeypatch):
+def test_postgres_failure_returns_sanitized_503(monkeypatch, api_key_headers):
     database_error = "connection to db.internal.example as admin_user refused"
     fake_psycopg = SimpleNamespace(
         connect=MagicMock(side_effect=RuntimeError(database_error))
@@ -231,7 +286,9 @@ def test_postgres_failure_returns_sanitized_503(monkeypatch):
     )
 
     response = client_for(service(repository)).post(
-        "/investigate", json=transaction_payload()
+        "/investigate",
+        json=transaction_payload(),
+        headers=api_key_headers,
     )
 
     assert response.status_code == 503
@@ -245,9 +302,11 @@ def test_postgres_failure_returns_sanitized_503(monkeypatch):
     assert database_error not in response.text
 
 
-def test_unexpected_workflow_error_returns_sanitized_500():
+def test_unexpected_workflow_error_returns_sanitized_500(api_key_headers):
     response = client_for(RaisingService()).post(
-        "/investigate", json=transaction_payload()
+        "/investigate",
+        json=transaction_payload(),
+        headers=api_key_headers,
     )
 
     assert response.status_code == 500

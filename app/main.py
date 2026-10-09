@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import FastAPI, HTTPException, Response, status
+from fastapi import Depends, FastAPI, HTTPException, Response, status
 from pydantic import BaseModel, ConfigDict
 
+from app.auth import require_api_key
 from app.config import Settings, get_settings
 from app.graph.analyzer import TransactionConflictError
 from app.logging_config import configure_logging
@@ -68,6 +69,7 @@ def create_app(
         "/assess-risk",
         response_model=LegacyRiskResponse,
         tags=["investigations"],
+        dependencies=[Depends(require_api_key)],
     )
     def assess_risk(transaction: Transaction) -> LegacyRiskResponse:
         result = score_transaction(transaction)
@@ -82,6 +84,7 @@ def create_app(
         "/investigate",
         response_model=InvestigationResponse,
         tags=["investigations"],
+        dependencies=[Depends(require_api_key)],
     )
     def investigate(
         transaction: Transaction,

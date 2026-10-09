@@ -21,6 +21,7 @@ services:
     environment:
       APP_ENV: container
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      API_KEY: ${API_KEY:?Set API_KEY in .env}
       SERVICE_MODE: ${SERVICE_MODE:-local}
       PERSISTENCE_BACKEND: postgres
       DATABASE_URL: postgresql://${POSTGRES_USER:-fincrime}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-fincrime}
