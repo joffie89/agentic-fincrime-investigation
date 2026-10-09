@@ -112,6 +112,7 @@ def _build_policy_retriever(settings: Settings) -> PolicyRetriever:
         embedding_service,
         minimum_relevance_score=settings.retrieval_min_relevance_score,
         policy_source_path=_POLICY_SOURCE_PATH,
+        retrieval_mode=settings.retrieval_mode,
     )
 
 

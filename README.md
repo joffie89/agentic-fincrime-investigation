@@ -39,7 +39,7 @@ flowchart LR
     LG --> Risk[Deterministic risk rules]
     Risk --> Graph[NetworkX analysis]
     Graph --> Anomaly[IsolationForest relationship signal]
-    Anomaly --> Retrieve[Policy retrieval - lexical hash by default]
+    Anomaly --> Retrieve[Hybrid policy retrieval - vector plus BM25]
     Retrieve --> Assess[Structured policy assessment]
     Assess --> Route{Review required?}
     Route -->|No| Complete[Complete recommendation]
@@ -151,9 +151,11 @@ Ingestion and query are separate operations:
 1. `PolicyIngestor` reads the synthetic policy documents, chunks them with word
    overlap, obtains embeddings through an `EmbeddingService`, and writes a
    validated JSON vector index.
-2. `PolicyRetriever` loads that stored index at query time, embeds the investigation
-   query, calculates cosine similarity, and returns deterministic Top-K chunks with
-   `policy_id`, `chunk_id`, text, and relevance score.
+2. `PolicyRetriever` loads that stored index at query time and ranks policy chunks
+   with vector similarity, BM25 keyword matching, or the default hybrid mode. The
+   hybrid mode combines both rankings with Reciprocal Rank Fusion and returns
+   deterministic Top-K chunks with `policy_id`, `chunk_id`, text, and relevance
+   score.
 
 The default `LocalHashEmbeddingService` is a deterministic lexical hashing
 baseline, not a semantic ML model. It keeps the complete demo offline and
@@ -161,6 +163,12 @@ repeatable. Its cosine similarity measures overlap in hashed lexical features,
 not semantic search. An injected `AzureOpenAIEmbeddingService` adapter is
 implemented and mock-tested for separately generated Azure-compatible indexes;
 the bundled index and default application composition remain local.
+
+Compare vector, BM25, and hybrid retrieval on the labelled policy queries:
+
+```powershell
+python -m app.evaluation.retrieval_eval
+```
 
 Rebuild the bundled index explicitly:
 
@@ -249,8 +257,9 @@ Open `http://127.0.0.1:8000/docs` for the generated OpenAPI UI.
 | `PERSISTENCE_BACKEND` | `memory` | `memory` or `postgres` |
 | `DATABASE_URL` | unset | Required for PostgreSQL mode |
 | `POLICY_INDEX_PATH` | `data/policy_index.json` | Stored vector index |
+| `RETRIEVAL_MODE` | `hybrid` | `vector`, `bm25`, or reciprocal-rank-fused `hybrid` search |
 | `RETRIEVAL_TOP_K` | `3` | Returned policy chunk count |
-| `RETRIEVAL_MIN_RELEVANCE_SCORE` | `0.05` | Minimum cosine-similarity score for returned chunks |
+| `RETRIEVAL_MIN_RELEVANCE_SCORE` | `0.05` | Minimum cosine score for vector results and hybrid vector candidates |
 | `HUMAN_REVIEW_CONFIDENCE_THRESHOLD` | `0.70` | Conditional-route threshold |
 | `AZURE_OPENAI_ENDPOINT` | unset | Required when `SERVICE_MODE=azure` or `EMBEDDING_MODE=azure` |
 | `AZURE_OPENAI_API_KEY` | unset | Required when `SERVICE_MODE=azure` or `EMBEDDING_MODE=azure`; never committed |
@@ -332,7 +341,7 @@ python -m pytest -q
 ```
 
 The suite contains 120+ tests covering rule boundaries, model validation, graph
-metrics, lexical-hash policy retrieval, mocked Azure embedding/LLM output,
+metrics, vector/BM25/hybrid policy retrieval, mocked Azure embedding/LLM output,
 LangGraph routes, escalation, persistence, API-key authentication, request
 correlation/logging, and evaluation execution. It requires neither Azure
 credentials nor paid API calls.
@@ -397,7 +406,7 @@ is a design, not evidence of a completed deployment.
 | Risk | Four preserved deterministic rules and boundary tests | Calibrated production rules/model governance |
 | Graph | In-process NetworkX over synthetic relationships | Live graph store, entity resolution, temporal analytics |
 | ML anomaly signal | IsolationForest over graph features, fixed-seed synthetic training set, routes to human review on disagreement | Trained on real historical data, periodic retraining, drift monitoring |
-| RAG | Synthetic corpus, chunking, local lexical-hash vectors, JSON index, Top-K | Managed vector database, policy lifecycle/approval workflow |
+| RAG | Synthetic corpus, chunking, local lexical-hash vectors, BM25, reciprocal-rank-fused hybrid search, JSON index, Top-K | Managed vector database, policy lifecycle/approval workflow |
 | AI | Rule-based local assessor; Azure chat and embedding adapters; mocked tests | Live Azure validation, monitoring, prompt/version registry |
 | Human review | Explicit pending status and fail-safe routing | Reviewer UI, assignment, approval/override audit events |
 | Persistence | Memory demo repository and PostgreSQL implementation | Migrations, pooling, retention, encryption policy, HA |

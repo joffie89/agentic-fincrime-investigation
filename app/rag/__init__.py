@@ -22,6 +22,10 @@ _EXPORTS = {
     "PolicyIngestor": ("app.rag.ingestion", "PolicyIngestor"),
     "PolicyRetriever": ("app.rag.retriever", "PolicyRetriever"),
     "build_policy_query": ("app.rag.retriever", "build_policy_query"),
+    "reciprocal_rank_fusion": (
+        "app.rag.retriever",
+        "reciprocal_rank_fusion",
+    ),
 }
 
 __all__ = list(_EXPORTS)

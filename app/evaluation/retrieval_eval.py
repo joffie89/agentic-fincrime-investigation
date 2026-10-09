@@ -10,6 +10,7 @@ from typing import Any
 
 from pydantic import Field
 
+from app.config import RetrievalMode
 from app.models.base import DomainModel, Identifier, LongText
 from app.models.domain import RetrievedPolicy
 from app.rag.embeddings import LocalHashEmbeddingService
@@ -21,6 +22,11 @@ DEFAULT_CASES_PATH = PROJECT_ROOT / "evaluation" / "retrieval_cases.json"
 DEFAULT_POLICY_PATH = PROJECT_ROOT / "data" / "policies.json"
 DEFAULT_INDEX_PATH = PROJECT_ROOT / "data" / "policy_index.json"
 RETRIEVAL_DEPTH = 100
+EVALUATION_MODES = (
+    RetrievalMode.VECTOR,
+    RetrievalMode.BM25,
+    RetrievalMode.HYBRID,
+)
 
 
 class PolicyRetrievalCase(DomainModel):
@@ -108,52 +114,66 @@ def run_retrieval_evaluation(
     policy_path: str | Path = DEFAULT_POLICY_PATH,
     index_path: str | Path = DEFAULT_INDEX_PATH,
 ) -> dict[str, Any]:
-    """Run all labelled queries through the existing policy retriever."""
+    """Compare every retrieval mode over the same labelled queries."""
 
     cases_source = Path(cases_path)
     policy_source = Path(policy_path)
     index_source = Path(index_path)
     dataset = _load_dataset(cases_source)
     _ensure_index(policy_source, index_source)
-    retriever = PolicyRetriever.from_index(
-        index_source,
-        LocalHashEmbeddingService(),
-        policy_source_path=policy_source,
-    )
-
-    rankings: list[list[str]] = []
-    expected: list[list[str]] = []
-    details: list[dict[str, Any]] = []
-    for case in dataset.cases:
-        results = retriever.retrieve(case.query, top_k=RETRIEVAL_DEPTH)
-        ranked_policy_ids = _unique_policy_ids(results)
-        rankings.append(ranked_policy_ids)
-        expected.append(case.expected_policy_ids)
-        details.append(
-            {
-                "name": case.name,
-                "expected_policy_ids": case.expected_policy_ids,
-                "returned_policy_ids": ranked_policy_ids,
-            }
+    results_by_mode: dict[str, dict[str, Any]] = {}
+    for mode in EVALUATION_MODES:
+        retriever = PolicyRetriever.from_index(
+            index_source,
+            LocalHashEmbeddingService(),
+            policy_source_path=policy_source,
+            retrieval_mode=mode,
         )
 
+        rankings: list[list[str]] = []
+        expected: list[list[str]] = []
+        details: list[dict[str, Any]] = []
+        for case in dataset.cases:
+            results = retriever.retrieve(case.query, top_k=RETRIEVAL_DEPTH)
+            ranked_policy_ids = _unique_policy_ids(results)
+            rankings.append(ranked_policy_ids)
+            expected.append(case.expected_policy_ids)
+            details.append(
+                {
+                    "name": case.name,
+                    "expected_policy_ids": case.expected_policy_ids,
+                    "returned_policy_ids": ranked_policy_ids,
+                }
+            )
+
+        results_by_mode[mode.value] = {
+            "metrics": calculate_retrieval_metrics(rankings, expected),
+            "cases": details,
+        }
+
+    hybrid_results = results_by_mode[RetrievalMode.HYBRID.value]
     return {
         "case_count": len(dataset.cases),
-        "metrics": calculate_retrieval_metrics(rankings, expected),
-        "cases": details,
+        "modes": results_by_mode,
+        # Preserve the earlier top-level view for callers that consumed the
+        # single-mode evaluator; it now represents the application default.
+        "metrics": hybrid_results["metrics"],
+        "cases": hybrid_results["cases"],
     }
 
 
 def _print_results(results: dict[str, Any]) -> None:
-    metrics = results["metrics"]
     print("Policy RAG retrieval evaluation")
     print(f"Queries: {results['case_count']}")
     print()
-    print("Metric  Score")
-    print("------  ------")
-    print(f"hit@1   {metrics['hit@1']:.4f}")
-    print(f"hit@3   {metrics['hit@3']:.4f}")
-    print(f"MRR     {metrics['mrr']:.4f}")
+    print("Mode    hit@1   hit@3   MRR")
+    print("------  ------  ------  ------")
+    for mode in EVALUATION_MODES:
+        metrics = results["modes"][mode.value]["metrics"]
+        print(
+            f"{mode.value:<6}  {metrics['hit@1']:.4f}  "
+            f"{metrics['hit@3']:.4f}  {metrics['mrr']:.4f}"
+        )
 
 
 def main() -> None:

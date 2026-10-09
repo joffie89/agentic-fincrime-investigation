@@ -24,6 +24,14 @@ class EmbeddingMode(str, Enum):
     AZURE = "azure"
 
 
+class RetrievalMode(str, Enum):
+    """Ranking strategy used for policy retrieval."""
+
+    VECTOR = "vector"
+    BM25 = "bm25"
+    HYBRID = "hybrid"
+
+
 class PersistenceBackend(str, Enum):
     """Supported investigation persistence implementations."""
 
@@ -51,6 +59,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     service_mode: ServiceMode = ServiceMode.LOCAL
     embedding_mode: EmbeddingMode = EmbeddingMode.LOCAL
+    retrieval_mode: RetrievalMode = RetrievalMode.HYBRID
     persistence_backend: PersistenceBackend = PersistenceBackend.MEMORY
     api_key: SecretStr = Field(repr=False, exclude=True)
     database_url: str | None = Field(default=None, repr=False, exclude=True)
