@@ -1,0 +1,104 @@
+{
+  "cases": [
+    {
+      "name": "unusual amount and new payee",
+      "query": "Which policy covers a payment materially higher than the established transaction pattern, particularly to a new payee on a young account?",
+      "expected_policy_ids": ["DEMO-AML-001"]
+    },
+    {
+      "name": "large transfer from recently opened account",
+      "query": "A recently opened account sent an unusually large transfer to a recipient it has never paid before. What review is required?",
+      "expected_policy_ids": ["DEMO-AML-001"]
+    },
+    {
+      "name": "unsupported payment context",
+      "query": "The payment purpose, beneficiary relationship, and source of funds are unsupported. What information should I request?",
+      "expected_policy_ids": ["DEMO-AML-001"]
+    },
+    {
+      "name": "alert alone does not justify blocking",
+      "query": "Can this alert alone justify blocking or reporting the transfer, or should I obtain customer context first?",
+      "expected_policy_ids": ["DEMO-AML-001"]
+    },
+    {
+      "name": "transaction burst within one day",
+      "query": "Eleven transfers posted within twenty-four hours, several split across smaller payments. Which transaction velocity policy applies?",
+      "expected_policy_ids": ["DEMO-AML-002"]
+    },
+    {
+      "name": "rapid pass-through activity",
+      "query": "Funds were credited and then quickly dispersed in several outbound transfers. How should I assess this pass-through activity?",
+      "expected_policy_ids": ["DEMO-AML-002"]
+    },
+    {
+      "name": "burst differs from historical pattern",
+      "query": "The customer suddenly made a rapid burst of transfers unlike their historical pattern. What evidence belongs in the investigation rationale?",
+      "expected_policy_ids": ["DEMO-AML-002"]
+    },
+    {
+      "name": "payment fragmented across same day",
+      "query": "The customer broke one payment into several smaller wires over the same day. Does this pattern require a velocity review?",
+      "expected_policy_ids": ["DEMO-AML-002"]
+    },
+    {
+      "name": "shared counterparties and direct transactions",
+      "query": "The origin and destination accounts share several counterparties and have repeated direct transactions. Which network policy applies?",
+      "expected_policy_ids": ["DEMO-AML-003"]
+    },
+    {
+      "name": "value concentrated on one recipient",
+      "query": "Most of the account outbound value goes to one recipient. How should I assess that concentration?",
+      "expected_policy_ids": ["DEMO-AML-003"]
+    },
+    {
+      "name": "hub account with recurring transfers",
+      "query": "The graph depicts a hub account connected to many payees, with recurring transfers to the same party. Which guidance covers this?",
+      "expected_policy_ids": ["DEMO-AML-003"]
+    },
+    {
+      "name": "preserve network evidence",
+      "query": "What account identifiers, counterparty counts, and concentration measures should I preserve when documenting relationship links?",
+      "expected_policy_ids": ["DEMO-AML-003"]
+    },
+    {
+      "name": "cross-border geographic context",
+      "query": "How should I assess geographic context for a cross-border payment without treating the country name alone as proof of risk?",
+      "expected_policy_ids": ["DEMO-AML-004"]
+    },
+    {
+      "name": "international transfer due diligence",
+      "query": "An international wire has a UK sender and an overseas recipient. What location-based due diligence and transfer-purpose checks are required?",
+      "expected_policy_ids": ["DEMO-AML-004"]
+    },
+    {
+      "name": "possible sanctions screening match",
+      "query": "A screening result suggests a possible sanctions match. Which authorized human must review it before any decision is made?",
+      "expected_policy_ids": ["DEMO-AML-004"]
+    },
+    {
+      "name": "unsupported jurisdiction risk claim",
+      "query": "Can I call the destination high risk based solely on geography when the evidence does not support a sanctions or jurisdiction concern?",
+      "expected_policy_ids": ["DEMO-AML-004"]
+    },
+    {
+      "name": "high risk with insufficient evidence",
+      "query": "Deterministic risk is high, retrieved evidence is insufficient, and model confidence is low. Does this case require human review?",
+      "expected_policy_ids": ["DEMO-AML-005"]
+    },
+    {
+      "name": "transaction and network signals conflict",
+      "query": "The transaction activity looks suspicious but the account-network picture looks normal. How should I handle those conflicting signals?",
+      "expected_policy_ids": ["DEMO-AML-005"]
+    },
+    {
+      "name": "automated result is not human approval",
+      "query": "May an automated recommendation be described as analyst-approved if nobody actually reviewed the case?",
+      "expected_policy_ids": ["DEMO-AML-005"]
+    },
+    {
+      "name": "missing information and failed persistence",
+      "query": "Information is missing and saving the investigation failed. How must those gaps and persistence failures be reported?",
+      "expected_policy_ids": ["DEMO-AML-005"]
+    }
+  ]
+}
