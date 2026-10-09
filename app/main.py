@@ -23,6 +23,15 @@ from app.services.risk_scorer import score_transaction
 
 logger = logging.getLogger(__name__)
 
+_UNAUTHORIZED_RESPONSE = {
+    "description": "Invalid or missing API key",
+    "content": {
+        "application/json": {
+            "example": {"detail": "Invalid or missing API key"},
+        }
+    },
+}
+
 
 class LegacyRiskResponse(BaseModel):
     """Validated response while retaining the original public field names."""
@@ -70,6 +79,7 @@ def create_app(
         response_model=LegacyRiskResponse,
         tags=["investigations"],
         dependencies=[Depends(require_api_key)],
+        responses={status.HTTP_401_UNAUTHORIZED: _UNAUTHORIZED_RESPONSE},
     )
     def assess_risk(transaction: Transaction) -> LegacyRiskResponse:
         result = score_transaction(transaction)
@@ -85,6 +95,7 @@ def create_app(
         response_model=InvestigationResponse,
         tags=["investigations"],
         dependencies=[Depends(require_api_key)],
+        responses={status.HTTP_401_UNAUTHORIZED: _UNAUTHORIZED_RESPONSE},
     )
     def investigate(
         transaction: Transaction,

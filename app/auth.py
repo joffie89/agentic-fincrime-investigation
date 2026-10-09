@@ -5,12 +5,16 @@ from __future__ import annotations
 import secrets
 from typing import Annotated
 
-from fastapi import Header, HTTPException, Request, status
+from fastapi import HTTPException, Request, Security, status
+from fastapi.security import APIKeyHeader
+
+
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
 def require_api_key(
     request: Request,
-    x_api_key: Annotated[str | None, Header(alias="X-API-Key")] = None,
+    x_api_key: Annotated[str | None, Security(api_key_header)],
 ) -> None:
     """Reject requests that do not contain the configured API key."""
 

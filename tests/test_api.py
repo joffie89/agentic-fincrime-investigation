@@ -121,6 +121,35 @@ def test_health_endpoint_works_without_api_key():
     }
 
 
+def test_openapi_documents_api_key_authentication():
+    schema = client_for(service()).get("/openapi.json").json()
+    security_schemes = schema["components"]["securitySchemes"]
+    api_key_schemes = {
+        name: definition
+        for name, definition in security_schemes.items()
+        if definition == {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-API-Key",
+        }
+    }
+
+    assert len(api_key_schemes) == 1
+    scheme_name = next(iter(api_key_schemes))
+    for path in ("/assess-risk", "/investigate"):
+        operation = schema["paths"][path]["post"]
+        assert {scheme_name: []} in operation["security"]
+        assert operation["responses"]["401"] == {
+            "description": "Invalid or missing API key",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Invalid or missing API key"}
+                }
+            },
+        }
+    assert "security" not in schema["paths"]["/health"]["get"]
+
+
 @pytest.mark.parametrize("path", ["/assess-risk", "/investigate"])
 def test_missing_api_key_returns_401(path):
     response = client_for(service()).post(path, json=transaction_payload())
