@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
+from uuid import UUID
 
 import pytest
 from fastapi.testclient import TestClient
@@ -119,6 +120,44 @@ def test_health_endpoint_works_without_api_key():
         "mode": "local",
         "persistence_backend": "memory",
     }
+
+
+def test_response_has_generated_request_id():
+    client = client_for(service())
+
+    with patch("app.middleware.logger.info") as log_info:
+        response = client.get("/health")
+
+    request_id = response.headers["X-Request-ID"]
+    parsed_request_id = UUID(request_id)
+    assert parsed_request_id.version == 4
+    assert str(parsed_request_id) == request_id
+
+    log_info.assert_called_once()
+    assert log_info.call_args.args == ("http_request",)
+    fields = log_info.call_args.kwargs["extra"]
+    assert fields == {
+        "event": "http_request",
+        "request_id": request_id,
+        "method": "GET",
+        "path": "/health",
+        "status_code": 200,
+        "duration_ms": fields["duration_ms"],
+    }
+    assert isinstance(fields["duration_ms"], float)
+    assert fields["duration_ms"] >= 0
+    assert fields["duration_ms"] == round(fields["duration_ms"], 1)
+
+
+def test_incoming_request_id_is_echoed_unchanged():
+    request_id = "gateway-Req-ABC_123"
+
+    response = client_for(service()).get(
+        "/health",
+        headers={"X-Request-ID": request_id},
+    )
+
+    assert response.headers["X-Request-ID"] == request_id
 
 
 def test_openapi_documents_api_key_authentication():

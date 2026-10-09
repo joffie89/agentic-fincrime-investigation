@@ -11,6 +11,7 @@ from app.auth import require_api_key
 from app.config import Settings, get_settings
 from app.graph.analyzer import TransactionConflictError
 from app.logging_config import configure_logging
+from app.middleware import HttpRequestLoggingMiddleware
 from app.models.domain import InvestigationResponse, RiskLevel
 from app.models.transaction import Transaction
 from app.services.investigation_service import (
@@ -63,6 +64,7 @@ def create_app(
             "oversight and must not be treated as autonomous financial decisions."
         ),
     )
+    application.add_middleware(HttpRequestLoggingMiddleware)
     application.state.settings = resolved_settings
     application.state.investigation_service = service
 
