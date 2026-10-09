@@ -9,7 +9,8 @@ allows an unvalidated model response into the workflow.
 from __future__ import annotations
 
 import json
-from typing import Any, Protocol, Sequence
+from collections.abc import Mapping
+from typing import Any, Final, Protocol, Sequence
 
 from app.models.domain import (
     GraphAnalysisResult,
@@ -24,6 +25,26 @@ from app.models.transaction import Transaction
 
 class PolicyAssessmentError(RuntimeError):
     """Raised when a policy-assessment provider cannot return valid output."""
+
+
+# Single applicability map for the synthetic policies in data/policies.json.
+# Graph signal names deliberately match GraphAnalyzer's public output.
+DEMO_POLICY_TRIGGER_SIGNALS: Final[Mapping[str, frozenset[str]]] = {
+    "DEMO-AML-001": frozenset(
+        {"YOUNG_ACCOUNT", "NEW_PAYEE", "UNUSUAL_AMOUNT"}
+    ),
+    "DEMO-AML-002": frozenset({"HIGH_VELOCITY"}),
+    "DEMO-AML-003": frozenset(
+        {
+            "HIGH_CONNECTIVITY",
+            "SHARED_COUNTERPARTIES",
+            "REPEATED_DIRECT_TRANSACTIONS",
+            "COUNTERPARTY_CONCENTRATION",
+        }
+    ),
+    "DEMO-AML-004": frozenset({"CROSS_BORDER"}),
+    "DEMO-AML-005": frozenset({"HIGH_RISK", "RISK_GRAPH_CONFLICT"}),
+}
 
 
 class PolicyAssessmentService(Protocol):
@@ -54,9 +75,23 @@ class DemoPolicyAssessmentService:
         graph_analysis: GraphAnalysisResult,
         policies: Sequence[RetrievedPolicy],
     ) -> PolicyAssessment:
-        del transaction  # The deterministic policy uses the derived signals.
-        policy_references = list(dict.fromkeys(item.policy_id for item in policies))
-        evidence_sufficient = bool(policy_references)
+        active_signals = _active_demo_policy_signals(
+            transaction,
+            risk_assessment,
+            graph_analysis,
+        )
+        policy_references = list(
+            dict.fromkeys(
+                item.policy_id
+                for item in policies
+                if DEMO_POLICY_TRIGGER_SIGNALS.get(item.policy_id, frozenset())
+                & active_signals
+            )
+        )
+        # Whether evidence was retrieved remains separate from whether a policy
+        # applies. A clean payment can have sufficient context without citing an
+        # inapplicable AML policy.
+        evidence_sufficient = bool(policies)
 
         if risk_assessment.risk_level is RiskLevel.HIGH:
             recommendation = Recommendation.ESCALATE_TO_HUMAN
@@ -100,6 +135,34 @@ class DemoPolicyAssessmentService:
             requires_human_review=requires_human_review,
             evidence_sufficient=evidence_sufficient,
         )
+
+
+def _active_demo_policy_signals(
+    transaction: Transaction,
+    risk_assessment: RiskAssessment,
+    graph_analysis: GraphAnalysisResult,
+) -> set[str]:
+    """Derive policy applicability signals from validated workflow inputs."""
+
+    signals = set(graph_analysis.signals)
+    if transaction.account_age_days < 30:
+        signals.add("YOUNG_ACCOUNT")
+    if transaction.new_payee:
+        signals.add("NEW_PAYEE")
+    if transaction.amount > 5 * transaction.average_transaction_amount:
+        signals.add("UNUSUAL_AMOUNT")
+    if transaction.transactions_last_24h > 10:
+        signals.add("HIGH_VELOCITY")
+    if (
+        transaction.origin_country.strip().casefold()
+        != transaction.destination_country.strip().casefold()
+    ):
+        signals.add("CROSS_BORDER")
+    if risk_assessment.risk_level is RiskLevel.HIGH:
+        signals.add("HIGH_RISK")
+    if graph_analysis.suspicious and risk_assessment.risk_level is RiskLevel.LOW:
+        signals.add("RISK_GRAPH_CONFLICT")
+    return signals
 
 
 class AzureOpenAIPolicyAssessmentService:

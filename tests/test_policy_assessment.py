@@ -10,6 +10,7 @@ import pytest
 from app.models.domain import (
     PolicyAssessment,
     Recommendation,
+    RetrievedPolicy,
     RiskAssessment,
     RiskLevel,
 )
@@ -18,6 +19,7 @@ from app.services.policy_assessment import (
     DemoPolicyAssessmentService,
     PolicyAssessmentError,
 )
+from app.services.risk_scorer import assess_transaction
 
 
 def low_risk() -> RiskAssessment:
@@ -38,17 +40,50 @@ def high_risk() -> RiskAssessment:
     )
 
 
-def test_demo_assessor_clears_low_risk_with_evidence(
-    transaction_factory, clean_graph_result, retrieved_policy
+def all_demo_policies() -> list[RetrievedPolicy]:
+    return [
+        RetrievedPolicy(
+            policy_id=f"DEMO-AML-{number:03d}",
+            chunk_id=f"DEMO-AML-{number:03d}#001",
+            text=f"Synthetic policy {number} evidence.",
+            relevance_score=0.75,
+        )
+        for number in range(1, 6)
+    ]
+
+
+def test_demo_assessor_clears_clean_transaction_without_policy_citations(
+    transaction_factory, clean_graph_result
 ):
     result = DemoPolicyAssessmentService().assess(
-        transaction_factory(), low_risk(), clean_graph_result, [retrieved_policy]
+        transaction_factory(),
+        low_risk(),
+        clean_graph_result,
+        all_demo_policies(),
     )
 
     assert result.recommendation is Recommendation.CLEAR
     assert result.evidence_sufficient is True
     assert result.requires_human_review is False
-    assert result.policy_references == ["DEMO-AML-001"]
+    assert result.policy_references == []
+
+
+def test_demo_assessor_cites_only_policies_for_active_risk_signals(
+    transaction_factory, clean_graph_result
+):
+    transaction = transaction_factory(
+        new_payee=True,
+        transactions_last_24h=11,
+    )
+
+    result = DemoPolicyAssessmentService().assess(
+        transaction,
+        assess_transaction(transaction),
+        clean_graph_result,
+        all_demo_policies(),
+    )
+
+    assert result.policy_references == ["DEMO-AML-001", "DEMO-AML-002"]
 
 
 def test_demo_assessor_escalates_high_risk(
