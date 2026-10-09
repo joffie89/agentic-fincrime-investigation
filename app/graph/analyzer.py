@@ -18,6 +18,10 @@ from app.models.domain import GraphAnalysisResult
 from app.models.transaction import Transaction
 
 
+class TransactionConflictError(ValueError):
+    """Raised when a transaction ID conflicts with historical details."""
+
+
 @dataclass(frozen=True, slots=True)
 class AccountTransactionEdge:
     """A synthetic or historical account-to-account transaction edge."""
@@ -88,7 +92,7 @@ class GraphAnalyzer:
         if existing is None:
             self._add_relationship(current, graph=graph)
         elif not self._same_transaction(existing, current):
-            raise ValueError(
+            raise TransactionConflictError(
                 "Current transaction_id collides with a different historical transaction"
             )
 

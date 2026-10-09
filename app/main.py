@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException, Response, status
 from pydantic import BaseModel, ConfigDict
 
 from app.config import Settings, get_settings
+from app.graph.analyzer import TransactionConflictError
 from app.logging_config import configure_logging
 from app.models.domain import InvestigationResponse, RiskLevel
 from app.models.transaction import Transaction
@@ -88,6 +89,11 @@ def create_app(
     ) -> InvestigationResponse:
         try:
             result = service.investigate(transaction)
+        except TransactionConflictError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="transaction_id already exists with different details",
+            ) from exc
         except Exception as exc:
             logger.exception(
                 "investigation_request_failed",

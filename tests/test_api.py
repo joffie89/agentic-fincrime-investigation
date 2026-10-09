@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi.testclient import TestClient
 
 from app.config import Settings
+from app.graph.analyzer import AccountTransactionEdge, GraphAnalyzer
 from app.main import create_app
 from app.models.domain import GraphAnalysisResult, PersistenceResult, RetrievedPolicy
 from app.repositories.memory import InMemoryInvestigationRepository
@@ -78,10 +79,10 @@ def transaction_payload(**updates):
     return payload
 
 
-def service(repository=None) -> InvestigationService:
+def service(repository=None, graph_analyzer=None) -> InvestigationService:
     workflow = InvestigationWorkflow(
         risk_assessor=assess_transaction,
-        graph_analyzer=CleanGraphAnalyzer(),
+        graph_analyzer=graph_analyzer or CleanGraphAnalyzer(),
         policy_retriever=StaticRetriever(),
         policy_assessor=DemoPolicyAssessmentService(),
         repository=repository or InMemoryInvestigationRepository(),
@@ -174,6 +175,44 @@ def test_invalid_transaction_returns_422():
     )
 
     assert response.status_code == 422
+
+
+def test_same_origin_and_destination_account_returns_422():
+    response = client_for(service()).post(
+        "/investigate",
+        json=transaction_payload(
+            destination_account_id="acct-api-origin",
+        ),
+    )
+
+    assert response.status_code == 422
+    assert (
+        "origin_account_id and destination_account_id must differ"
+        in response.json()["detail"][0]["msg"]
+    )
+
+
+def test_reused_transaction_id_with_different_details_returns_409():
+    analyzer = GraphAnalyzer(
+        [
+            AccountTransactionEdge(
+                "txn-api-low",
+                "acct-historical-origin",
+                "acct-historical-destination",
+                50.0,
+            )
+        ]
+    )
+
+    response = client_for(service(graph_analyzer=analyzer)).post(
+        "/investigate",
+        json=transaction_payload(),
+    )
+
+    assert response.status_code == 409
+    assert response.json() == {
+        "detail": "transaction_id already exists with different details"
+    }
 
 
 def test_unknown_transaction_field_returns_422():
