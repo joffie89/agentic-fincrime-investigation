@@ -93,8 +93,9 @@ def test_postgres_repository_commits_successful_write(monkeypatch) -> None:
 
 
 def test_postgres_repository_reports_connection_failure(monkeypatch) -> None:
+    database_error = "database unavailable at db.internal.example for admin_user"
     fake_psycopg = SimpleNamespace(
-        connect=MagicMock(side_effect=RuntimeError("database unavailable"))
+        connect=MagicMock(side_effect=RuntimeError(database_error))
     )
     monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
     repository = PostgresInvestigationRepository(
@@ -105,7 +106,8 @@ def test_postgres_repository_reports_connection_failure(monkeypatch) -> None:
 
     assert result.succeeded is False
     assert result.backend == "postgres"
-    assert "database unavailable" in (result.error or "")
+    assert result.error == "Investigation could not be saved"
+    assert database_error not in (result.error or "")
 
 
 def test_postgres_repository_rolls_back_failed_write(monkeypatch) -> None:
@@ -124,7 +126,7 @@ def test_postgres_repository_rolls_back_failed_write(monkeypatch) -> None:
     result = repository.save(_record())
 
     assert result.succeeded is False
-    assert "write rejected" in (result.error or "")
+    assert result.error == "Investigation could not be saved"
     connection.commit.assert_not_called()
     connection.rollback.assert_called_once_with()
     connection.close.assert_called_once_with()

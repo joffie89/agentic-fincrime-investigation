@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+from unittest.mock import MagicMock
+
 from fastapi.testclient import TestClient
 
+import app.repositories.postgres as postgres_module
 from app.config import Settings
 from app.graph.analyzer import AccountTransactionEdge, GraphAnalyzer
 from app.main import create_app
-from app.models.domain import GraphAnalysisResult, PersistenceResult, RetrievedPolicy
+from app.models.domain import GraphAnalysisResult, RetrievedPolicy
 from app.repositories.memory import InMemoryInvestigationRepository
+from app.repositories.postgres import PostgresInvestigationRepository
 from app.services.investigation_service import InvestigationService
 from app.services.policy_assessment import DemoPolicyAssessmentService
 from app.services.risk_scorer import assess_transaction
@@ -46,15 +51,6 @@ class StaticRetriever:
             )
         ]
         return policies[:top_k]
-
-
-class FailedRepository:
-    def save(self, _record):
-        return PersistenceResult(
-            succeeded=False,
-            backend="postgres",
-            error="connection refused",
-        )
 
 
 class RaisingService:
@@ -224,8 +220,17 @@ def test_unknown_transaction_field_returns_422():
     assert response.status_code == 422
 
 
-def test_persistence_failure_returns_503_with_truthful_body():
-    response = client_for(service(FailedRepository())).post(
+def test_postgres_failure_returns_sanitized_503(monkeypatch):
+    database_error = "connection to db.internal.example as admin_user refused"
+    fake_psycopg = SimpleNamespace(
+        connect=MagicMock(side_effect=RuntimeError(database_error))
+    )
+    monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
+    repository = PostgresInvestigationRepository(
+        "postgresql://admin_user:secret@db.internal.example/investigations"
+    )
+
+    response = client_for(service(repository)).post(
         "/investigate", json=transaction_payload()
     )
 
@@ -235,8 +240,9 @@ def test_persistence_failure_returns_503_with_truthful_body():
     assert body["persistence"] == {
         "succeeded": False,
         "backend": "postgres",
-        "error": "connection refused",
+        "error": "Investigation could not be saved",
     }
+    assert database_error not in response.text
 
 
 def test_unexpected_workflow_error_returns_sanitized_500():

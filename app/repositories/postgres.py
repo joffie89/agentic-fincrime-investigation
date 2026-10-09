@@ -160,7 +160,7 @@ class PostgresInvestigationRepository:
                 cursor.execute(_CREATE_TABLE_SQL)
                 cursor.execute(_UPSERT_SQL, self._parameters(normalized))
             connection.commit()
-        except Exception as exc:
+        except Exception:
             if connection is not None:
                 try:
                     connection.rollback()
@@ -181,11 +181,10 @@ class PostgresInvestigationRepository:
                     "investigation_id": str(investigation_id),
                 },
             )
-            error = f"PostgreSQL persistence failed: {exc}"[:256]
             return PersistenceResult(
                 succeeded=False,
                 backend=self.backend,
-                error=error,
+                error="Investigation could not be saved",
             )
         finally:
             if connection is not None:
