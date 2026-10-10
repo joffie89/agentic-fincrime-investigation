@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Collection
 from pathlib import Path
 from typing import Any
 
@@ -44,6 +45,7 @@ class InvestigationEvaluationCase(DomainModel):
     transaction: Transaction
     expected_recommendation: Recommendation
     expect_human_review: bool
+    expected_policy_ids: list[Identifier]
 
 
 class EvaluationDataset(DomainModel):
@@ -58,6 +60,15 @@ def _metric(correct: int, total: int) -> dict[str, int | float]:
         "total": total,
         "accuracy": round(correct / total, 4) if total else 0.0,
     }
+
+
+def policy_ids_match_expected(
+    cited_policy_ids: Collection[str],
+    expected_policy_ids: Collection[str],
+) -> bool:
+    """Return whether the cited and expected policy ID sets match exactly."""
+
+    return set(cited_policy_ids) == set(expected_policy_ids)
 
 
 def _load_dataset(path: Path) -> EvaluationDataset:
@@ -145,13 +156,10 @@ def run_evaluation(
         )
         retrieved_ids = {item.policy_id for item in result.retrieved_policies}
         referenced_ids = set(result.policy_assessment.policy_references)
-        grounding_passed = (
-            referenced_ids <= retrieved_ids
-            and bool(result.reasons)
-            and (
-                not result.policy_assessment.evidence_sufficient
-                or bool(referenced_ids)
-            )
+        expected_policy_ids = set(case.expected_policy_ids)
+        grounding_passed = policy_ids_match_expected(
+            referenced_ids,
+            expected_policy_ids,
         )
         recommendation_correct += int(recommendation_passed)
         grounding_correct += int(grounding_passed)
@@ -167,6 +175,7 @@ def run_evaluation(
                 "escalation_passed": escalation_passed,
                 "grounding_passed": grounding_passed,
                 "retrieved_policy_ids": sorted(retrieved_ids),
+                "expected_policy_ids": sorted(expected_policy_ids),
                 "referenced_policy_ids": sorted(referenced_ids),
             }
         )
@@ -190,7 +199,7 @@ def run_evaluation(
         },
         "grounding_checks": {
             **_metric(grounding_correct, len(dataset.investigation_cases)),
-            "metric": "references are a subset of retrieved evidence",
+            "metric": "cited policy IDs exactly match expected policy IDs",
         },
         "escalation_behavior": {
             **_metric(escalation_correct, len(dataset.investigation_cases)),
