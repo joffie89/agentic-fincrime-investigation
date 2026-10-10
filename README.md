@@ -49,8 +49,9 @@ flowchart LR
     Audit --> Memory[(In-memory demo store)]
     Audit --> Postgres[(PostgreSQL)]
     Policies[Synthetic policy JSON] --> Ingest[Offline chunk + embed]
-    Ingest --> Index[(JSON embedding index)]
+    Ingest --> Index[(Provider-specific JSON embedding index)]
     Index --> Retrieve
+    OpenAI[OpenAI embeddings API] -. optional embeddings .-> Ingest
     Azure[Azure OpenAI-compatible API] -. optional assessment .-> Assess
     Azure -. optional embeddings .-> Ingest
 ```
@@ -164,21 +165,12 @@ Ingestion and query are separate operations:
 The default `LocalHashEmbeddingService` is a deterministic lexical hashing
 baseline, not a semantic ML model. It keeps the complete demo offline and
 repeatable. Its cosine similarity measures overlap in hashed lexical features,
-not semantic search. An injected `AzureOpenAIEmbeddingService` adapter is
-implemented and mock-tested for separately generated Azure-compatible indexes;
-the bundled index and default application composition remain local.
-
-Compare vector, BM25, and hybrid retrieval on the labelled policy queries:
-
-```powershell
-python -m app.evaluation.retrieval_eval
-```
-
-Rebuild the bundled index explicitly:
-
-```powershell
-python -m app.rag.ingestion --source data/policies.json --output data/policy_index.json
-```
+not semantic search. `EMBEDDING_MODE` can instead select the official OpenAI
+embeddings API or the Azure OpenAI adapter. Provider indexes are generated
+separately and record their embedding implementation and dimensions; OpenAI
+indexes also record the exact model. Load-time checks prevent a local index, or
+an index from another OpenAI model, being used by the selected service. Both
+hosted adapters are mock-tested; tests and CI keep the local baseline.
 
 ### Policy assessment and grounding
 
@@ -257,14 +249,16 @@ Open `http://127.0.0.1:8000/docs` for the generated OpenAPI UI.
 | `LOG_LEVEL` | `INFO` | Root JSON log level |
 | `API_KEY` | none; required | Key accepted in `X-API-Key` on protected endpoints |
 | `SERVICE_MODE` | `local` | `local` rule-based or `azure` Azure OpenAI assessment |
-| `EMBEDDING_MODE` | `local` | `local` lexical hashing baseline or `azure` embedding adapter |
+| `EMBEDDING_MODE` | `local` | `local` lexical baseline, `openai` OpenAI embeddings, or `azure` Azure OpenAI embeddings |
 | `PERSISTENCE_BACKEND` | `memory` | `memory` or `postgres` |
 | `DATABASE_URL` | unset | Required for PostgreSQL mode |
-| `POLICY_INDEX_PATH` | `data/policy_index.json` | Stored vector index |
-| `RETRIEVAL_MODE` | `hybrid` | `vector`, `bm25`, or reciprocal-rank-fused `hybrid` search |
+| `POLICY_INDEX_PATH` | provider-specific | Stored vector index; local uses `data/policy_index.json` and OpenAI uses `data/policy_index_openai.json` unless a custom path is supplied |
+| `RETRIEVAL_MODE` | provider-specific | `vector` with OpenAI embeddings and `hybrid` otherwise; an explicit `vector`, `bm25`, or `hybrid` value overrides the default |
 | `RETRIEVAL_TOP_K` | `3` | Returned policy chunk count |
 | `RETRIEVAL_MIN_RELEVANCE_SCORE` | `0.05` | Minimum cosine score for vector results and hybrid vector candidates |
 | `HUMAN_REVIEW_CONFIDENCE_THRESHOLD` | `0.70` | Conditional-route threshold |
+| `OPENAI_API_KEY` | unset | Secret required only when `EMBEDDING_MODE=openai`; never committed |
+| `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | OpenAI embedding model recorded in the generated index |
 | `AZURE_OPENAI_ENDPOINT` | unset | Required when `SERVICE_MODE=azure` or `EMBEDDING_MODE=azure` |
 | `AZURE_OPENAI_API_KEY` | unset | Required when `SERVICE_MODE=azure` or `EMBEDDING_MODE=azure`; never committed |
 | `AZURE_OPENAI_CHAT_DEPLOYMENT` | unset | Required when `SERVICE_MODE=azure` |
@@ -272,8 +266,10 @@ Open `http://127.0.0.1:8000/docs` for the generated OpenAPI UI.
 | `AZURE_OPENAI_EMBEDDING_DIMENSIONS` | `1536` | Expected Azure embedding vector size |
 | `AZURE_OPENAI_API_VERSION` | `2024-10-21` | Azure API version |
 
-`Settings` requires `API_KEY` and validates selected backends at startup. No
-credentials are hard-coded, and `.env` is ignored by Git and Docker.
+`Settings` always requires `API_KEY` and conditionally validates credentials for
+the selected hosted assessment or embedding mode at startup. No credentials are
+hard-coded, and `.env` is ignored by Git and Docker. Local embedding remains the
+default for development, tests, and CI.
 
 ## API examples
 
@@ -345,10 +341,10 @@ python -m pytest -q
 ```
 
 The suite contains 120+ tests covering rule boundaries, model validation, graph
-metrics, vector/BM25/hybrid policy retrieval, mocked Azure embedding/LLM output,
-LangGraph routes, escalation, persistence, API-key authentication, request
-correlation/logging, and evaluation execution. It requires neither Azure
-credentials nor paid API calls.
+metrics, vector/BM25/hybrid policy retrieval, mocked OpenAI and Azure embedding
+output, mocked Azure LLM output, LangGraph routes, escalation, persistence,
+API-key authentication, request correlation/logging, and evaluation execution.
+It requires no hosted-provider credentials or paid API calls.
 
 Run the evaluation:
 
@@ -361,6 +357,50 @@ rule correctness, expected-policy-in-Top-K retrieval, recommendation agreement,
 reference grounding, and escalation behavior. The dataset is intentionally small;
 results are a regression signal for this demo, not evidence of real-world model
 performance.
+
+### Retrieval evaluation
+
+The labelled retrieval evaluation contains 60 queries for 30 synthetic policies.
+The measured results below use the bundled lexical-hashing index and OpenAI
+`text-embedding-3-small`:
+
+| Embeddings | Retrieval mode | hit@1 | hit@3 | MRR |
+|---|---|---:|---:|---:|
+| Local hashing | vector | 0.0167 | 0.2167 | 0.1705 |
+| Local hashing | BM25 | 0.3000 | 0.5333 | 0.4734 |
+| Local hashing | hybrid | 0.1333 | 0.4167 | 0.3247 |
+| OpenAI `text-embedding-3-small` | vector | 0.7500 | 0.9667 | 0.8469 |
+| OpenAI `text-embedding-3-small` | BM25 | 0.3000 | 0.5333 | 0.4734 |
+| OpenAI `text-embedding-3-small` | hybrid | 0.5833 | 0.8333 | 0.7227 |
+
+Rebuild the local index and evaluate vector, BM25, and hybrid retrieval:
+
+```powershell
+$env:EMBEDDING_MODE = "local"
+python -m app.rag.ingestion --source data/policies.json --output data/policy_index.json
+python -m app.evaluation.retrieval_eval --index data/policy_index.json
+```
+
+Build and evaluate the separate OpenAI index with the same cases:
+
+```powershell
+$env:EMBEDDING_MODE = "openai"
+$env:OPENAI_API_KEY = "replace-with-your-openai-api-key"
+$env:OPENAI_EMBEDDING_MODEL = "text-embedding-3-small"
+python -m app.rag.ingestion --source data/policies.json --output data/policy_index_openai.json
+python -m app.evaluation.retrieval_eval --index data/policy_index_openai.json
+```
+
+The OpenAI commands make paid network calls. Keep the local and OpenAI index
+files separate; the recorded provider and model metadata prevents accidental
+mixing.
+
+The semantic OpenAI embeddings fixed the lexical baseline's weak paraphrase
+matching. Hybrid retrieval underperformed vector retrieval here because the
+evaluation deliberately uses paraphrased queries with little wording overlap,
+so BM25's lexical ranking diluted the stronger vector ranking during fusion.
+For that reason, `vector` is the default retrieval mode when
+`EMBEDDING_MODE=openai`; explicitly setting `RETRIEVAL_MODE` still overrides it.
 
 ## Docker and PostgreSQL
 
@@ -410,8 +450,8 @@ is a design, not evidence of a completed deployment.
 | Risk | Four preserved deterministic rules and boundary tests | Calibrated production rules/model governance |
 | Graph | In-process NetworkX over synthetic relationships | Live graph store, entity resolution, temporal analytics |
 | ML anomaly signal | IsolationForest over graph features, fixed-seed synthetic training set, routes to human review on disagreement | Trained on real historical data, periodic retraining, drift monitoring |
-| RAG | Synthetic corpus, chunking, local lexical-hash vectors, BM25, reciprocal-rank-fused hybrid search, JSON index, Top-K | Managed vector database, policy lifecycle/approval workflow |
-| AI | Rule-based local assessor; Azure chat and embedding adapters; mocked tests | Live Azure validation, monitoring, prompt/version registry |
+| RAG | Synthetic corpus, chunking, local lexical-hash, OpenAI, and Azure embedding providers, BM25, reciprocal-rank-fused hybrid search, provider-specific JSON indexes, Top-K | Managed vector database, policy lifecycle/approval workflow |
+| AI | Rule-based local assessor; OpenAI embedding and Azure chat/embedding adapters; mocked tests | Hosted-provider validation, monitoring, prompt/version registry |
 | Human review | Explicit pending status and fail-safe routing | Reviewer UI, assignment, approval/override audit events |
 | Persistence | Memory demo repository and PostgreSQL implementation | Migrations, pooling, retention, encryption policy, HA |
 | Operations | JSON logs with request IDs and timing, Docker/Compose, GitHub Actions CI | Actual Azure resources/deployment, observability backend |
@@ -426,7 +466,7 @@ is a design, not evidence of a completed deployment.
 - Local memory persistence is lost when the process exits.
 - PostgreSQL schema creation is convenient for the prototype; production would use
   versioned migrations and a connection pool.
-- Azure adapters are mock-tested but require the user's compatible Azure
-  deployments and were not called by the test suite.
+- OpenAI and Azure adapters are mock-tested but require the user's credentials
+  (and compatible Azure deployments) and are not called by the test suite.
 - No role-based authorization, PII controls, sanctions data, case-management UI,
   human-review completion endpoint, or actual cloud deployment is included.

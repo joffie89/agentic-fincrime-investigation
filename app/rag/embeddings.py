@@ -1,4 +1,4 @@
-"""Embedding abstractions and a deterministic local implementation."""
+"""Embedding abstractions and local or hosted implementations."""
 
 from __future__ import annotations
 
@@ -7,6 +7,8 @@ import math
 import re
 from collections.abc import Mapping
 from typing import Any, Protocol, Sequence
+
+from openai import OpenAI
 
 
 class EmbeddingService(Protocol):
@@ -65,6 +67,120 @@ class LocalHashEmbeddingService:
 
     def embed_many(self, texts: Sequence[str]) -> list[list[float]]:
         return [self.embed(text) for text in texts]
+
+
+class OpenAIEmbeddingService:
+    """Batched adapter for the OpenAI embeddings API.
+
+    A client can be injected for deterministic tests.  In normal use the
+    adapter constructs the official SDK client with a 30-second timeout and at
+    most three retries.
+    """
+
+    _MODEL_DIMENSIONS = {
+        "text-embedding-3-small": 1536,
+        "text-embedding-3-large": 3072,
+        "text-embedding-ada-002": 1536,
+    }
+
+    def __init__(
+        self,
+        api_key: str | None = None,
+        *,
+        client: object | None = None,
+        model: str = "text-embedding-3-small",
+        dimension: int | None = None,
+        batch_size: int = 100,
+    ) -> None:
+        normalized_model = model.strip()
+        if not normalized_model:
+            raise ValueError("OpenAI embedding model must not be blank")
+        if dimension is None:
+            dimension = self._MODEL_DIMENSIONS.get(normalized_model, 1536)
+        if dimension <= 0:
+            raise ValueError("Embedding dimension must be positive")
+        if isinstance(batch_size, bool) or not isinstance(batch_size, int) or batch_size <= 0:
+            raise ValueError("OpenAI embedding batch size must be a positive integer")
+        if client is None:
+            if not api_key or not api_key.strip():
+                raise ValueError("OpenAI API key must not be blank")
+            client = OpenAI(
+                api_key=api_key,
+                timeout=30.0,
+                max_retries=3,
+            )
+        embeddings_endpoint = getattr(client, "embeddings", None)
+        if embeddings_endpoint is None or not callable(
+            getattr(embeddings_endpoint, "create", None)
+        ):
+            raise TypeError("Client must expose embeddings.create")
+
+        self._client = client
+        self.model = normalized_model
+        self._dimension = dimension
+        self.batch_size = batch_size
+
+    @property
+    def dimension(self) -> int:
+        return self._dimension
+
+    def embed(self, text: str) -> list[float]:
+        return self.embed_many([text])[0]
+
+    def embed_many(self, texts: Sequence[str]) -> list[list[float]]:
+        values = list(texts)
+        if not values:
+            return []
+        if not all(isinstance(value, str) and value.strip() for value in values):
+            raise ValueError("OpenAI embedding inputs must be non-empty strings")
+
+        vectors: list[list[float]] = []
+        for start in range(0, len(values), self.batch_size):
+            batch = values[start : start + self.batch_size]
+            response = self._client.embeddings.create(  # type: ignore[attr-defined]
+                model=self.model,
+                input=batch,
+            )
+            raw_data = self._read(response, "data")
+            if not isinstance(raw_data, (list, tuple)) or len(raw_data) != len(batch):
+                raise ValueError("OpenAI returned an unexpected embedding count")
+
+            indexed_items: list[tuple[int, object]] = []
+            for item in raw_data:
+                raw_index = self._read(item, "index")
+                if isinstance(raw_index, bool):
+                    raise ValueError("OpenAI returned a malformed embedding index")
+                try:
+                    index = int(raw_index)
+                except (TypeError, ValueError) as exc:
+                    raise ValueError(
+                        "OpenAI returned a malformed embedding index"
+                    ) from exc
+                indexed_items.append((index, item))
+            indexed_items.sort(key=lambda pair: pair[0])
+            if [index for index, _ in indexed_items] != list(range(len(batch))):
+                raise ValueError("OpenAI returned malformed embedding indexes")
+
+            for _, item in indexed_items:
+                raw_vector = self._read(item, "embedding")
+                if not isinstance(raw_vector, (list, tuple)):
+                    raise ValueError("OpenAI returned a malformed embedding")
+                try:
+                    vector = [float(value) for value in raw_vector]
+                except (TypeError, ValueError) as exc:
+                    raise ValueError("OpenAI returned a malformed embedding") from exc
+                if len(vector) != self.dimension or not all(
+                    math.isfinite(value) for value in vector
+                ):
+                    raise ValueError("OpenAI returned an unexpected embedding dimension")
+                vectors.append(vector)
+        return vectors
+
+    @staticmethod
+    def _read(value: object, name: str, default: Any = None) -> Any:
+        if isinstance(value, Mapping):
+            return value.get(name, default)
+        return getattr(value, name, default)
 
 
 class AzureOpenAIEmbeddingService:

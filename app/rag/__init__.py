@@ -19,6 +19,10 @@ _EXPORTS = {
         "app.rag.embeddings",
         "LocalHashEmbeddingService",
     ),
+    "OpenAIEmbeddingService": (
+        "app.rag.embeddings",
+        "OpenAIEmbeddingService",
+    ),
     "PolicyIngestor": ("app.rag.ingestion", "PolicyIngestor"),
     "PolicyRetriever": ("app.rag.retriever", "PolicyRetriever"),
     "build_policy_query": ("app.rag.retriever", "build_policy_query"),

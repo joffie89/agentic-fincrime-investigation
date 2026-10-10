@@ -1,4 +1,4 @@
-"""Query-time loading and ranking of the local JSON policy index."""
+"""Query-time loading and ranking of a JSON policy index."""
 
 from __future__ import annotations
 
@@ -121,6 +121,16 @@ class PolicyRetriever:
             if indexed_version != LocalHashEmbeddingService.VERSION:
                 raise ValueError(
                     "Local embedding implementation version does not match the index"
+                )
+        if implementation == "OpenAIEmbeddingService":
+            indexed_model = metadata.get("model")
+            service_model = getattr(service, "model", None)
+            if not isinstance(indexed_model, str) or not indexed_model:
+                raise ValueError("OpenAI policy index has no valid embedding model")
+            if indexed_model != service_model:
+                raise ValueError(
+                    "Embedding model mismatch: "
+                    f"index={indexed_model}, service={service_model}"
                 )
 
         if policy_source_path is not None:

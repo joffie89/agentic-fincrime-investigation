@@ -5,14 +5,13 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from app.config import EmbeddingMode, ServiceMode, Settings
+from app.config import ServiceMode, Settings
 from app.graph.analyzer import GraphAnalyzer
 from app.models.domain import InvestigationResponse, RiskLevel
 from app.models.transaction import Transaction
-from app.rag.embeddings import (
-    AzureOpenAIEmbeddingService,
-    EmbeddingService,
-    LocalHashEmbeddingService,
+from app.rag.embedding_provider import (
+    build_embedding_service,
+    resolve_policy_index_path,
 )
 from app.rag.ingestion import PolicyIngestor
 from app.rag.retriever import PolicyRetriever
@@ -89,16 +88,8 @@ def _build_policy_assessor(settings: Settings) -> PolicyAssessmentService:
 
 
 def _build_policy_retriever(settings: Settings) -> PolicyRetriever:
-    embedding_service: EmbeddingService
-    if settings.embedding_mode is EmbeddingMode.LOCAL:
-        embedding_service = LocalHashEmbeddingService()
-    else:
-        embedding_service = AzureOpenAIEmbeddingService(
-            client=_build_azure_client(settings),
-            deployment=settings.azure_openai_embedding_deployment or "",
-            dimension=settings.azure_openai_embedding_dimensions,
-        )
-    index_path = settings.policy_index_path
+    embedding_service = build_embedding_service(settings)
+    index_path = resolve_policy_index_path(settings)
     if not index_path.is_absolute():
         index_path = Path.cwd() / index_path
     if not index_path.exists():

@@ -10,10 +10,14 @@ from typing import Any
 
 from pydantic import Field
 
-from app.config import RetrievalMode
+from app.config import EmbeddingSettings, RetrievalMode
 from app.models.base import DomainModel, Identifier, LongText
 from app.models.domain import RetrievedPolicy
-from app.rag.embeddings import LocalHashEmbeddingService
+from app.rag.embedding_provider import (
+    build_embedding_service,
+    resolve_policy_index_path,
+)
+from app.rag.embeddings import EmbeddingService, LocalHashEmbeddingService
 from app.rag.ingestion import PolicyIngestor
 from app.rag.retriever import PolicyRetriever
 
@@ -96,9 +100,13 @@ def _load_dataset(path: Path) -> PolicyRetrievalDataset:
     return PolicyRetrievalDataset.model_validate(payload)
 
 
-def _ensure_index(policy_path: Path, index_path: Path) -> None:
+def _ensure_index(
+    policy_path: Path,
+    index_path: Path,
+    embedding_service: EmbeddingService,
+) -> None:
     if not index_path.exists():
-        PolicyIngestor(LocalHashEmbeddingService()).ingest_file(
+        PolicyIngestor(embedding_service).ingest_file(
             policy_path,
             index_path,
         )
@@ -113,19 +121,21 @@ def run_retrieval_evaluation(
     *,
     policy_path: str | Path = DEFAULT_POLICY_PATH,
     index_path: str | Path = DEFAULT_INDEX_PATH,
+    embedding_service: EmbeddingService | None = None,
 ) -> dict[str, Any]:
     """Compare every retrieval mode over the same labelled queries."""
 
     cases_source = Path(cases_path)
     policy_source = Path(policy_path)
     index_source = Path(index_path)
+    service = embedding_service or LocalHashEmbeddingService()
     dataset = _load_dataset(cases_source)
-    _ensure_index(policy_source, index_source)
+    _ensure_index(policy_source, index_source, service)
     results_by_mode: dict[str, dict[str, Any]] = {}
     for mode in EVALUATION_MODES:
         retriever = PolicyRetriever.from_index(
             index_source,
-            LocalHashEmbeddingService(),
+            service,
             policy_source_path=policy_source,
             retrieval_mode=mode,
         )
@@ -193,14 +203,20 @@ def main() -> None:
     parser.add_argument(
         "--index",
         type=Path,
-        default=DEFAULT_INDEX_PATH,
-        help="Path to the policy retrieval index",
+        default=None,
+        help="Path to the policy retrieval index (defaults by provider)",
     )
     arguments = parser.parse_args()
+    settings = EmbeddingSettings()
+    embedding_service = build_embedding_service(settings)
+    index_path = resolve_policy_index_path(settings, arguments.index)
+    if not index_path.is_absolute():
+        index_path = PROJECT_ROOT / index_path
     results = run_retrieval_evaluation(
         arguments.cases,
         policy_path=arguments.policies,
-        index_path=arguments.index,
+        index_path=index_path,
+        embedding_service=embedding_service,
     )
     _print_results(results)
 
