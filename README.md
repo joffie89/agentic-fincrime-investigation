@@ -90,7 +90,7 @@ FastAPI request -> Pydantic validation -> compiled LangGraph
 │   ├── workflow/                        # typed state and LangGraph
 │   └── evaluation/evaluate.py           # executable evaluation harness
 ├── data/
-│   ├── policies.json                    # original synthetic policy text
+│   ├── policies.json                    # 30 synthetic demo policy passages
 │   └── policy_index.json                # generated local vector index
 ├── evaluation/cases.json                # synthetic expected outcomes
 ├── tests/                               # unit and API/workflow tests
@@ -145,6 +145,10 @@ When deterministic risk is `LOW` or `MEDIUM`, graph analysis is not already
 the investigation to human review.
 
 ### Policy RAG
+
+All 30 bundled policy passages are synthetic internal policies written for this
+demo. They do not quote or cite real regulations by section and must not be
+treated as authoritative regulatory text.
 
 Ingestion and query are separate operations:
 

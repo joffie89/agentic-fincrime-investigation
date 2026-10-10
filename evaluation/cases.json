@@ -168,7 +168,8 @@
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expect_human_review": true,
       "expected_policy_ids": [
-        "DEMO-AML-003"
+        "DEMO-AML-003",
+        "DEMO-AML-005"
       ]
     }
   ]
