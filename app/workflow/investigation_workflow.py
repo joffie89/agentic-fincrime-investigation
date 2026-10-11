@@ -157,6 +157,7 @@ class InvestigationWorkflow:
                 state["risk_assessment"],
                 state["graph_analysis"],
                 state.get("retrieved_policies", []),
+                state.get("relationship_anomaly"),
             )
             events = [*state.get("audit_events", []), "policy_assessment_completed"]
             return {"policy_assessment": assessment, "audit_events": events}

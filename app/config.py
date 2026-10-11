@@ -14,6 +14,7 @@ class ServiceMode(str, Enum):
     """Policy-assessment provider used by the application."""
 
     LOCAL = "local"
+    OPENAI = "openai"
     AZURE = "azure"
 
 
@@ -162,6 +163,7 @@ class Settings(EmbeddingSettings):
     human_review_confidence_threshold: float = Field(default=0.70, ge=0.0, le=1.0)
 
     azure_openai_chat_deployment: str | None = None
+    openai_chat_model: str = "gpt-4.1-mini"
 
     @field_validator("app_env", mode="before")
     @classmethod
@@ -178,6 +180,14 @@ class Settings(EmbeddingSettings):
         allowed = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}
         if normalized not in allowed:
             raise ValueError(f"LOG_LEVEL must be one of {sorted(allowed)}")
+        return normalized
+
+    @field_validator("openai_chat_model", mode="before")
+    @classmethod
+    def openai_chat_model_must_not_be_blank(cls, value: object) -> str:
+        normalized = str(value).strip()
+        if not normalized:
+            raise ValueError("OPENAI_CHAT_MODEL must not be empty")
         return normalized
 
     @field_validator("api_key")
@@ -197,6 +207,11 @@ class Settings(EmbeddingSettings):
 
     @model_validator(mode="after")
     def validate_selected_backends(self) -> "Settings":
+        if self.service_mode is ServiceMode.OPENAI and not self.openai_api_key:
+            raise ValueError(
+                "OPENAI_API_KEY is required when SERVICE_MODE=openai"
+            )
+
         if self.persistence_backend is PersistenceBackend.POSTGRES and not self.database_url:
             raise ValueError(
                 "DATABASE_URL is required when PERSISTENCE_BACKEND=postgres"

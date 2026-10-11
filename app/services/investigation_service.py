@@ -19,6 +19,7 @@ from app.repositories import build_repository
 from app.services.policy_assessment import (
     AzureOpenAIPolicyAssessmentService,
     DemoPolicyAssessmentService,
+    OpenAIPolicyAssessmentService,
     PolicyAssessmentService,
 )
 from app.services.risk_scorer import assess_transaction
@@ -77,6 +78,13 @@ class InvestigationService:
 def _build_policy_assessor(settings: Settings) -> PolicyAssessmentService:
     if settings.service_mode is ServiceMode.LOCAL:
         return DemoPolicyAssessmentService()
+    if settings.service_mode is ServiceMode.OPENAI:
+        if settings.openai_api_key is None:  # Defensive; config validation covers this.
+            raise ValueError("OPENAI_API_KEY is required when SERVICE_MODE=openai")
+        return OpenAIPolicyAssessmentService(
+            api_key=settings.openai_api_key.get_secret_value(),
+            model=settings.openai_chat_model,
+        )
 
     # Import only for the configured hosted path so local/demo mode remains
     # independent of credentials and provider availability.
