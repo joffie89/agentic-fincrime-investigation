@@ -192,8 +192,17 @@ class InvestigationWorkflow:
         relationship_anomaly_disagreement = self._relationship_anomaly_disagreement(
             state
         )
+        medium_risk_cannot_complete_automatically = (
+            risk.risk_level is RiskLevel.MEDIUM
+            and (
+                assessment.recommendation is not Recommendation.CLEAR
+                or assessment.confidence < 0.9
+                or not assessment.evidence_sufficient
+            )
+        )
         requires_review = (
             risk.risk_level is RiskLevel.HIGH
+            or medium_risk_cannot_complete_automatically
             or assessment.confidence < self._confidence_threshold
             or not assessment.evidence_sufficient
             or assessment.requires_human_review

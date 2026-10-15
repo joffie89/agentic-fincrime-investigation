@@ -158,6 +158,90 @@ def test_high_risk_routes_to_human_review(
     assert any("HIGH" in reason for reason in result.reasons)
 
 
+def test_medium_clear_high_confidence_with_sufficient_evidence_completes(
+    transaction_factory, clean_graph_result, retrieved_policy
+):
+    assessment = PolicyAssessment(
+        recommendation=Recommendation.CLEAR,
+        reasons=["The available evidence supports clearing the payment."],
+        confidence=0.9,
+        policy_references=[retrieved_policy.policy_id],
+        missing_information=[],
+        requires_human_review=False,
+        evidence_sufficient=True,
+    )
+    workflow = build_workflow(
+        graph_result=clean_graph_result,
+        policies=[retrieved_policy],
+        assessor=StaticAssessor(assessment),
+    )
+
+    result = workflow.invoke(
+        transaction_factory(transaction_id="txn-medium-clear", amount=600.0)
+    )
+
+    assert result.risk_assessment.risk_score == 30
+    assert result.status is InvestigationStatus.COMPLETED
+    assert result.recommendation is Recommendation.CLEAR
+    assert result.requires_human_review is False
+
+
+def test_medium_clear_low_confidence_routes_to_human_review(
+    transaction_factory, clean_graph_result, retrieved_policy
+):
+    assessment = PolicyAssessment(
+        recommendation=Recommendation.CLEAR,
+        reasons=["The available evidence tentatively supports clearing the payment."],
+        confidence=0.89,
+        policy_references=[retrieved_policy.policy_id],
+        missing_information=[],
+        requires_human_review=False,
+        evidence_sufficient=True,
+    )
+    workflow = build_workflow(
+        graph_result=clean_graph_result,
+        policies=[retrieved_policy],
+        assessor=StaticAssessor(assessment),
+    )
+
+    result = workflow.invoke(
+        transaction_factory(transaction_id="txn-medium-low-confidence", amount=600.0)
+    )
+
+    assert result.risk_assessment.risk_score == 30
+    assert result.status is InvestigationStatus.PENDING_HUMAN_REVIEW
+    assert result.recommendation is Recommendation.CLEAR
+    assert result.requires_human_review is True
+
+
+def test_medium_request_more_info_routes_to_human_review(
+    transaction_factory, clean_graph_result, retrieved_policy
+):
+    assessment = PolicyAssessment(
+        recommendation=Recommendation.REQUEST_MORE_INFO,
+        reasons=["The payment purpose needs confirmation."],
+        confidence=0.95,
+        policy_references=[retrieved_policy.policy_id],
+        missing_information=["Payment purpose"],
+        requires_human_review=False,
+        evidence_sufficient=True,
+    )
+    workflow = build_workflow(
+        graph_result=clean_graph_result,
+        policies=[retrieved_policy],
+        assessor=StaticAssessor(assessment),
+    )
+
+    result = workflow.invoke(
+        transaction_factory(transaction_id="txn-medium-more-info", amount=600.0)
+    )
+
+    assert result.risk_assessment.risk_score == 30
+    assert result.status is InvestigationStatus.PENDING_HUMAN_REVIEW
+    assert result.recommendation is Recommendation.REQUEST_MORE_INFO
+    assert result.requires_human_review is True
+
+
 def test_insufficient_policy_evidence_routes_to_human_review(
     transaction_factory, clean_graph_result
 ):
