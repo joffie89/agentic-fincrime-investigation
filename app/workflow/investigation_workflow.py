@@ -160,7 +160,11 @@ class InvestigationWorkflow:
                 state.get("relationship_anomaly"),
             )
             events = [*state.get("audit_events", []), "policy_assessment_completed"]
-            return {"policy_assessment": assessment, "audit_events": events}
+            return {
+                "policy_assessment": assessment,
+                "llm_usage": getattr(assessment, "llm_usage", None),
+                "audit_events": events,
+            }
         except PolicyAssessmentError as exc:
             logger.exception(
                 "policy_assessment_failed",
@@ -180,6 +184,7 @@ class InvestigationWorkflow:
             )
             return {
                 "policy_assessment": fallback,
+                "llm_usage": exc.llm_usage,
                 "audit_events": [*state.get("audit_events", []), "policy_assessment_failed"],
                 "errors": [*state.get("errors", []), str(exc)],
             }
@@ -332,6 +337,11 @@ class InvestigationWorkflow:
             "human_review_required": state["requires_human_review"],
             "status": state["status"].value,
             "created_at": state["created_at"].isoformat(),
+            "llm_usage": (
+                state["llm_usage"].model_dump(mode="json")
+                if state.get("llm_usage") is not None
+                else None
+            ),
             "audit_events": state.get("audit_events", []),
             "errors": state.get("errors", []),
         }
@@ -356,6 +366,7 @@ class InvestigationWorkflow:
             relationship_anomaly=final_state["relationship_anomaly"],
             retrieved_policies=final_state.get("retrieved_policies", []),
             policy_assessment=final_state["policy_assessment"],
+            llm_usage=final_state.get("llm_usage"),
             recommendation=recommendation.recommendation,
             reasons=recommendation.reasons,
             requires_human_review=final_state["requires_human_review"],

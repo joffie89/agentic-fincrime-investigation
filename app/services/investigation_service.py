@@ -70,6 +70,11 @@ class InvestigationService:
                 "status": result.status.value,
                 "requires_human_review": result.requires_human_review,
                 "persistence_succeeded": result.persistence.succeeded,
+                "llm_usage": (
+                    result.llm_usage.model_dump(mode="json")
+                    if result.llm_usage is not None
+                    else None
+                ),
             },
         )
         return result
@@ -84,6 +89,8 @@ def _build_policy_assessor(settings: Settings) -> PolicyAssessmentService:
         return OpenAIPolicyAssessmentService(
             api_key=settings.openai_api_key.get_secret_value(),
             model=settings.openai_chat_model,
+            input_price_per_1m=settings.openai_input_price_per_1m,
+            output_price_per_1m=settings.openai_output_price_per_1m,
         )
 
     # Import only for the configured hosted path so local/demo mode remains
@@ -92,6 +99,8 @@ def _build_policy_assessor(settings: Settings) -> PolicyAssessmentService:
     return AzureOpenAIPolicyAssessmentService(
         client=client,
         deployment=settings.azure_openai_chat_deployment or "",
+        input_price_per_1m=settings.openai_input_price_per_1m,
+        output_price_per_1m=settings.openai_output_price_per_1m,
     )
 
 

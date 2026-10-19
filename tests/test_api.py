@@ -14,11 +14,14 @@ import app.repositories.postgres as postgres_module
 from app.config import Settings
 from app.graph.analyzer import AccountTransactionEdge, GraphAnalyzer
 from app.main import create_app
-from app.models.domain import GraphAnalysisResult, RetrievedPolicy
+from app.models.domain import GraphAnalysisResult, Recommendation, RetrievedPolicy
 from app.repositories.memory import InMemoryInvestigationRepository
 from app.repositories.postgres import PostgresInvestigationRepository
 from app.services.investigation_service import InvestigationService
-from app.services.policy_assessment import DemoPolicyAssessmentService
+from app.services.policy_assessment import (
+    DemoPolicyAssessmentService,
+    OpenAIPolicyAssessmentService,
+)
 from app.services.risk_scorer import assess_transaction
 from app.workflow.investigation_workflow import InvestigationWorkflow
 
@@ -78,12 +81,16 @@ def transaction_payload(**updates):
     return payload
 
 
-def service(repository=None, graph_analyzer=None) -> InvestigationService:
+def service(
+    repository=None,
+    graph_analyzer=None,
+    policy_assessor=None,
+) -> InvestigationService:
     workflow = InvestigationWorkflow(
         risk_assessor=assess_transaction,
         graph_analyzer=graph_analyzer or CleanGraphAnalyzer(),
         policy_retriever=StaticRetriever(),
-        policy_assessor=DemoPolicyAssessmentService(),
+        policy_assessor=policy_assessor or DemoPolicyAssessmentService(),
         repository=repository or InMemoryInvestigationRepository(),
         retrieval_top_k=3,
         human_review_confidence_threshold=0.6,
@@ -143,6 +150,7 @@ def test_response_has_generated_request_id():
         "path": "/health",
         "status_code": 200,
         "duration_ms": fields["duration_ms"],
+        "llm_usage": None,
     }
     assert isinstance(fields["duration_ms"], float)
     assert fields["duration_ms"] >= 0
@@ -242,11 +250,12 @@ def test_assess_risk_preserves_legacy_contract(api_key_headers):
 
 
 def test_investigate_low_risk_executes_workflow(api_key_headers):
-    response = client_for(service()).post(
-        "/investigate",
-        json=transaction_payload(),
-        headers=api_key_headers,
-    )
+    with patch("app.middleware.logger.info") as log_info:
+        response = client_for(service()).post(
+            "/investigate",
+            json=transaction_payload(),
+            headers=api_key_headers,
+        )
 
     assert response.status_code == 200
     body = response.json()
@@ -259,6 +268,63 @@ def test_investigate_low_risk_executes_workflow(api_key_headers):
         "anomaly_score": -0.1,
         "is_anomalous": False,
     }
+    assert body["llm_usage"] is None
+    assert log_info.call_args.kwargs["extra"]["llm_usage"] is None
+
+
+def test_investigate_returns_and_logs_mocked_llm_usage(api_key_headers):
+    mocked_usage = SimpleNamespace(input_tokens=1_200, output_tokens=300)
+    mocked_response = SimpleNamespace(
+        output_parsed=SimpleNamespace(
+            recommendation=Recommendation.CLEAR,
+            reasons=["The supplied evidence supports clearing the payment."],
+            confidence=0.95,
+            cited_policy_ids=[],
+            missing_information=[],
+            evidence_sufficient=True,
+        ),
+        usage=mocked_usage,
+    )
+    client = SimpleNamespace(
+        responses=SimpleNamespace(
+            parse=MagicMock(return_value=mocked_response),
+        )
+    )
+    assessor = OpenAIPolicyAssessmentService(
+        client,
+        "gpt-4.1-mini",
+        input_price_per_1m=0.4,
+        output_price_per_1m=1.6,
+    )
+    repository = InMemoryInvestigationRepository()
+
+    with (
+        patch("app.middleware.logger.info") as log_info,
+        patch("app.services.investigation_service.logger.info") as investigation_log,
+    ):
+        response = client_for(
+            service(repository=repository, policy_assessor=assessor)
+        ).post(
+            "/investigate",
+            json=transaction_payload(transaction_id="txn-api-llm-usage"),
+            headers=api_key_headers,
+        )
+
+    assert response.status_code == 200
+    usage = response.json()["llm_usage"]
+    assert usage["input_tokens"] == 1_200
+    assert usage["output_tokens"] == 300
+    assert usage["latency_ms"] >= 0
+    assert usage["estimated_cost_usd"] == pytest.approx(0.00096)
+    log_info.assert_called_once()
+    assert log_info.call_args.kwargs["extra"]["llm_usage"] == usage
+    finished_log = next(
+        call
+        for call in investigation_log.call_args_list
+        if call.args == ("investigation_finished",)
+    )
+    assert finished_log.kwargs["extra"]["llm_usage"] == usage
+    assert repository.records[0]["llm_usage"] == usage
 
 
 def test_investigate_high_risk_routes_to_human_review(api_key_headers):

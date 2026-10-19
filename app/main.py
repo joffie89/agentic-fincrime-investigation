@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import Depends, FastAPI, HTTPException, Response, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from pydantic import BaseModel, ConfigDict
 
 from app.auth import require_api_key
@@ -101,6 +101,7 @@ def create_app(
     )
     def investigate(
         transaction: Transaction,
+        request: Request,
         response: Response,
     ) -> InvestigationResponse:
         try:
@@ -122,6 +123,11 @@ def create_app(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Investigation could not be completed",
             ) from exc
+        request.state.llm_usage = (
+            result.llm_usage.model_dump(mode="json")
+            if result.llm_usage is not None
+            else None
+        )
         if not result.persistence.succeeded:
             response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return result

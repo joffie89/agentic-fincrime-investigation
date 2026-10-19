@@ -58,5 +58,6 @@ class HttpRequestLoggingMiddleware:
                     "path": scope["path"],
                     "status_code": status_code,
                     "duration_ms": duration_ms,
+                    "llm_usage": scope.get("state", {}).get("llm_usage"),
                 },
             )

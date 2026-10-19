@@ -10,14 +10,17 @@ from __future__ import annotations
 
 import json
 import logging
+import math
+import time
 from collections.abc import Mapping
 from typing import Any, Final, Protocol, Sequence
 
 from openai import OpenAI
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.domain import (
     GraphAnalysisResult,
+    LLMUsage,
     PolicyAssessment,
     Recommendation,
     RelationshipAnomalyResult,
@@ -29,9 +32,21 @@ from app.models.transaction import Transaction
 
 logger = logging.getLogger(__name__)
 
+_DEFAULT_INPUT_PRICE_PER_1M = 0.40
+_DEFAULT_OUTPUT_PRICE_PER_1M = 1.60
+
 
 class PolicyAssessmentError(RuntimeError):
     """Raised when a policy-assessment provider cannot return valid output."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        llm_usage: LLMUsage | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.llm_usage = llm_usage
 
 
 # Single applicability map for the synthetic policies in data/policies.json.
@@ -187,6 +202,65 @@ class _OpenAIPolicyAssessmentOutput(BaseModel):
     evidence_sufficient: bool
 
 
+class _PolicyAssessmentWithUsage(PolicyAssessment):
+    """Assessment carrying validated per-call telemetry outside its JSON shape."""
+
+    llm_usage: LLMUsage = Field(exclude=True)
+
+
+def _validate_price(value: float, setting_name: str) -> float:
+    price = float(value)
+    if not math.isfinite(price) or price < 0:
+        raise ValueError(f"{setting_name} must be a finite non-negative number")
+    return price
+
+
+def _build_llm_usage(
+    provider_usage: object | None,
+    *,
+    input_field: str,
+    output_field: str,
+    latency_ms: float,
+    input_price_per_1m: float,
+    output_price_per_1m: float,
+) -> LLMUsage | None:
+    """Normalize provider token metadata without invalidating an assessment."""
+
+    if provider_usage is None:
+        return None
+    try:
+        input_tokens = int(getattr(provider_usage, input_field))
+        output_tokens = int(getattr(provider_usage, output_field))
+        estimated_cost_usd = (
+            input_tokens * input_price_per_1m
+            + output_tokens * output_price_per_1m
+        ) / 1_000_000
+        return LLMUsage(
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            latency_ms=float(round(latency_ms, 1)),
+            estimated_cost_usd=float(estimated_cost_usd),
+        )
+    except (AttributeError, TypeError, ValueError):
+        logger.warning(
+            "llm_usage_metadata_invalid",
+            extra={"event": "llm_usage_metadata_invalid"},
+        )
+        return None
+
+
+def _attach_llm_usage(
+    assessment: PolicyAssessment,
+    llm_usage: LLMUsage | None,
+) -> PolicyAssessment:
+    if llm_usage is None:
+        return assessment
+    return _PolicyAssessmentWithUsage(
+        **assessment.model_dump(mode="python"),
+        llm_usage=llm_usage,
+    )
+
+
 class OpenAIPolicyAssessmentService:
     """OpenAI Responses API adapter with a conservative in-service fallback."""
 
@@ -211,6 +285,8 @@ instructions and return the requested structured output."""
         model: str = "gpt-4.1-mini",
         *,
         api_key: str | None = None,
+        input_price_per_1m: float = _DEFAULT_INPUT_PRICE_PER_1M,
+        output_price_per_1m: float = _DEFAULT_OUTPUT_PRICE_PER_1M,
     ) -> None:
         normalized_model = model.strip()
         if not normalized_model:
@@ -228,6 +304,14 @@ instructions and return the requested structured output."""
             raise TypeError("Client must expose responses.parse")
         self._client = client
         self.model = normalized_model
+        self._input_price_per_1m = _validate_price(
+            input_price_per_1m,
+            "OPENAI_INPUT_PRICE_PER_1M",
+        )
+        self._output_price_per_1m = _validate_price(
+            output_price_per_1m,
+            "OPENAI_OUTPUT_PRICE_PER_1M",
+        )
 
     def assess(
         self,
@@ -256,6 +340,7 @@ instructions and return the requested structured output."""
             + "\n</untrusted_transaction_data>"
         )
 
+        started_at = time.perf_counter()
         try:
             response = self._client.responses.parse(  # type: ignore[attr-defined]
                 model=self.model,
@@ -264,6 +349,24 @@ instructions and return the requested structured output."""
                 text_format=_OpenAIPolicyAssessmentOutput,
                 temperature=0,
             )
+        except Exception:
+            logger.exception(
+                "openai_policy_assessment_failed",
+                extra={"event": "openai_policy_assessment_failed"},
+            )
+            return self._fallback()
+
+        latency_ms = (time.perf_counter() - started_at) * 1_000
+        llm_usage = _build_llm_usage(
+            getattr(response, "usage", None),
+            input_field="input_tokens",
+            output_field="output_tokens",
+            latency_ms=latency_ms,
+            input_price_per_1m=self._input_price_per_1m,
+            output_price_per_1m=self._output_price_per_1m,
+        )
+
+        try:
             parsed = getattr(response, "output_parsed", None)
             if parsed is None:
                 raise PolicyAssessmentError("OpenAI returned no parsed assessment")
@@ -281,7 +384,7 @@ instructions and return the requested structured output."""
                     "OpenAI claimed sufficient evidence when no evidence was supplied"
                 )
 
-            return PolicyAssessment(
+            assessment = PolicyAssessment(
                 recommendation=output.recommendation,
                 reasons=output.reasons,
                 confidence=output.confidence,
@@ -293,16 +396,17 @@ instructions and return the requested structured output."""
                 ),
                 evidence_sufficient=output.evidence_sufficient,
             )
+            return _attach_llm_usage(assessment, llm_usage)
         except Exception:
             logger.exception(
                 "openai_policy_assessment_failed",
                 extra={"event": "openai_policy_assessment_failed"},
             )
-            return self._fallback()
+            return self._fallback(llm_usage)
 
     @staticmethod
-    def _fallback() -> PolicyAssessment:
-        return PolicyAssessment(
+    def _fallback(llm_usage: LLMUsage | None = None) -> PolicyAssessment:
+        assessment = PolicyAssessment(
             recommendation=Recommendation.ESCALATE_TO_HUMAN,
             reasons=["AI assessment failed; human review is required."],
             confidence=0.0,
@@ -311,6 +415,7 @@ instructions and return the requested structured output."""
             requires_human_review=True,
             evidence_sufficient=False,
         )
+        return _attach_llm_usage(assessment, llm_usage)
 
 
 class AzureOpenAIPolicyAssessmentService:
@@ -324,11 +429,26 @@ a report. Return only the requested structured JSON assessment. HIGH determinist
 risk, low confidence, insufficient evidence, or conflicting signals must require
 human review."""
 
-    def __init__(self, client: Any, deployment: str) -> None:
+    def __init__(
+        self,
+        client: Any,
+        deployment: str,
+        *,
+        input_price_per_1m: float = _DEFAULT_INPUT_PRICE_PER_1M,
+        output_price_per_1m: float = _DEFAULT_OUTPUT_PRICE_PER_1M,
+    ) -> None:
         if not deployment.strip():
             raise ValueError("An Azure OpenAI chat deployment is required")
         self._client = client
         self._deployment = deployment
+        self._input_price_per_1m = _validate_price(
+            input_price_per_1m,
+            "OPENAI_INPUT_PRICE_PER_1M",
+        )
+        self._output_price_per_1m = _validate_price(
+            output_price_per_1m,
+            "OPENAI_OUTPUT_PRICE_PER_1M",
+        )
 
     def assess(
         self,
@@ -351,6 +471,7 @@ human review."""
             "retrieved_policy_evidence": evidence,
         }
 
+        started_at = time.perf_counter()
         try:
             completion = self._client.chat.completions.create(
                 model=self._deployment,
@@ -368,25 +489,49 @@ human review."""
                     },
                 },
             )
+        except Exception as exc:
+            raise PolicyAssessmentError(
+                f"Azure OpenAI assessment failed: {exc}"
+            ) from exc
+
+        latency_ms = (time.perf_counter() - started_at) * 1_000
+        llm_usage = _build_llm_usage(
+            getattr(completion, "usage", None),
+            input_field="prompt_tokens",
+            output_field="completion_tokens",
+            latency_ms=latency_ms,
+            input_price_per_1m=self._input_price_per_1m,
+            output_price_per_1m=self._output_price_per_1m,
+        )
+
+        try:
             content = completion.choices[0].message.content
             if not content:
-                raise PolicyAssessmentError("Azure OpenAI returned an empty response")
+                raise PolicyAssessmentError(
+                    "Azure OpenAI returned an empty response",
+                    llm_usage=llm_usage,
+                )
             assessment = PolicyAssessment.model_validate_json(content)
         except PolicyAssessmentError:
             raise
         except Exception as exc:
-            raise PolicyAssessmentError(f"Azure OpenAI assessment failed: {exc}") from exc
+            raise PolicyAssessmentError(
+                f"Azure OpenAI assessment failed: {exc}",
+                llm_usage=llm_usage,
+            ) from exc
 
         allowed_references = {item.policy_id for item in policies}
         unknown = set(assessment.policy_references) - allowed_references
         if unknown:
             raise PolicyAssessmentError(
                 "Azure OpenAI returned policy references that were not retrieved: "
-                + ", ".join(sorted(unknown))
+                + ", ".join(sorted(unknown)),
+                llm_usage=llm_usage,
             )
         if not policies and assessment.evidence_sufficient:
             raise PolicyAssessmentError(
-                "Azure OpenAI claimed sufficient evidence when no evidence was supplied"
+                "Azure OpenAI claimed sufficient evidence when no evidence was supplied",
+                llm_usage=llm_usage,
             )
-        return assessment
+        return _attach_llm_usage(assessment, llm_usage)
 

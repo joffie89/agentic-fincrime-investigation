@@ -41,6 +41,10 @@ class InvestigationStatus(str, Enum):
 
 
 ReasonList = Annotated[list[ShortText], Field(min_length=1)]
+NonNegativeFiniteFloat = Annotated[
+    StrictFloat,
+    Field(ge=0, allow_inf_nan=False),
+]
 
 
 class RiskAssessment(DomainModel):
@@ -116,6 +120,15 @@ class PolicyAssessment(DomainModel):
     evidence_sufficient: StrictBool
 
 
+class LLMUsage(DomainModel):
+    """Token, latency, and estimated-cost metadata for one LLM call."""
+
+    input_tokens: NonNegativeInt
+    output_tokens: NonNegativeInt
+    latency_ms: NonNegativeFiniteFloat
+    estimated_cost_usd: NonNegativeFiniteFloat
+
+
 class InvestigationRecommendation(DomainModel):
     """Final recommendation after deterministic escalation routing."""
 
@@ -145,6 +158,7 @@ class InvestigationResponse(DomainModel):
     relationship_anomaly: RelationshipAnomalyResult | None = None
     retrieved_policies: list[RetrievedPolicy]
     policy_assessment: PolicyAssessment
+    llm_usage: LLMUsage | None = None
     recommendation: Recommendation
     reasons: ReasonList
     requires_human_review: StrictBool

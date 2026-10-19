@@ -164,6 +164,16 @@ class Settings(EmbeddingSettings):
 
     azure_openai_chat_deployment: str | None = None
     openai_chat_model: str = "gpt-4.1-mini"
+    openai_input_price_per_1m: float = Field(
+        default=0.40,
+        ge=0,
+        allow_inf_nan=False,
+    )
+    openai_output_price_per_1m: float = Field(
+        default=1.60,
+        ge=0,
+        allow_inf_nan=False,
+    )
 
     @field_validator("app_env", mode="before")
     @classmethod

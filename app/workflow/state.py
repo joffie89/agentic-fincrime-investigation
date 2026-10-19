@@ -9,6 +9,7 @@ from app.models.domain import (
     GraphAnalysisResult,
     InvestigationRecommendation,
     InvestigationStatus,
+    LLMUsage,
     PersistenceResult,
     PolicyAssessment,
     RelationshipAnomalyResult,
@@ -29,6 +30,7 @@ class InvestigationState(TypedDict, total=False):
     relationship_anomaly: RelationshipAnomalyResult
     retrieved_policies: list[RetrievedPolicy]
     policy_assessment: PolicyAssessment
+    llm_usage: LLMUsage | None
     recommendation: InvestigationRecommendation
     requires_human_review: bool
     status: InvestigationStatus
