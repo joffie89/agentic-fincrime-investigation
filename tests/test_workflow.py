@@ -166,6 +166,7 @@ def test_medium_clear_high_confidence_with_sufficient_evidence_completes(
         reasons=["The available evidence supports clearing the payment."],
         confidence=0.9,
         policy_references=[retrieved_policy.policy_id],
+        policies_considered=[],
         missing_information=[],
         requires_human_review=False,
         evidence_sufficient=True,
@@ -194,6 +195,7 @@ def test_medium_clear_low_confidence_routes_to_human_review(
         reasons=["The available evidence tentatively supports clearing the payment."],
         confidence=0.89,
         policy_references=[retrieved_policy.policy_id],
+        policies_considered=[],
         missing_information=[],
         requires_human_review=False,
         evidence_sufficient=True,
@@ -222,6 +224,7 @@ def test_medium_request_more_info_routes_to_human_review(
         reasons=["The payment purpose needs confirmation."],
         confidence=0.95,
         policy_references=[retrieved_policy.policy_id],
+        policies_considered=[],
         missing_information=["Payment purpose"],
         requires_human_review=False,
         evidence_sufficient=True,
@@ -263,6 +266,7 @@ def test_low_confidence_routes_to_human_review(
         reasons=["The evidence is ambiguous."],
         confidence=0.4,
         policy_references=[retrieved_policy.policy_id],
+        policies_considered=[],
         missing_information=["Payment purpose"],
         requires_human_review=False,
         evidence_sufficient=True,
@@ -291,6 +295,7 @@ def test_conflicting_graph_signal_routes_to_human_review(
         reasons=["Policy evidence alone does not trigger escalation."],
         confidence=0.95,
         policy_references=[retrieved_policy.policy_id],
+        policies_considered=[],
         missing_information=[],
         requires_human_review=False,
         evidence_sufficient=True,
@@ -315,6 +320,7 @@ def test_relationship_anomaly_disagreement_routes_to_human_review(
         reasons=["Policy evidence alone does not trigger escalation."],
         confidence=0.95,
         policy_references=[retrieved_policy.policy_id],
+        policies_considered=[],
         missing_information=[],
         requires_human_review=False,
         evidence_sufficient=True,
@@ -350,6 +356,8 @@ def test_provider_failure_uses_safe_validated_fallback(
     assert result.requires_human_review is True
     assert result.policy_assessment.confidence == 0.0
     assert result.policy_assessment.evidence_sufficient is False
+    assert result.policy_assessment.policy_references == []
+    assert result.policy_assessment.policies_considered == [retrieved_policy.policy_id]
 
 
 def test_persistence_failure_is_reported_truthfully(

@@ -279,7 +279,8 @@ def test_investigate_returns_and_logs_mocked_llm_usage(api_key_headers):
             recommendation=Recommendation.CLEAR,
             reasons=["The supplied evidence supports clearing the payment."],
             confidence=0.95,
-            cited_policy_ids=[],
+            policy_references=[],
+            policies_considered=["DEMO-AML-001"],
             missing_information=[],
             evidence_sufficient=True,
         ),
@@ -316,6 +317,10 @@ def test_investigate_returns_and_logs_mocked_llm_usage(api_key_headers):
     assert usage["output_tokens"] == 300
     assert usage["latency_ms"] >= 0
     assert usage["estimated_cost_usd"] == pytest.approx(0.00096)
+    assert response.json()["policy_assessment"]["policy_references"] == []
+    assert response.json()["policy_assessment"]["policies_considered"] == [
+        "DEMO-AML-001"
+    ]
     log_info.assert_called_once()
     assert log_info.call_args.kwargs["extra"]["llm_usage"] == usage
     finished_log = next(

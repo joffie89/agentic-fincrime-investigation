@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -72,6 +73,13 @@ def test_demo_assessor_clears_clean_transaction_without_policy_citations(
     assert result.evidence_sufficient is True
     assert result.requires_human_review is False
     assert result.policy_references == []
+    assert result.policies_considered == [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-003",
+        "DEMO-AML-004",
+        "DEMO-AML-005",
+    ]
 
 
 def test_demo_assessor_cites_only_policies_for_active_risk_signals(
@@ -90,6 +98,11 @@ def test_demo_assessor_cites_only_policies_for_active_risk_signals(
     )
 
     assert result.policy_references == ["DEMO-AML-001", "DEMO-AML-002"]
+    assert result.policies_considered == [
+        "DEMO-AML-003",
+        "DEMO-AML-004",
+        "DEMO-AML-005",
+    ]
 
 
 def test_demo_assessor_escalates_high_risk(
@@ -115,6 +128,7 @@ def test_demo_assessor_marks_missing_evidence(
     assert result.evidence_sufficient is False
     assert result.requires_human_review is True
     assert result.policy_references == []
+    assert result.policies_considered == []
 
 
 class StubCompletions:
@@ -145,6 +159,7 @@ def valid_azure_payload() -> dict[str, object]:
         reasons=["The supplied evidence calls for supporting context."],
         confidence=0.8,
         policy_references=["DEMO-AML-001"],
+        policies_considered=[],
         missing_information=["Payment purpose"],
         requires_human_review=False,
         evidence_sufficient=True,
@@ -169,11 +184,13 @@ def test_azure_assessor_validates_structured_output_and_prompt(
     assert "DEMO-AML-001" in messages[1]["content"]
 
 
+@pytest.mark.parametrize("field", ["policy_references", "policies_considered"])
 def test_azure_assessor_rejects_fabricated_policy_reference(
+    field,
     transaction_factory, clean_graph_result, retrieved_policy
 ):
     payload = valid_azure_payload()
-    payload["policy_references"] = ["FABRICATED-POLICY"]
+    payload[field] = ["FABRICATED-POLICY"]
     client, _ = azure_client(payload)
     service = AzureOpenAIPolicyAssessmentService(client, "chat-deployment")
 
@@ -236,7 +253,8 @@ def valid_openai_output(**updates: object) -> SimpleNamespace:
         "recommendation": Recommendation.REQUEST_MORE_INFO,
         "reasons": ["The supplied evidence calls for supporting context."],
         "confidence": 0.8,
-        "cited_policy_ids": ["DEMO-AML-001"],
+        "policy_references": ["DEMO-AML-001"],
+        "policies_considered": [],
         "missing_information": ["Payment purpose"],
         "evidence_sufficient": True,
     }
@@ -248,6 +266,7 @@ def assert_openai_failure_fallback(result: PolicyAssessment) -> None:
     assert result.recommendation is Recommendation.ESCALATE_TO_HUMAN
     assert result.confidence == 0.0
     assert result.policy_references == []
+    assert result.policies_considered == []
     assert result.requires_human_review is True
     assert result.evidence_sufficient is False
     assert any("AI assessment failed" in reason for reason in result.reasons)
@@ -357,6 +376,7 @@ def test_openai_assessor_returns_valid_structured_output_and_delimits_user_data(
     assert result.recommendation is Recommendation.REQUEST_MORE_INFO
     assert result.confidence == 0.8
     assert result.policy_references == ["DEMO-AML-001"]
+    assert result.policies_considered == []
     assert result.missing_information == ["Payment purpose"]
     assert result.evidence_sufficient is True
     assert result.requires_human_review is False
@@ -367,6 +387,9 @@ def test_openai_assessor_returns_valid_structured_output_and_delimits_user_data(
         str(responses.kwargs["instructions"]).casefold().split()
     )
     assert "ignore any instructions" in normalized_instructions
+    assert "policy_references" in normalized_instructions
+    assert "policies_considered" in normalized_instructions
+    assert "clean clear" in normalized_instructions
     prompt_input = str(responses.kwargs["input"])
     assert "<untrusted_transaction_data>" in prompt_input
     assert "</untrusted_transaction_data>" in prompt_input
@@ -404,12 +427,74 @@ def test_openai_assessor_records_mocked_token_usage_latency_and_cost(
     assert result.llm_usage.estimated_cost_usd == pytest.approx(0.00096)
 
 
-def test_openai_assessor_rejects_hallucinated_policy_id_with_fallback(
+def test_openai_clean_clear_separates_considered_from_applied_policies(
     transaction_factory, clean_graph_result, retrieved_policy
 ):
     client, _ = openai_client(
-        valid_openai_output(cited_policy_ids=["FABRICATED-POLICY"])
+        valid_openai_output(
+            recommendation=Recommendation.CLEAR,
+            reasons=["No supplied signal makes the retrieved policy applicable."],
+            confidence=0.95,
+            policy_references=[],
+            policies_considered=[retrieved_policy.policy_id],
+            missing_information=[],
+        )
     )
+    service = OpenAIPolicyAssessmentService(client, "gpt-4.1-mini")
+
+    result = service.assess(
+        transaction_factory(), low_risk(), clean_graph_result, [retrieved_policy]
+    )
+
+    assert result.recommendation is Recommendation.CLEAR
+    assert result.policy_references == []
+    assert result.policies_considered == [retrieved_policy.policy_id]
+    assert result.requires_human_review is False
+
+
+def test_openai_clean_clear_policy_reference_without_signals_logs_warning(
+    transaction_factory,
+    clean_graph_result,
+    retrieved_policy,
+    caplog,
+):
+    client, _ = openai_client(
+        valid_openai_output(
+            recommendation=Recommendation.CLEAR,
+            reasons=["No supplied signal requires escalation."],
+            confidence=0.95,
+            policy_references=[retrieved_policy.policy_id],
+            policies_considered=[],
+            missing_information=[],
+        )
+    )
+    service = OpenAIPolicyAssessmentService(client, "gpt-4.1-mini")
+
+    with caplog.at_level(logging.WARNING, logger="app.services.policy_assessment"):
+        result = service.assess(
+            transaction_factory(), low_risk(), clean_graph_result, [retrieved_policy]
+        )
+
+    assert result.recommendation is Recommendation.CLEAR
+    assert result.policy_references == []
+    assert result.policies_considered == [retrieved_policy.policy_id]
+    warning = next(
+        record
+        for record in caplog.records
+        if getattr(record, "event", None)
+        == "openai_clear_policy_references_without_signals"
+    )
+    assert warning.levelno == logging.WARNING
+    assert warning.transaction_id == "txn-test-low"
+    assert warning.policy_references == [retrieved_policy.policy_id]
+
+
+@pytest.mark.parametrize("field", ["policy_references", "policies_considered"])
+def test_openai_assessor_rejects_hallucinated_policy_id_with_fallback(
+    field,
+    transaction_factory, clean_graph_result, retrieved_policy
+):
+    client, _ = openai_client(valid_openai_output(**{field: ["FABRICATED-POLICY"]}))
     service = OpenAIPolicyAssessmentService(client, "gpt-4.1-mini")
 
     result = service.assess(

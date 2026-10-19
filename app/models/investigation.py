@@ -115,6 +115,7 @@ class PolicyAssessment(DomainModel):
     reasons: ReasonList
     confidence: UnitInterval
     policy_references: list[Identifier]
+    policies_considered: list[Identifier]
     missing_information: list[ShortText]
     requires_human_review: StrictBool
     evidence_sufficient: StrictBool

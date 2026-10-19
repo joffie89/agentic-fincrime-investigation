@@ -11,6 +11,7 @@ from app.evaluation.evaluate import (
     policy_ids_match_expected,
     run_evaluation,
 )
+from app.models.domain import PolicyAssessment, Recommendation
 
 
 @pytest.mark.parametrize(
@@ -31,6 +32,21 @@ def test_policy_ids_must_exactly_match_expected_ids(
         policy_ids_match_expected(cited_policy_ids, expected_policy_ids)
         is expected_match
     )
+
+
+def test_policies_considered_do_not_count_as_grounding_references() -> None:
+    assessment = PolicyAssessment(
+        recommendation=Recommendation.CLEAR,
+        reasons=["No supplied risk signal makes the reviewed policy applicable."],
+        confidence=0.95,
+        policy_references=[],
+        policies_considered=["POL-CONSIDERED"],
+        missing_information=[],
+        requires_human_review=False,
+        evidence_sufficient=True,
+    )
+
+    assert policy_ids_match_expected(assessment.policy_references, []) is True
 
 
 def test_evaluation_runs_against_synthetic_data(tmp_path: Path):
