@@ -7,7 +7,9 @@ import logging
 from types import SimpleNamespace
 from unittest.mock import patch
 
+import httpx
 import pytest
+from openai import OpenAI
 from pydantic import ValidationError
 
 from app.config import Settings
@@ -24,6 +26,7 @@ from app.services.policy_assessment import (
     DemoPolicyAssessmentService,
     OpenAIPolicyAssessmentService,
     PolicyAssessmentError,
+    _OpenAIPolicyAssessmentOutput,
 )
 from app.services.investigation_service import _build_policy_assessor
 from app.services.risk_scorer import assess_transaction
@@ -327,6 +330,29 @@ def test_openai_pricing_settings_reject_negative_values(price_field: str) -> Non
         )
 
 
+def test_openai_structured_output_schema_is_strict_compatible() -> None:
+    schema = _OpenAIPolicyAssessmentOutput.model_json_schema()
+
+    def assert_strict_object_contract(value: object) -> None:
+        if isinstance(value, dict):
+            assert "default" not in value
+            value_type = value.get("type")
+            assert value_type != "null"
+            if value_type == "object":
+                properties = value.get("properties", {})
+                assert value.get("additionalProperties") is False
+                assert set(value.get("required", [])) == set(properties)
+            if isinstance(value_type, list):
+                assert "null" not in value_type
+            for child in value.values():
+                assert_strict_object_contract(child)
+        elif isinstance(value, list):
+            for child in value:
+                assert_strict_object_contract(child)
+
+    assert_strict_object_contract(schema)
+
+
 def test_openai_service_composition_configures_timeout_retries_and_default_model() -> None:
     client, _ = openai_client(valid_openai_output())
     settings = Settings(
@@ -432,7 +458,7 @@ def test_openai_clean_clear_separates_considered_from_applied_policies(
 ):
     client, _ = openai_client(
         valid_openai_output(
-            recommendation=Recommendation.CLEAR,
+            recommendation="CLEAR",
             reasons=["No supplied signal makes the retrieved policy applicable."],
             confidence=0.95,
             policy_references=[],
@@ -450,6 +476,104 @@ def test_openai_clean_clear_separates_considered_from_applied_policies(
     assert result.policy_references == []
     assert result.policies_considered == [retrieved_policy.policy_id]
     assert result.requires_human_review is False
+
+
+def test_openai_demo_103_clean_clear_realistic_response_does_not_fallback(
+    transaction_factory,
+    clean_graph_result,
+):
+    policy_ids = ["DEMO-AML-004", "DEMO-AML-019", "DEMO-AML-001"]
+    policies = [
+        RetrievedPolicy(
+            policy_id=policy_id,
+            chunk_id=f"{policy_id}#001",
+            text=f"Synthetic retrieved evidence for {policy_id}.",
+            relevance_score=0.75,
+        )
+        for policy_id in policy_ids
+    ]
+    usage = SimpleNamespace(input_tokens=1_000, output_tokens=120)
+    response_payload = {
+        "recommendation": "CLEAR",
+        "reasons": [
+            "The payment is domestic, consistent with prior activity, and "
+            "has no supplied risk or graph signals."
+        ],
+        "confidence": 0.96,
+        "policy_references": [],
+        "policies_considered": policy_ids,
+        "missing_information": [],
+        "evidence_sufficient": True,
+    }
+
+    def openai_response(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "id": "resp-demo-103",
+                "object": "response",
+                "created_at": 1.0,
+                "status": "completed",
+                "model": "gpt-4.1-mini",
+                "output": [
+                    {
+                        "id": "msg-demo-103",
+                        "type": "message",
+                        "role": "assistant",
+                        "status": "completed",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "annotations": [],
+                                "text": json.dumps(response_payload),
+                            }
+                        ],
+                    }
+                ],
+                "parallel_tool_calls": True,
+                "tool_choice": "auto",
+                "tools": [],
+                "usage": {
+                    "input_tokens": usage.input_tokens,
+                    "input_tokens_details": {
+                        "cache_write_tokens": 0,
+                        "cached_tokens": 0,
+                    },
+                    "output_tokens": usage.output_tokens,
+                    "output_tokens_details": {"reasoning_tokens": 0},
+                    "total_tokens": usage.input_tokens + usage.output_tokens,
+                },
+            },
+        )
+
+    http_client = httpx.Client(transport=httpx.MockTransport(openai_response))
+    with OpenAI(
+        api_key="test-key",
+        base_url="https://openai.test/v1",
+        http_client=http_client,
+    ) as client:
+        result = OpenAIPolicyAssessmentService(client, "gpt-4.1-mini").assess(
+            transaction_factory(
+                transaction_id="demo-103",
+                amount=120.0,
+                average_transaction_amount=100.0,
+                account_age_days=900,
+                new_payee=False,
+                origin_country="GB",
+                destination_country="GB",
+            ),
+            low_risk(),
+            clean_graph_result,
+            policies,
+        )
+
+    assert result.recommendation is Recommendation.CLEAR
+    assert result.policy_references == []
+    assert result.policies_considered == policy_ids
+    assert result.requires_human_review is False
+    assert result.llm_usage is not None
+    assert result.llm_usage.input_tokens == 1_000
+    assert result.llm_usage.output_tokens == 120
 
 
 def test_openai_clean_clear_policy_reference_without_signals_logs_warning(
@@ -502,6 +626,37 @@ def test_openai_assessor_rejects_hallucinated_policy_id_with_fallback(
     )
 
     assert_openai_failure_fallback(result)
+
+
+def test_openai_fallback_logs_exception_details_without_prompt(
+    transaction_factory,
+    clean_graph_result,
+    retrieved_policy,
+    caplog,
+):
+    client, _ = openai_client(
+        valid_openai_output(policy_references=["FABRICATED-POLICY"])
+    )
+    service = OpenAIPolicyAssessmentService(client, "gpt-4.1-mini")
+    prompt_only_marker = "prompt-only-secret-marker"
+
+    with caplog.at_level(logging.ERROR, logger="app.services.policy_assessment"):
+        result = service.assess(
+            transaction_factory(transaction_id=prompt_only_marker),
+            low_risk(),
+            clean_graph_result,
+            [retrieved_policy],
+        )
+
+    assert_openai_failure_fallback(result)
+    failure = next(
+        record
+        for record in caplog.records
+        if getattr(record, "event", None) == "openai_policy_assessment_failed"
+    )
+    assert failure.exception_type == "PolicyAssessmentError"
+    assert "not retrieved" in failure.exception_message
+    assert prompt_only_marker not in caplog.text
 
 
 def test_openai_assessor_timeout_returns_fallback_without_policy_citations(

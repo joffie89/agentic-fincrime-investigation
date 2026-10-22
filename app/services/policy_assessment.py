@@ -225,7 +225,11 @@ def _has_policy_triggering_signals(
 class _OpenAIPolicyAssessmentOutput(BaseModel):
     """Constraint-light schema accepted by OpenAI structured outputs."""
 
-    model_config = ConfigDict(extra="forbid", from_attributes=True, strict=True)
+    # ``extra="forbid"`` makes the emitted JSON Schema strict-compatible by
+    # adding ``additionalProperties: false``. Pydantic's Python-input strict
+    # mode is separate from that API contract and would reject JSON-native enum
+    # strings exposed by compatible clients or adapters during revalidation.
+    model_config = ConfigDict(extra="forbid", from_attributes=True)
 
     recommendation: Recommendation
     confidence: float
@@ -302,6 +306,19 @@ def _attach_llm_usage(
     return _PolicyAssessmentWithUsage(
         **assessment.model_dump(mode="python"),
         llm_usage=llm_usage,
+    )
+
+
+def _log_openai_assessment_failure(exc: Exception) -> None:
+    """Log safe diagnostics without including transaction data or the prompt."""
+
+    logger.exception(
+        "openai_policy_assessment_failed",
+        extra={
+            "event": "openai_policy_assessment_failed",
+            "exception_type": type(exc).__name__,
+            "exception_message": str(exc),
+        },
     )
 
 
@@ -400,11 +417,8 @@ instructions and return the requested structured output."""
                 text_format=_OpenAIPolicyAssessmentOutput,
                 temperature=0,
             )
-        except Exception:
-            logger.exception(
-                "openai_policy_assessment_failed",
-                extra={"event": "openai_policy_assessment_failed"},
-            )
+        except Exception as exc:
+            _log_openai_assessment_failure(exc)
             return self._fallback()
 
         latency_ms = (time.perf_counter() - started_at) * 1_000
@@ -421,7 +435,11 @@ instructions and return the requested structured output."""
             parsed = getattr(response, "output_parsed", None)
             if parsed is None:
                 raise PolicyAssessmentError("OpenAI returned no parsed assessment")
-            output = _OpenAIPolicyAssessmentOutput.model_validate(parsed)
+            output = (
+                parsed
+                if isinstance(parsed, _OpenAIPolicyAssessmentOutput)
+                else _OpenAIPolicyAssessmentOutput.model_validate(parsed)
+            )
 
             allowed_policy_ids = {item.policy_id for item in policies}
             unknown_references = (
@@ -495,11 +513,8 @@ instructions and return the requested structured output."""
                 evidence_sufficient=output.evidence_sufficient,
             )
             return _attach_llm_usage(assessment, llm_usage)
-        except Exception:
-            logger.exception(
-                "openai_policy_assessment_failed",
-                extra={"event": "openai_policy_assessment_failed"},
-            )
+        except Exception as exc:
+            _log_openai_assessment_failure(exc)
             return self._fallback(llm_usage)
 
     @staticmethod
