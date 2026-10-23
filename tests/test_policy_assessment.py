@@ -273,6 +273,13 @@ def assert_openai_failure_fallback(result: PolicyAssessment) -> None:
     assert result.requires_human_review is True
     assert result.evidence_sufficient is False
     assert any("AI assessment failed" in reason for reason in result.reasons)
+    assert getattr(result, "fallback_used", False) is True
+    assert getattr(result, "fallback_error_type", None)
+    assert getattr(result, "fallback_error_message", None)
+    dumped = result.model_dump(mode="json")
+    assert "fallback_used" not in dumped
+    assert "fallback_error_type" not in dumped
+    assert "fallback_error_message" not in dumped
 
 
 def test_openai_service_mode_requires_api_key() -> None:

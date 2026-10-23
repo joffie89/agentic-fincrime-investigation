@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from app.models.domain import (
     GraphAnalysisResult,
@@ -35,5 +35,8 @@ class InvestigationState(TypedDict, total=False):
     requires_human_review: bool
     status: InvestigationStatus
     persistence: PersistenceResult
+    routing: dict[str, Any]
+    workflow_steps: dict[str, dict[str, Any]]
     audit_events: list[str]
     errors: list[str]
+    fallbacks: list[dict[str, Any]]

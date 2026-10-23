@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Any
 
 from app.config import ServiceMode, Settings
 from app.graph.analyzer import GraphAnalyzer
@@ -78,6 +79,11 @@ class InvestigationService:
             },
         )
         return result
+
+    def get_investigation(self, investigation_id: str) -> dict[str, Any] | None:
+        """Return a persisted investigation audit trail by its identifier."""
+
+        return self.workflow.get_investigation(investigation_id)
 
 
 def _build_policy_assessor(settings: Settings) -> PolicyAssessmentService:

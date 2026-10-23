@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from pydantic import BaseModel, ConfigDict
@@ -29,6 +30,24 @@ _UNAUTHORIZED_RESPONSE = {
     "content": {
         "application/json": {
             "example": {"detail": "Invalid or missing API key"},
+        }
+    },
+}
+
+_NOT_FOUND_RESPONSE = {
+    "description": "Investigation not found",
+    "content": {
+        "application/json": {
+            "example": {"detail": "Investigation not found"},
+        }
+    },
+}
+
+_RETRIEVAL_UNAVAILABLE_RESPONSE = {
+    "description": "Investigation could not be retrieved",
+    "content": {
+        "application/json": {
+            "example": {"detail": "Investigation could not be retrieved"},
         }
     },
 }
@@ -131,6 +150,40 @@ def create_app(
         if not result.persistence.succeeded:
             response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return result
+
+    @application.get(
+        "/investigations/{investigation_id}",
+        response_model=dict[str, Any],
+        tags=["investigations"],
+        dependencies=[Depends(require_api_key)],
+        responses={
+            status.HTTP_401_UNAUTHORIZED: _UNAUTHORIZED_RESPONSE,
+            status.HTTP_404_NOT_FOUND: _NOT_FOUND_RESPONSE,
+            status.HTTP_503_SERVICE_UNAVAILABLE: _RETRIEVAL_UNAVAILABLE_RESPONSE,
+        },
+    )
+    def get_investigation(investigation_id: str) -> dict[str, Any]:
+        try:
+            record = service.get_investigation(investigation_id)
+        except Exception as exc:
+            logger.exception(
+                "investigation_retrieval_failed",
+                extra={
+                    "event": "investigation_retrieval_failed",
+                    "investigation_id": investigation_id,
+                },
+            )
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Investigation could not be retrieved",
+            ) from exc
+
+        if record is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Investigation not found",
+            )
+        return record
 
     return application
 

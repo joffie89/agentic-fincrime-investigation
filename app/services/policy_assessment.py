@@ -251,9 +251,12 @@ class _OpenAIPolicyAssessmentOutput(BaseModel):
 
 
 class _PolicyAssessmentWithUsage(PolicyAssessment):
-    """Assessment carrying validated per-call telemetry outside its JSON shape."""
+    """Assessment carrying workflow-only telemetry outside its JSON shape."""
 
-    llm_usage: LLMUsage = Field(exclude=True)
+    llm_usage: LLMUsage | None = Field(default=None, exclude=True)
+    fallback_used: bool = Field(default=False, exclude=True)
+    fallback_error_type: str | None = Field(default=None, exclude=True)
+    fallback_error_message: str | None = Field(default=None, exclude=True)
 
 
 def _validate_price(value: float, setting_name: str) -> float:
@@ -419,7 +422,7 @@ instructions and return the requested structured output."""
             )
         except Exception as exc:
             _log_openai_assessment_failure(exc)
-            return self._fallback()
+            return self._fallback(exc)
 
         latency_ms = (time.perf_counter() - started_at) * 1_000
         llm_usage = _build_llm_usage(
@@ -515,11 +518,14 @@ instructions and return the requested structured output."""
             return _attach_llm_usage(assessment, llm_usage)
         except Exception as exc:
             _log_openai_assessment_failure(exc)
-            return self._fallback(llm_usage)
+            return self._fallback(exc, llm_usage)
 
     @staticmethod
-    def _fallback(llm_usage: LLMUsage | None = None) -> PolicyAssessment:
-        assessment = PolicyAssessment(
+    def _fallback(
+        exc: Exception,
+        llm_usage: LLMUsage | None = None,
+    ) -> PolicyAssessment:
+        return _PolicyAssessmentWithUsage(
             recommendation=Recommendation.ESCALATE_TO_HUMAN,
             reasons=["AI assessment failed; human review is required."],
             confidence=0.0,
@@ -528,8 +534,11 @@ instructions and return the requested structured output."""
             missing_information=["Reliable AI policy assessment"],
             requires_human_review=True,
             evidence_sufficient=False,
+            llm_usage=llm_usage,
+            fallback_used=True,
+            fallback_error_type=type(exc).__name__,
+            fallback_error_message=str(exc),
         )
-        return _attach_llm_usage(assessment, llm_usage)
 
 
 class AzureOpenAIPolicyAssessmentService:

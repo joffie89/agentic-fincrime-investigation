@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
+import pytest
+
 from app.models.domain import (
     GraphAnalysisResult,
     InvestigationStatus,
@@ -24,6 +28,11 @@ class StaticGraphAnalyzer:
 
     def analyze(self, _transaction):
         return self.result
+
+
+class FailingGraphAnalyzer:
+    def analyze(self, _transaction):
+        raise RuntimeError("graph analysis exploded")
 
 
 class StaticRelationshipAnomalyScorer:
@@ -131,6 +140,113 @@ def test_low_risk_routes_to_completed(
     assert result.relationship_anomaly.is_anomalous is False
     assert result.persistence.succeeded is True
     assert len(repository.records) == 1
+
+
+def test_successful_investigation_persists_complete_audit_trail(
+    transaction_factory, clean_graph_result, retrieved_policy
+):
+    repository = InMemoryInvestigationRepository()
+    assessment = PolicyAssessment(
+        recommendation=Recommendation.CLEAR,
+        reasons=["The available evidence supports clearing the payment."],
+        confidence=0.95,
+        policy_references=[retrieved_policy.policy_id],
+        policies_considered=[],
+        missing_information=[],
+        requires_human_review=False,
+        evidence_sufficient=True,
+    )
+    workflow = build_workflow(
+        graph_result=clean_graph_result,
+        policies=[retrieved_policy],
+        assessor=StaticAssessor(assessment),
+        repository=repository,
+    )
+    transaction = transaction_factory(transaction_id="txn-audit-success")
+
+    result = workflow.invoke(transaction)
+
+    record = repository.records[0]
+    assert record["investigation_id"] == result.investigation_id
+    assert record["transaction"] == transaction.model_dump(mode="json")
+    assert record["risk_assessment"] == result.risk_assessment.model_dump(mode="json")
+    assert record["graph_analysis"] == clean_graph_result.model_dump(mode="json")
+    assert record["relationship_anomaly"] == (
+        result.relationship_anomaly.model_dump(mode="json")
+    )
+    assert record["retrieved_policies"] == [
+        {
+            "policy_id": retrieved_policy.policy_id,
+            "chunk_id": retrieved_policy.chunk_id,
+            "relevance_score": retrieved_policy.relevance_score,
+        }
+    ]
+    assert record["policy_assessment"] == assessment.model_dump(mode="json")
+    assert record["routing"]["decision"] == "complete"
+    assert record["routing"]["triggered_rule"]
+    assert record["routing"]["triggered_rule"] in record["routing"][
+        "triggered_rules"
+    ]
+    assert record["llm_usage"] is None
+    assert record["errors"] == []
+    assert record["fallbacks"] == []
+
+    expected_steps = {
+        "risk_assessment",
+        "graph_analysis",
+        "relationship_anomaly_scoring",
+        "policy_retrieval",
+        "policy_validation",
+        "routing_decision",
+        "finalize",
+        "persist",
+    }
+    assert expected_steps <= record["workflow_steps"].keys()
+    for step_name in expected_steps:
+        step = record["workflow_steps"][step_name]
+        assert step["status"] == "completed"
+        assert datetime.fromisoformat(step["started_at"]).tzinfo is not None
+        assert datetime.fromisoformat(step["completed_at"]).tzinfo is not None
+
+
+def test_graph_failure_persists_partial_audit_trail(
+    transaction_factory, retrieved_policy
+):
+    repository = InMemoryInvestigationRepository()
+    workflow = InvestigationWorkflow(
+        risk_assessor=assess_transaction,
+        graph_analyzer=FailingGraphAnalyzer(),
+        policy_retriever=StaticRetriever([retrieved_policy]),
+        policy_assessor=DemoPolicyAssessmentService(),
+        repository=repository,
+        retrieval_top_k=3,
+        human_review_confidence_threshold=0.6,
+        relationship_anomaly_scorer=StaticRelationshipAnomalyScorer(
+            (-0.1, False)
+        ),
+    )
+    transaction = transaction_factory(transaction_id="txn-audit-partial")
+
+    with pytest.raises(RuntimeError, match="graph analysis exploded"):
+        workflow.invoke(transaction)
+
+    assert len(repository.records) == 1
+    record = repository.records[0]
+    assert record["transaction"] == transaction.model_dump(mode="json")
+    assert record["risk_assessment"] is not None
+    assert record["graph_analysis"] is None
+    assert record["relationship_anomaly"] is None
+    assert record["retrieved_policies"] == []
+    assert record["policy_assessment"] is None
+    assert record["recommendation"] is None
+    assert record["status"] == InvestigationStatus.FAILED.value
+    assert record["routing"]["decision"] == "failed"
+    assert record["routing"]["triggered_rule"] == "graph_analysis_failed"
+    assert record["workflow_steps"]["risk_assessment"]["status"] == "completed"
+    assert record["workflow_steps"]["graph_analysis"]["status"] == "failed"
+    assert any("RuntimeError" in error for error in record["errors"])
+    assert any("graph analysis exploded" in error for error in record["errors"])
+    assert record["fallbacks"] == []
 
 
 def test_high_risk_routes_to_human_review(
@@ -344,10 +460,12 @@ def test_relationship_anomaly_disagreement_routes_to_human_review(
 def test_provider_failure_uses_safe_validated_fallback(
     transaction_factory, clean_graph_result, retrieved_policy
 ):
+    repository = InMemoryInvestigationRepository()
     workflow = build_workflow(
         graph_result=clean_graph_result,
         policies=[retrieved_policy],
         assessor=FailingAssessor(),
+        repository=repository,
     )
 
     result = workflow.invoke(transaction_factory())
@@ -358,6 +476,11 @@ def test_provider_failure_uses_safe_validated_fallback(
     assert result.policy_assessment.evidence_sufficient is False
     assert result.policy_assessment.policy_references == []
     assert result.policy_assessment.policies_considered == [retrieved_policy.policy_id]
+    record = repository.records[0]
+    assert record["fallbacks"]
+    assert record["fallbacks"][0]["step"] == "policy_validation"
+    assert "provider unavailable" in record["fallbacks"][0]["message"]
+    assert any("provider unavailable" in error for error in record["errors"])
 
 
 def test_persistence_failure_is_reported_truthfully(

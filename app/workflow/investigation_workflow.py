@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from datetime import UTC, datetime
 from typing import Any, Callable, Protocol
 from uuid import uuid4
@@ -43,6 +44,8 @@ class RelationshipAnomalyScorerProtocol(Protocol):
 class InvestigationRepositoryProtocol(Protocol):
     def save(self, record: dict[str, Any]) -> PersistenceResult: ...
 
+    def get(self, investigation_id: str) -> dict[str, Any] | None: ...
+
 
 class InvestigationWorkflow:
     """Small, explainable graph whose compiled graph is invoked per request."""
@@ -79,16 +82,41 @@ class InvestigationWorkflow:
 
     def _compile_graph(self) -> Any:
         builder = StateGraph(InvestigationState)
-        builder.add_node("risk_assessment", self._risk_assessment_node)
-        builder.add_node("graph_analysis", self._graph_analysis_node)
+        builder.add_node(
+            "risk_assessment",
+            self._timed_node("risk_assessment", self._risk_assessment_node),
+        )
+        builder.add_node(
+            "graph_analysis",
+            self._timed_node("graph_analysis", self._graph_analysis_node),
+        )
         builder.add_node(
             "relationship_anomaly_scoring",
-            self._relationship_anomaly_scoring_node,
+            self._timed_node(
+                "relationship_anomaly_scoring",
+                self._relationship_anomaly_scoring_node,
+            ),
         )
-        builder.add_node("policy_retrieval", self._policy_retrieval_node)
-        builder.add_node("policy_validation", self._policy_validation_node)
-        builder.add_node("human_review_required", self._human_review_node)
-        builder.add_node("finalize", self._finalize_node)
+        builder.add_node(
+            "policy_retrieval",
+            self._timed_node("policy_retrieval", self._policy_retrieval_node),
+        )
+        builder.add_node(
+            "policy_validation",
+            self._timed_node("policy_validation", self._policy_validation_node),
+        )
+        builder.add_node(
+            "routing_decision",
+            self._timed_node("routing_decision", self._routing_decision_node),
+        )
+        builder.add_node(
+            "human_review_required",
+            self._timed_node("human_review_required", self._human_review_node),
+        )
+        builder.add_node(
+            "finalize",
+            self._timed_node("finalize", self._finalize_node),
+        )
         builder.add_node("persist", self._persistence_node)
 
         builder.add_edge(START, "risk_assessment")
@@ -96,8 +124,9 @@ class InvestigationWorkflow:
         builder.add_edge("graph_analysis", "relationship_anomaly_scoring")
         builder.add_edge("relationship_anomaly_scoring", "policy_retrieval")
         builder.add_edge("policy_retrieval", "policy_validation")
+        builder.add_edge("policy_validation", "routing_decision")
         builder.add_conditional_edges(
-            "policy_validation",
+            "routing_decision",
             self._route_after_policy_validation,
             {
                 "human_review": "human_review_required",
@@ -108,6 +137,92 @@ class InvestigationWorkflow:
         builder.add_edge("finalize", "persist")
         builder.add_edge("persist", END)
         return builder.compile()
+
+    def _timed_node(
+        self,
+        step_name: str,
+        node: Callable[[InvestigationState], dict[str, Any]],
+    ) -> Callable[[InvestigationState], dict[str, Any]]:
+        """Record step timing and persist a partial audit record on failure."""
+
+        def invoke_node(state: InvestigationState) -> dict[str, Any]:
+            started_at = datetime.now(UTC)
+            started_counter = time.perf_counter()
+            try:
+                updates = node(state)
+            except Exception as exc:
+                completed_at = datetime.now(UTC)
+                step = self._step_timing(
+                    started_at,
+                    completed_at,
+                    started_counter,
+                    status="failed",
+                    error=exc,
+                )
+                error = (
+                    f"{step_name} failed with {type(exc).__name__}: {exc}"
+                )
+                failure_rule = f"{step_name}_failed"
+                failed_state: InvestigationState = {
+                    **state,
+                    "status": InvestigationStatus.FAILED,
+                    "requires_human_review": True,
+                    "routing": {
+                        "decision": "failed",
+                        "triggered_rule": failure_rule,
+                        "triggered_rules": [failure_rule],
+                    },
+                    "workflow_steps": {
+                        **state.get("workflow_steps", {}),
+                        step_name: step,
+                    },
+                    "audit_events": [
+                        *state.get("audit_events", []),
+                        f"{step_name}_failed",
+                    ],
+                    "errors": [*state.get("errors", []), error],
+                }
+                self._persist_partial_failure(failed_state)
+                raise
+
+            completed_at = datetime.now(UTC)
+            return {
+                **updates,
+                "workflow_steps": {
+                    **state.get("workflow_steps", {}),
+                    step_name: self._step_timing(
+                        started_at,
+                        completed_at,
+                        started_counter,
+                        status="completed",
+                    ),
+                },
+            }
+
+        return invoke_node
+
+    @staticmethod
+    def _step_timing(
+        started_at: datetime,
+        completed_at: datetime,
+        started_counter: float,
+        *,
+        status: str,
+        error: Exception | None = None,
+    ) -> dict[str, Any]:
+        timing: dict[str, Any] = {
+            "started_at": started_at.isoformat(),
+            "completed_at": completed_at.isoformat(),
+            "duration_ms": round(
+                max(0.0, (time.perf_counter() - started_counter) * 1_000),
+                1,
+            ),
+            "status": status,
+        }
+        if error is not None:
+            timing["error_type"] = type(error).__name__
+            timing["error_message"] = str(error)
+        return timing
 
     def _risk_assessment_node(self, state: InvestigationState) -> dict[str, Any]:
         assessment = self._risk_assessor(state["transaction"])
@@ -159,12 +274,45 @@ class InvestigationWorkflow:
                 state.get("retrieved_policies", []),
                 state.get("relationship_anomaly"),
             )
-            events = [*state.get("audit_events", []), "policy_assessment_completed"]
-            return {
+            updates: dict[str, Any] = {
                 "policy_assessment": assessment,
                 "llm_usage": getattr(assessment, "llm_usage", None),
-                "audit_events": events,
+                "audit_events": [
+                    *state.get("audit_events", []),
+                    "policy_assessment_completed",
+                ],
             }
+            if getattr(assessment, "fallback_used", False):
+                error_type = getattr(
+                    assessment,
+                    "fallback_error_type",
+                    "PolicyAssessmentError",
+                )
+                message = getattr(
+                    assessment,
+                    "fallback_error_message",
+                    "AI policy assessment failed",
+                )
+                fallback = self._fallback_entry(
+                    error_type=error_type or "PolicyAssessmentError",
+                    message=message or "AI policy assessment failed",
+                )
+                updates["fallbacks"] = [
+                    *state.get("fallbacks", []),
+                    fallback,
+                ]
+                updates["errors"] = [
+                    *state.get("errors", []),
+                    (
+                        "policy_validation used fallback after "
+                        f"{fallback['error_type']}: {fallback['message']}"
+                    ),
+                ]
+                updates["audit_events"] = [
+                    *state.get("audit_events", []),
+                    "policy_assessment_fallback",
+                ]
+            return updates
         except PolicyAssessmentError as exc:
             logger.exception(
                 "policy_assessment_failed",
@@ -183,39 +331,91 @@ class InvestigationWorkflow:
                 requires_human_review=True,
                 evidence_sufficient=False,
             )
+            fallback_entry = self._fallback_entry(
+                error_type=type(exc).__name__,
+                message=str(exc),
+            )
             return {
                 "policy_assessment": fallback,
                 "llm_usage": exc.llm_usage,
-                "audit_events": [*state.get("audit_events", []), "policy_assessment_failed"],
-                "errors": [*state.get("errors", []), str(exc)],
+                "audit_events": [
+                    *state.get("audit_events", []),
+                    "policy_assessment_fallback",
+                ],
+                "errors": [
+                    *state.get("errors", []),
+                    f"policy_validation used fallback after {type(exc).__name__}: {exc}",
+                ],
+                "fallbacks": [
+                    *state.get("fallbacks", []),
+                    fallback_entry,
+                ],
             }
 
-    def _route_after_policy_validation(self, state: InvestigationState) -> str:
+    @staticmethod
+    def _fallback_entry(*, error_type: str, message: str) -> dict[str, str]:
+        return {
+            "step": "policy_validation",
+            "error_type": error_type,
+            "message": message,
+            "occurred_at": datetime.now(UTC).isoformat(),
+        }
+
+    def _routing_decision_node(
+        self,
+        state: InvestigationState,
+    ) -> dict[str, Any]:
         risk = state["risk_assessment"]
         graph = state["graph_analysis"]
         assessment = state["policy_assessment"]
-        conflicting_signals = graph.suspicious and risk.risk_level is RiskLevel.LOW
-        relationship_anomaly_disagreement = self._relationship_anomaly_disagreement(
-            state
+        triggered_rules: list[str] = []
+
+        def add_rule(rule: str) -> None:
+            if rule not in triggered_rules:
+                triggered_rules.append(rule)
+
+        if risk.risk_level is RiskLevel.HIGH:
+            add_rule("high_risk_requires_human_review")
+        if risk.risk_level is RiskLevel.MEDIUM:
+            if assessment.recommendation is not Recommendation.CLEAR:
+                add_rule("medium_risk_assessment_not_clear")
+            if assessment.confidence < 0.9:
+                add_rule("medium_risk_confidence_below_0_9")
+            if not assessment.evidence_sufficient:
+                add_rule("medium_risk_evidence_insufficient")
+        if assessment.confidence < self._confidence_threshold:
+            add_rule("assessment_confidence_below_threshold")
+        if not assessment.evidence_sufficient:
+            add_rule("insufficient_policy_evidence")
+        if assessment.requires_human_review:
+            add_rule("policy_assessment_requires_human_review")
+        if graph.suspicious and risk.risk_level is RiskLevel.LOW:
+            add_rule("graph_risk_conflict")
+        if self._relationship_anomaly_disagreement(state):
+            add_rule("relationship_anomaly_disagreement")
+
+        decision = "human_review" if triggered_rules else "complete"
+        if not triggered_rules:
+            triggered_rules.append("automatic_completion_criteria_met")
+        routing = {
+            "decision": decision,
+            "triggered_rule": triggered_rules[0],
+            "triggered_rules": triggered_rules,
+        }
+        return {
+            "routing": routing,
+            "audit_events": [
+                *state.get("audit_events", []),
+                f"routing_decision_{decision}",
+            ],
+        }
+
+    def _route_after_policy_validation(self, state: InvestigationState) -> str:
+        return (
+            "human_review"
+            if state["routing"]["decision"] == "human_review"
+            else "complete"
         )
-        medium_risk_cannot_complete_automatically = (
-            risk.risk_level is RiskLevel.MEDIUM
-            and (
-                assessment.recommendation is not Recommendation.CLEAR
-                or assessment.confidence < 0.9
-                or not assessment.evidence_sufficient
-            )
-        )
-        requires_review = (
-            risk.risk_level is RiskLevel.HIGH
-            or medium_risk_cannot_complete_automatically
-            or assessment.confidence < self._confidence_threshold
-            or not assessment.evidence_sufficient
-            or assessment.requires_human_review
-            or conflicting_signals
-            or relationship_anomaly_disagreement
-        )
-        return "human_review" if requires_review else "complete"
 
     @staticmethod
     def _relationship_anomaly_disagreement(state: InvestigationState) -> bool:
@@ -281,18 +481,19 @@ class InvestigationWorkflow:
         }
 
     def _persistence_node(self, state: InvestigationState) -> dict[str, Any]:
-        record = self._record_from_state(state)
         try:
+            persistence_state = self._state_with_persistence_audit(state)
+            record = self._record_from_state(persistence_state)
             result = self._repository.save(record)
-        except Exception as exc:
+        except Exception:
             logger.exception(
                 "investigation_persistence_failed",
                 extra={"investigation_id": state["investigation_id"]},
             )
             result = PersistenceResult(
                 succeeded=False,
-                backend=type(self._repository).__name__,
-                error=str(exc),
+                backend=self._repository_backend(),
+                error="Investigation could not be saved",
             )
         updates: dict[str, Any] = {
             "persistence": result,
@@ -306,6 +507,67 @@ class InvestigationWorkflow:
             if result.error:
                 updates["errors"] = [*state.get("errors", []), result.error]
         return updates
+
+    def _state_with_persistence_audit(
+        self,
+        state: InvestigationState,
+    ) -> InvestigationState:
+        """Prepare the canonical record written by a successful save."""
+
+        started_at = datetime.now(UTC)
+        started_counter = time.perf_counter()
+        completed_at = datetime.now(UTC)
+        return {
+            **state,
+            "persistence": PersistenceResult(
+                succeeded=True,
+                backend=self._repository_backend(),
+            ),
+            "workflow_steps": {
+                **state.get("workflow_steps", {}),
+                "persist": self._step_timing(
+                    started_at,
+                    completed_at,
+                    started_counter,
+                    status="completed",
+                ),
+            },
+            "audit_events": [
+                *state.get("audit_events", []),
+                "persistence_succeeded",
+            ],
+        }
+
+    def _persist_partial_failure(self, state: InvestigationState) -> None:
+        """Best-effort persistence that never hides the original step error."""
+
+        try:
+            persistence_state = self._state_with_persistence_audit(state)
+            record = self._record_from_state(persistence_state)
+            result = self._repository.save(record)
+        except Exception:
+            logger.exception(
+                "partial_investigation_persistence_failed",
+                extra={
+                    "event": "partial_investigation_persistence_failed",
+                    "investigation_id": state["investigation_id"],
+                },
+            )
+            return
+        if not result.succeeded:
+            logger.error(
+                "partial_investigation_persistence_failed",
+                extra={
+                    "event": "partial_investigation_persistence_failed",
+                    "investigation_id": state["investigation_id"],
+                    "backend": result.backend,
+                },
+            )
+
+    def _repository_backend(self) -> str:
+        return str(
+            getattr(self._repository, "backend", type(self._repository).__name__)
+        )
 
     @staticmethod
     def _build_policy_query(state: InvestigationState) -> str:
@@ -324,27 +586,82 @@ class InvestigationWorkflow:
 
     @staticmethod
     def _record_from_state(state: InvestigationState) -> dict[str, Any]:
+        transaction = state["transaction"]
+        risk = state.get("risk_assessment")
+        graph = state.get("graph_analysis")
+        relationship_anomaly = state.get("relationship_anomaly")
+        policy_assessment = state.get("policy_assessment")
+        recommendation = state.get("recommendation")
+        persistence = state.get("persistence")
+        status_value = (
+            state["status"].value if state.get("status") is not None else None
+        )
+        retrieved_policies = [
+            {
+                "policy_id": item.policy_id,
+                "chunk_id": item.chunk_id,
+                "relevance_score": item.relevance_score,
+            }
+            for item in state.get("retrieved_policies", [])
+        ]
         return {
+            "schema_version": 1,
             "investigation_id": state["investigation_id"],
-            "transaction_id": state["transaction"].transaction_id,
-            "risk_score": state["risk_assessment"].risk_score,
-            "risk_level": state["risk_assessment"].risk_level.value,
-            "risk_reasons": state["risk_assessment"].risk_reasons,
-            "graph_signals": state["graph_analysis"].model_dump(mode="json"),
-            "retrieved_policy_references": [
-                item.policy_id for item in state.get("retrieved_policies", [])
-            ],
-            "recommendation": state["recommendation"].recommendation.value,
-            "human_review_required": state["requires_human_review"],
-            "status": state["status"].value,
-            "created_at": state["created_at"].isoformat(),
+            "transaction_id": transaction.transaction_id,
+            "transaction": transaction.model_dump(mode="json"),
+            "risk_assessment": (
+                risk.model_dump(mode="json") if risk is not None else None
+            ),
+            "graph_analysis": (
+                graph.model_dump(mode="json") if graph is not None else None
+            ),
+            "relationship_anomaly": (
+                relationship_anomaly.model_dump(mode="json")
+                if relationship_anomaly is not None
+                else None
+            ),
+            "retrieved_policies": retrieved_policies,
+            "policy_assessment": (
+                policy_assessment.model_dump(mode="json")
+                if policy_assessment is not None
+                else None
+            ),
+            "routing": state.get("routing"),
+            "recommendation": (
+                recommendation.model_dump(mode="json")
+                if recommendation is not None
+                else None
+            ),
+            "requires_human_review": state.get("requires_human_review"),
+            "status": status_value,
             "llm_usage": (
                 state["llm_usage"].model_dump(mode="json")
                 if state.get("llm_usage") is not None
                 else None
             ),
+            "workflow_steps": state.get("workflow_steps", {}),
+            "persistence": (
+                persistence.model_dump(mode="json")
+                if persistence is not None
+                else None
+            ),
+            "created_at": state["created_at"].isoformat(),
+            "updated_at": datetime.now(UTC).isoformat(),
             "audit_events": state.get("audit_events", []),
             "errors": state.get("errors", []),
+            "fallbacks": state.get("fallbacks", []),
+            # Keep the summary fields used by the PostgreSQL table alongside
+            # the complete JSON record for backwards-compatible indexing.
+            "risk_score": risk.risk_score if risk is not None else None,
+            "risk_level": risk.risk_level.value if risk is not None else None,
+            "risk_reasons": risk.risk_reasons if risk is not None else [],
+            "graph_signals": (
+                graph.model_dump(mode="json") if graph is not None else {}
+            ),
+            "retrieved_policy_references": [
+                item.policy_id for item in state.get("retrieved_policies", [])
+            ],
+            "human_review_required": state.get("requires_human_review", False),
         }
 
     def invoke(self, transaction: Transaction) -> InvestigationResponse:
@@ -356,6 +673,8 @@ class InvestigationWorkflow:
             "transaction": transaction,
             "audit_events": ["investigation_started"],
             "errors": [],
+            "fallbacks": [],
+            "workflow_steps": {},
         }
         final_state: InvestigationState = self.graph.invoke(initial_state)
         recommendation = final_state["recommendation"]
@@ -375,3 +694,8 @@ class InvestigationWorkflow:
             persistence=final_state["persistence"],
             created_at=final_state["created_at"],
         )
+
+    def get_investigation(self, investigation_id: str) -> dict[str, Any] | None:
+        """Return the persisted audit record for ``investigation_id``."""
+
+        return self._repository.get(investigation_id)

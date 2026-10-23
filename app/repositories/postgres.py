@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+from copy import deepcopy
 from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any
@@ -70,6 +71,13 @@ ON CONFLICT (investigation_id) DO UPDATE SET
     status = EXCLUDED.status,
     updated_at = EXCLUDED.updated_at,
     full_record = EXCLUDED.full_record
+"""
+
+
+_SELECT_SQL = """
+SELECT full_record
+FROM investigations
+WHERE investigation_id = %s
 """
 
 
@@ -209,6 +217,81 @@ class PostgresInvestigationRepository:
             },
         )
         return PersistenceResult(succeeded=True, backend=self.backend)
+
+    def get(self, investigation_id: str) -> dict[str, Any] | None:
+        """Retrieve the complete JSON audit record by investigation ID."""
+
+        if not investigation_id or not investigation_id.strip():
+            return None
+
+        if psycopg is None:
+            logger.error(
+                "PostgreSQL investigation retrieval unavailable",
+                extra={
+                    "event": "persistence_retrieval_failed",
+                    "backend": self.backend,
+                    "investigation_id": investigation_id,
+                },
+            )
+            raise RuntimeError("Investigation could not be retrieved")
+
+        connection: Any | None = None
+        try:
+            connection = psycopg.connect(self._database_url, connect_timeout=5)
+            with connection.cursor() as cursor:
+                # A fresh database should return a normal not-found result rather
+                # than exposing a missing-table error to the API caller.
+                cursor.execute(_CREATE_TABLE_SQL)
+                cursor.execute(_SELECT_SQL, (investigation_id,))
+                row = cursor.fetchone()
+            connection.commit()
+
+            if row is None:
+                return None
+
+            payload = row[0]
+            if isinstance(payload, bytes):
+                payload = payload.decode("utf-8")
+            if isinstance(payload, str):
+                payload = json.loads(payload)
+            if not isinstance(payload, dict):
+                raise ValueError("Stored investigation record is not a JSON object")
+            return deepcopy(_as_dict(payload))
+        except Exception as exc:
+            if connection is not None:
+                try:
+                    connection.rollback()
+                except Exception:
+                    logger.exception(
+                        "PostgreSQL rollback failed after retrieval",
+                        extra={
+                            "event": "persistence_retrieval_rollback_failed",
+                            "backend": self.backend,
+                            "investigation_id": investigation_id,
+                        },
+                    )
+            logger.exception(
+                "PostgreSQL investigation retrieval failed",
+                extra={
+                    "event": "persistence_retrieval_failed",
+                    "backend": self.backend,
+                    "investigation_id": investigation_id,
+                },
+            )
+            raise RuntimeError("Investigation could not be retrieved") from exc
+        finally:
+            if connection is not None:
+                try:
+                    connection.close()
+                except Exception:
+                    logger.exception(
+                        "PostgreSQL connection close failed after retrieval",
+                        extra={
+                            "event": "persistence_retrieval_close_failed",
+                            "backend": self.backend,
+                            "investigation_id": investigation_id,
+                        },
+                    )
 
     @staticmethod
     def _parameters(record: dict[str, Any]) -> tuple[Any, ...]:

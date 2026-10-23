@@ -64,6 +64,11 @@ class RaisingService:
         raise RuntimeError("internal details must not leak")
 
 
+class RaisingRetrievalService:
+    def get_investigation(self, _investigation_id):
+        raise RuntimeError("database host and username must not leak")
+
+
 def transaction_payload(**updates):
     payload = {
         "transaction_id": "txn-api-low",
@@ -194,6 +199,24 @@ def test_openapi_documents_api_key_authentication():
                 }
             },
         }
+    get_operation = schema["paths"]["/investigations/{investigation_id}"]["get"]
+    assert {scheme_name: []} in get_operation["security"]
+    assert get_operation["responses"]["401"] == {
+        "description": "Invalid or missing API key",
+        "content": {
+            "application/json": {
+                "example": {"detail": "Invalid or missing API key"}
+            }
+        },
+    }
+    assert get_operation["responses"]["404"] == {
+        "description": "Investigation not found",
+        "content": {
+            "application/json": {
+                "example": {"detail": "Investigation not found"}
+            }
+        },
+    }
     assert "security" not in schema["paths"]["/health"]["get"]
 
 
@@ -226,6 +249,67 @@ def test_correct_api_key_works(path, api_key_headers):
     )
 
     assert response.status_code == 200
+
+
+def test_get_investigation_returns_complete_persisted_record(api_key_headers):
+    repository = InMemoryInvestigationRepository()
+    client = client_for(service(repository=repository))
+    create_response = client.post(
+        "/investigate",
+        json=transaction_payload(transaction_id="txn-api-audit"),
+        headers=api_key_headers,
+    )
+    investigation_id = create_response.json()["investigation_id"]
+
+    response = client.get(
+        f"/investigations/{investigation_id}",
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["investigation_id"] == investigation_id
+    assert body["transaction"]["transaction_id"] == "txn-api-audit"
+    assert body["risk_assessment"]["risk_level"] == "LOW"
+    assert body["retrieved_policies"][0]["policy_id"] == "DEMO-AML-001"
+
+
+def test_get_investigation_returns_404_when_missing(api_key_headers):
+    response = client_for(service()).get(
+        "/investigations/missing-investigation",
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Investigation not found"}
+
+
+def test_get_investigation_requires_api_key():
+    response = client_for(service()).get("/investigations/inv-001")
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid or missing API key"}
+
+
+def test_get_investigation_rejects_wrong_api_key():
+    response = client_for(service()).get(
+        "/investigations/inv-001",
+        headers={"X-API-Key": "wrong-api-key"},
+    )
+
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Invalid or missing API key"}
+
+
+def test_get_investigation_sanitizes_repository_failure(api_key_headers):
+    response = client_for(RaisingRetrievalService()).get(
+        "/investigations/inv-001",
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "Investigation could not be retrieved"}
+    assert "database host" not in response.text
 
 
 def test_assess_risk_preserves_legacy_contract(api_key_headers):
