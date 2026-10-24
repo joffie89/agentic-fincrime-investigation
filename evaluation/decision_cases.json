@@ -302,7 +302,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-005"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-005", "DEMO-AML-006"]
     },
     {
       "name": "young account makes unusual first overseas transfer",
@@ -321,7 +321,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-005"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-005", "DEMO-AML-006"]
     },
     {
       "name": "young account combines extreme value and payment burst",
@@ -359,7 +359,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005", "DEMO-AML-006"]
     },
     {
       "name": "all deterministic risk indicators fire together",
@@ -378,7 +378,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005", "DEMO-AML-006"]
     },
     {
       "name": "newly opened account sends oversized European payment",
@@ -397,7 +397,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-005"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-005", "DEMO-AML-006"]
     },
     {
       "name": "young account rapidly sends amount far above baseline",
@@ -435,7 +435,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005", "DEMO-AML-006"]
     },
     {
       "name": "very new account shows every high-risk payment signal",
@@ -454,7 +454,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005", "DEMO-AML-006"]
     },
     {
       "name": "unusual cross-border payment from young account to new party",
@@ -473,7 +473,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-005"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-005", "DEMO-AML-006"]
     },
     {
       "name": "high-value burst from recently opened account",
@@ -511,7 +511,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005", "DEMO-AML-006"]
     },
     {
       "name": "new account makes oversized transfer after many payments",
@@ -549,7 +549,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-005"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-005", "DEMO-AML-006"]
     },
     {
       "name": "all risk rules fire on a large domestic transfer",
@@ -568,7 +568,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005", "DEMO-AML-006"]
     },
     {
       "name": "single unusual domestic payment",
@@ -604,9 +604,9 @@
         "origin_account_id": "medium-origin-002",
         "destination_account_id": "medium-destination-002"
       },
-      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-006"]
     },
     {
       "name": "young account shows a payment velocity spike",
@@ -623,7 +623,7 @@
         "origin_account_id": "medium-origin-003",
         "destination_account_id": "medium-destination-003"
       },
-      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
       "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002"]
     },
@@ -642,9 +642,9 @@
         "origin_account_id": "medium-origin-004",
         "destination_account_id": "medium-destination-004"
       },
-      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-006"]
     },
     {
       "name": "unusual amount sent to a first-time recipient",
@@ -661,9 +661,9 @@
         "origin_account_id": "medium-origin-005",
         "destination_account_id": "medium-destination-005"
       },
-      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-006"]
     },
     {
       "name": "young account sends amount well above its average",
@@ -680,7 +680,7 @@
         "origin_account_id": "medium-origin-006",
         "destination_account_id": "medium-destination-006"
       },
-      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
       "expected_policy_ids": ["DEMO-AML-001"]
     },
@@ -699,7 +699,7 @@
         "origin_account_id": "medium-origin-007",
         "destination_account_id": "medium-destination-007"
       },
-      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
       "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002"]
     },
@@ -737,9 +737,9 @@
         "origin_account_id": "medium-origin-009",
         "destination_account_id": "medium-destination-009"
       },
-      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-006"]
     },
     {
       "name": "new overseas beneficiary added during busy payment day",
@@ -756,9 +756,9 @@
         "origin_account_id": "medium-origin-010",
         "destination_account_id": "medium-destination-010"
       },
-      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-004"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-004", "DEMO-AML-006"]
     },
     {
       "name": "young customer makes many small overseas payments",
@@ -775,7 +775,7 @@
         "origin_account_id": "medium-origin-011",
         "destination_account_id": "medium-destination-011"
       },
-      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
       "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-004"]
     },
@@ -794,9 +794,9 @@
         "origin_account_id": "medium-origin-012",
         "destination_account_id": "medium-destination-012"
       },
-      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-006"]
     },
     {
       "name": "young account makes oversized cross-border transfer",
@@ -813,7 +813,7 @@
         "origin_account_id": "medium-origin-013",
         "destination_account_id": "medium-destination-013"
       },
-      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
       "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004"]
     },
@@ -832,7 +832,7 @@
         "origin_account_id": "medium-origin-014",
         "destination_account_id": "medium-destination-014"
       },
-      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
       "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-004"]
     },
@@ -853,7 +853,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-003"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-003", "DEMO-AML-006"]
     },
     {
       "name": "unusual value flows across established connected accounts",
@@ -891,7 +891,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-003"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-003", "DEMO-AML-006"]
     },
     {
       "name": "connected accounts make unusual cross-border transfer",
@@ -948,7 +948,7 @@
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
-      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-003"]
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-003", "DEMO-AML-006"]
     }
   ]
 }

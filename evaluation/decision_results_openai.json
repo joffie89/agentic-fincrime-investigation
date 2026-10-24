@@ -1,0 +1,1328 @@
+{
+  "generated_at": "2026-10-23T21:03:06.296603+00:00",
+  "dataset": "C:\\Users\\joffi\\agentic-fincrime-investigation\\evaluation\\decision_cases.json",
+  "service_mode": "openai",
+  "embedding_mode": "openai",
+  "retrieval_mode": "vector",
+  "case_count": 50,
+  "cost_scope": "Policy-assessment LLM usage only; embedding API cost is not included.",
+  "metrics": {
+    "case_count": 50,
+    "recommendation_accuracy": {
+      "correct": 37,
+      "total": 50,
+      "accuracy": 0.74
+    },
+    "human_review_routing_accuracy": {
+      "correct": 49,
+      "total": 50,
+      "accuracy": 0.98
+    },
+    "missed_escalations": {
+      "count": 1,
+      "case_names": [
+        "young account shows a payment velocity spike"
+      ]
+    },
+    "unnecessary_escalations": {
+      "count": 0,
+      "case_names": []
+    },
+    "exact_citation_match_rate": {
+      "correct": 25,
+      "total": 50,
+      "accuracy": 0.5
+    },
+    "llm_fallback_count": 0,
+    "workflow_failure_count": 0,
+    "latency_ms": {
+      "p50": 2971.2143499637023,
+      "p95": 4169.885324954521
+    },
+    "cost_usd": {
+      "total": 0.0439524,
+      "average_per_case": 0.000879048
+    }
+  },
+  "cases": [
+    {
+      "name": "routine grocery payment to established beneficiary",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 9384.97589994222,
+      "estimated_cost_usd": 0.0007612000000000001,
+      "completed": true,
+      "investigation_id": "dbcce3ca-8a6c-470c-9b73-12d981d9b848",
+      "llm_usage": {
+        "input_tokens": 1335,
+        "output_tokens": 142,
+        "latency_ms": 5905.5,
+        "estimated_cost_usd": 0.0007612000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "normal monthly rent transfer",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 4216.231500031427,
+      "estimated_cost_usd": 0.000768,
+      "completed": true,
+      "investigation_id": "f42b2c50-5478-4f04-b738-b6f00bbf81f9",
+      "llm_usage": {
+        "input_tokens": 1336,
+        "output_tokens": 146,
+        "latency_ms": 3786.9,
+        "estimated_cost_usd": 0.000768
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "larger but proportionate household purchase",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 2902.9765999875963,
+      "estimated_cost_usd": 0.0007624000000000001,
+      "completed": true,
+      "investigation_id": "a0b8a3d0-cb6e-43d9-9117-a202a69fe1c9",
+      "llm_usage": {
+        "input_tokens": 1334,
+        "output_tokens": 143,
+        "latency_ms": 1944.3,
+        "estimated_cost_usd": 0.0007624000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "payment exactly at unusual amount boundary",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 2485.4023999068886,
+      "estimated_cost_usd": 0.0007576,
+      "completed": true,
+      "investigation_id": "389c1eb1-d33a-433a-bb79-d8a2361d2457",
+      "llm_usage": {
+        "input_tokens": 1334,
+        "output_tokens": 140,
+        "latency_ms": 2166.9,
+        "estimated_cost_usd": 0.0007576
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "thirty-day account with ordinary transfer",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 2932.0686000864953,
+      "estimated_cost_usd": 0.0008264000000000001,
+      "completed": true,
+      "investigation_id": "b24f6527-4420-4bad-977f-e60a473ef732",
+      "llm_usage": {
+        "input_tokens": 1334,
+        "output_tokens": 183,
+        "latency_ms": 2579.5,
+        "estimated_cost_usd": 0.0008264000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "ten routine payments in one day",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 4113.239999860525,
+      "estimated_cost_usd": 0.0007576,
+      "completed": true,
+      "investigation_id": "31f6bdd5-8a0b-4f1b-bc46-b1b0e82b83c4",
+      "llm_usage": {
+        "input_tokens": 1334,
+        "output_tokens": 140,
+        "latency_ms": 3792.2,
+        "estimated_cost_usd": 0.0007576
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "established customer utility payment",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 2933.8849000632763,
+      "estimated_cost_usd": 0.0008236000000000001,
+      "completed": true,
+      "investigation_id": "5499e809-e142-4a62-95ee-8b65a90295c9",
+      "llm_usage": {
+        "input_tokens": 1335,
+        "output_tokens": 181,
+        "latency_ms": 2602.4,
+        "estimated_cost_usd": 0.0008236000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "known supplier invoice within normal range",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 2859.51630002819,
+      "estimated_cost_usd": 0.0007652000000000001,
+      "completed": true,
+      "investigation_id": "e96e01d5-bc97-4c7a-828f-232367a6edee",
+      "llm_usage": {
+        "input_tokens": 1337,
+        "output_tokens": 144,
+        "latency_ms": 2558.2,
+        "estimated_cost_usd": 0.0007652000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "routine transfer between domestic accounts",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 2673.250700114295,
+      "estimated_cost_usd": 0.000838,
+      "completed": true,
+      "investigation_id": "c802e12d-352e-4ad0-99aa-6df54c651309",
+      "llm_usage": {
+        "input_tokens": 1335,
+        "output_tokens": 190,
+        "latency_ms": 2372.3,
+        "estimated_cost_usd": 0.000838
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "modest scheduled savings payment",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 2302.7186000254005,
+      "estimated_cost_usd": 0.0008136,
+      "completed": true,
+      "investigation_id": "6b9296b5-3ba4-421d-9f20-bbd1b8a26dab",
+      "llm_usage": {
+        "input_tokens": 1334,
+        "output_tokens": 175,
+        "latency_ms": 1999.6,
+        "estimated_cost_usd": 0.0008136
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "ordinary payroll-related domestic payment",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 3613.6771999299526,
+      "estimated_cost_usd": 0.0007636000000000001,
+      "completed": true,
+      "investigation_id": "c60a53ac-ea9a-42c4-bba8-ec2c60ab59b3",
+      "llm_usage": {
+        "input_tokens": 1337,
+        "output_tokens": 143,
+        "latency_ms": 3292.0,
+        "estimated_cost_usd": 0.0007636000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "regular council tax payment",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 2234.6665000077337,
+      "estimated_cost_usd": 0.0008108,
+      "completed": true,
+      "investigation_id": "99258faf-ce22-400e-b34f-a3fab85d7eca",
+      "llm_usage": {
+        "input_tokens": 1335,
+        "output_tokens": 173,
+        "latency_ms": 1922.9,
+        "estimated_cost_usd": 0.0008108
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "low-value payment from mature account",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 3148.209000006318,
+      "estimated_cost_usd": 0.0007643999999999999,
+      "completed": true,
+      "investigation_id": "8c3b142c-fc6c-4f71-8bce-cab2dc1b54a4",
+      "llm_usage": {
+        "input_tokens": 1335,
+        "output_tokens": 144,
+        "latency_ms": 2823.1,
+        "estimated_cost_usd": 0.0007643999999999999
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "known tradesperson payment matching history",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 2130.0999999511987,
+      "estimated_cost_usd": 0.0007704000000000001,
+      "completed": true,
+      "investigation_id": "eeec6c66-fe05-41d9-ad70-64c76f045a87",
+      "llm_usage": {
+        "input_tokens": 1334,
+        "output_tokens": 148,
+        "latency_ms": 1803.8,
+        "estimated_cost_usd": 0.0007704000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "routine card settlement to known party",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 2321.471899980679,
+      "estimated_cost_usd": 0.0007772,
+      "completed": true,
+      "investigation_id": "b5aaca24-1707-4557-8e6c-c325a359cc47",
+      "llm_usage": {
+        "input_tokens": 1335,
+        "output_tokens": 152,
+        "latency_ms": 2026.3,
+        "estimated_cost_usd": 0.0007772
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "new account sends outsized amount to new beneficiary",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 3655.2349000703543,
+      "estimated_cost_usd": 0.0009364000000000001,
+      "completed": true,
+      "investigation_id": "77c59e05-a14f-49eb-a8b6-16d7b94e77b5",
+      "llm_usage": {
+        "input_tokens": 1373,
+        "output_tokens": 242,
+        "latency_ms": 3365.7,
+        "estimated_cost_usd": 0.0009364000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "young account makes unusual first overseas transfer",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006",
+        "DEMO-AML-005"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 3713.1605001632124,
+      "estimated_cost_usd": 0.0009588000000000001,
+      "completed": true,
+      "investigation_id": "7c9da231-42f5-4672-be84-301a4b53d1ae",
+      "llm_usage": {
+        "input_tokens": 1373,
+        "output_tokens": 256,
+        "latency_ms": 3410.9,
+        "estimated_cost_usd": 0.0009588000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "young account combines extreme value and payment burst",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 4307.554899947718,
+      "estimated_cost_usd": 0.000894,
+      "completed": true,
+      "investigation_id": "12b54f37-7e32-4dcd-87d0-0f5c3937b26e",
+      "llm_usage": {
+        "input_tokens": 1383,
+        "output_tokens": 213,
+        "latency_ms": 3996.9,
+        "estimated_cost_usd": 0.000894
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "established account pays new beneficiary after velocity spike",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-006"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2972.7082999888808,
+      "estimated_cost_usd": 0.0009524000000000001,
+      "completed": true,
+      "investigation_id": "f0f5bd6b-a36f-493e-974d-58ac8e2fec45",
+      "llm_usage": {
+        "input_tokens": 1377,
+        "output_tokens": 251,
+        "latency_ms": 2651.2,
+        "estimated_cost_usd": 0.0009524000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "all deterministic risk indicators fire together",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-006"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2835.014200070873,
+      "estimated_cost_usd": 0.0009472,
+      "completed": true,
+      "investigation_id": "4690195c-1d22-4ccc-9140-86068cf177b3",
+      "llm_usage": {
+        "input_tokens": 1388,
+        "output_tokens": 245,
+        "latency_ms": 2495.9,
+        "estimated_cost_usd": 0.0009472
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "newly opened account sends oversized European payment",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006",
+        "DEMO-AML-005"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2927.215699804947,
+      "estimated_cost_usd": 0.0009828,
+      "completed": true,
+      "investigation_id": "ee29c6ce-811d-448a-ac69-ecd2a583c8ea",
+      "llm_usage": {
+        "input_tokens": 1373,
+        "output_tokens": 271,
+        "latency_ms": 2577.1,
+        "estimated_cost_usd": 0.0009828
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "young account rapidly sends amount far above baseline",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2573.1174000538886,
+      "estimated_cost_usd": 0.0009432,
+      "completed": true,
+      "investigation_id": "36ca4a4a-d129-4a95-85c0-9c8ed03cb09a",
+      "llm_usage": {
+        "input_tokens": 1382,
+        "output_tokens": 244,
+        "latency_ms": 2275.9,
+        "estimated_cost_usd": 0.0009432
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "new payee receives oversized transfer amid rapid activity",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-006"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2778.8410000503063,
+      "estimated_cost_usd": 0.0009512,
+      "completed": true,
+      "investigation_id": "9b85fd27-7316-46b5-9611-8fb9b37702c4",
+      "llm_usage": {
+        "input_tokens": 1378,
+        "output_tokens": 250,
+        "latency_ms": 2467.5,
+        "estimated_cost_usd": 0.0009512
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "very new account shows every high-risk payment signal",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-006"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2907.974800094962,
+      "estimated_cost_usd": 0.00096,
+      "completed": true,
+      "investigation_id": "0e93715b-4d68-4d2d-b418-bc1acc7c4a3c",
+      "llm_usage": {
+        "input_tokens": 1388,
+        "output_tokens": 253,
+        "latency_ms": 2592.3,
+        "estimated_cost_usd": 0.00096
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "unusual cross-border payment from young account to new party",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 3918.458400061354,
+      "estimated_cost_usd": 0.000954,
+      "completed": true,
+      "investigation_id": "59105042-4527-4d8b-ad0e-2793da65f712",
+      "llm_usage": {
+        "input_tokens": 1373,
+        "output_tokens": 253,
+        "latency_ms": 3621.8,
+        "estimated_cost_usd": 0.000954
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "high-value burst from recently opened account",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 3032.957199960947,
+      "estimated_cost_usd": 0.0009320000000000001,
+      "completed": true,
+      "investigation_id": "a1be0b81-ede1-4e63-9a42-2ace29f1e320",
+      "llm_usage": {
+        "input_tokens": 1382,
+        "output_tokens": 237,
+        "latency_ms": 2727.8,
+        "estimated_cost_usd": 0.0009320000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "mature account suddenly pays large amount to new payee repeatedly",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-006"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 3781.635700026527,
+      "estimated_cost_usd": 0.0009788000000000002,
+      "completed": true,
+      "investigation_id": "0cd0aff6-400c-4667-9e93-b220a8bbdb9b",
+      "llm_usage": {
+        "input_tokens": 1379,
+        "output_tokens": 267,
+        "latency_ms": 3126.4,
+        "estimated_cost_usd": 0.0009788000000000002
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "new account makes oversized transfer after many payments",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 3540.5518000479788,
+      "estimated_cost_usd": 0.0009160000000000001,
+      "completed": true,
+      "investigation_id": "b844bd56-5a55-4f80-83b7-9fbdeefa61ca",
+      "llm_usage": {
+        "input_tokens": 1382,
+        "output_tokens": 227,
+        "latency_ms": 3007.2,
+        "estimated_cost_usd": 0.0009160000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "young account sends disproportionate payment abroad",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 3113.3743999525905,
+      "estimated_cost_usd": 0.0009092000000000001,
+      "completed": true,
+      "investigation_id": "cf3e575e-23fa-4d28-abf9-7a923029bc4d",
+      "llm_usage": {
+        "input_tokens": 1373,
+        "output_tokens": 225,
+        "latency_ms": 2822.9,
+        "estimated_cost_usd": 0.0009092000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "all risk rules fire on a large domestic transfer",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-006"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2956.090599996969,
+      "estimated_cost_usd": 0.0009408000000000001,
+      "completed": true,
+      "investigation_id": "8d38f474-eb03-41de-ac9b-cb81bc359a67",
+      "llm_usage": {
+        "input_tokens": 1388,
+        "output_tokens": 241,
+        "latency_ms": 2653.0,
+        "estimated_cost_usd": 0.0009408000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "single unusual domestic payment",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 3539.8130000103265,
+      "estimated_cost_usd": 0.0008316000000000002,
+      "completed": true,
+      "investigation_id": "2144f168-52b2-4b7e-8df1-2ceebe6dff43",
+      "llm_usage": {
+        "input_tokens": 1347,
+        "output_tokens": 183,
+        "latency_ms": 3236.4,
+        "estimated_cost_usd": 0.0008316000000000002
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "young account pays a new beneficiary within normal value",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 3760.48139994964,
+      "estimated_cost_usd": 0.0009644000000000001,
+      "completed": true,
+      "investigation_id": "9a0350ca-9e41-4e42-9f36-b422a12b5d7f",
+      "llm_usage": {
+        "input_tokens": 1355,
+        "output_tokens": 264,
+        "latency_ms": 3435.4,
+        "estimated_cost_usd": 0.0009644000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "young account shows a payment velocity spike",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002"
+      ],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 3105.5252000223845,
+      "estimated_cost_usd": 0.0008476000000000001,
+      "completed": true,
+      "investigation_id": "d5226228-962f-4784-9074-44c6404fbdc2",
+      "llm_usage": {
+        "input_tokens": 1347,
+        "output_tokens": 193,
+        "latency_ms": 2634.8,
+        "estimated_cost_usd": 0.0008476000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "established account adds payee during transaction burst",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002"
+      ],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 3034.0849000494927,
+      "estimated_cost_usd": 0.0007764,
+      "completed": true,
+      "investigation_id": "81c22c96-bfa5-4bcc-b56c-6df380f3b1fc",
+      "llm_usage": {
+        "input_tokens": 1361,
+        "output_tokens": 145,
+        "latency_ms": 2078.9,
+        "estimated_cost_usd": 0.0007764
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "unusual amount sent to a first-time recipient",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006",
+        "DEMO-AML-016"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2749.0369000006467,
+      "estimated_cost_usd": 0.0009096000000000001,
+      "completed": true,
+      "investigation_id": "b9b891e7-f213-4dd1-bb91-763e680789ae",
+      "llm_usage": {
+        "input_tokens": 1358,
+        "output_tokens": 229,
+        "latency_ms": 2441.4,
+        "estimated_cost_usd": 0.0009096000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "young account sends amount well above its average",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 3926.602500025183,
+      "estimated_cost_usd": 0.0009164,
+      "completed": true,
+      "investigation_id": "4ff50b70-4e7e-4c63-b896-ca4a324d0845",
+      "llm_usage": {
+        "input_tokens": 1363,
+        "output_tokens": 232,
+        "latency_ms": 3627.0,
+        "estimated_cost_usd": 0.0009164
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "large payment follows unusually busy day",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2991.5060000494123,
+      "estimated_cost_usd": 0.0008992000000000001,
+      "completed": true,
+      "investigation_id": "7b58c44f-7220-48b3-9ba3-f744b66422a9",
+      "llm_usage": {
+        "input_tokens": 1368,
+        "output_tokens": 220,
+        "latency_ms": 2708.6,
+        "estimated_cost_usd": 0.0008992000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "atypically large transfer to an overseas known payee",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2331.79960004054,
+      "estimated_cost_usd": 0.0008208000000000001,
+      "completed": true,
+      "investigation_id": "03407690-f8ad-4955-8dab-2a7dc1b2559b",
+      "llm_usage": {
+        "input_tokens": 1348,
+        "output_tokens": 176,
+        "latency_ms": 2029.5,
+        "estimated_cost_usd": 0.0008208000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "new young customer makes first cross-border payment",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 3161.7255001328886,
+      "estimated_cost_usd": 0.0009724000000000001,
+      "completed": true,
+      "investigation_id": "ce7c097a-2344-449f-824b-2839d725b06b",
+      "llm_usage": {
+        "input_tokens": 1355,
+        "output_tokens": 269,
+        "latency_ms": 2861.5,
+        "estimated_cost_usd": 0.0009724000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "new overseas beneficiary added during busy payment day",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 3824.110799934715,
+      "estimated_cost_usd": 0.0009628000000000001,
+      "completed": true,
+      "investigation_id": "e48c352b-02a7-4c8d-b226-02f7e954f29c",
+      "llm_usage": {
+        "input_tokens": 1363,
+        "output_tokens": 261,
+        "latency_ms": 3530.8,
+        "estimated_cost_usd": 0.0009628000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "young customer makes many small overseas payments",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 2969.7203999385238,
+      "estimated_cost_usd": 0.0008696000000000001,
+      "completed": true,
+      "investigation_id": "c875011f-10aa-4a9a-9f3c-a6960f1a6a8b",
+      "llm_usage": {
+        "input_tokens": 1362,
+        "output_tokens": 203,
+        "latency_ms": 2625.0,
+        "estimated_cost_usd": 0.0008696000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "large first payment to overseas recipient",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 3230.346200056374,
+      "estimated_cost_usd": 0.0009876,
+      "completed": true,
+      "investigation_id": "0e04dfc1-6a1c-4f1b-ad9c-f0bc86a5e5dd",
+      "llm_usage": {
+        "input_tokens": 1365,
+        "output_tokens": 276,
+        "latency_ms": 2929.9,
+        "estimated_cost_usd": 0.0009876
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "young account makes oversized cross-border transfer",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ],
+      "actual_policy_ids": [],
+      "llm_fallback_used": false,
+      "latency_ms": 2479.227799922228,
+      "estimated_cost_usd": 0.0008668,
+      "completed": true,
+      "investigation_id": "40e69e16-15f5-46d3-ae68-98a738d702ea",
+      "llm_usage": {
+        "input_tokens": 1363,
+        "output_tokens": 201,
+        "latency_ms": 2176.0,
+        "estimated_cost_usd": 0.0008668
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "unusual overseas payment during velocity spike",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2631.389999995008,
+      "estimated_cost_usd": 0.000926,
+      "completed": true,
+      "investigation_id": "da1eae39-225f-4b65-b50f-84f093e5f2ce",
+      "llm_usage": {
+        "input_tokens": 1359,
+        "output_tokens": 239,
+        "latency_ms": 2319.3,
+        "estimated_cost_usd": 0.000926
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "young account and new payee intersect with known network",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-003"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-003",
+        "DEMO-AML-016"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2710.356199881062,
+      "estimated_cost_usd": 0.0009412,
+      "completed": true,
+      "investigation_id": "e2c0668a-cfcd-42c2-92fa-46bec52699d8",
+      "llm_usage": {
+        "input_tokens": 1361,
+        "output_tokens": 248,
+        "latency_ms": 2414.8,
+        "estimated_cost_usd": 0.0009412
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "unusual value flows across established connected accounts",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-003"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-003"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2941.0300001036376,
+      "estimated_cost_usd": 0.0008887999999999999,
+      "completed": true,
+      "investigation_id": "26b5802e-7264-4451-9e37-08b8e772bbfa",
+      "llm_usage": {
+        "input_tokens": 1350,
+        "output_tokens": 218,
+        "latency_ms": 2620.2,
+        "estimated_cost_usd": 0.0008887999999999999
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "new payee and payment burst occur on connected account pair",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-003"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-003"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 3012.8283000085503,
+      "estimated_cost_usd": 0.0009344,
+      "completed": true,
+      "investigation_id": "27f5c4fd-7f04-4191-8142-4067d10fa0a3",
+      "llm_usage": {
+        "input_tokens": 1372,
+        "output_tokens": 241,
+        "latency_ms": 2720.5,
+        "estimated_cost_usd": 0.0009344
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "connected accounts make unusual cross-border transfer",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-003",
+        "DEMO-AML-004"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-003"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 3192.0735999010503,
+      "estimated_cost_usd": 0.0009516,
+      "completed": true,
+      "investigation_id": "2538b23d-05c2-49e4-8bff-dad02ba9482f",
+      "llm_usage": {
+        "input_tokens": 1351,
+        "output_tokens": 257,
+        "latency_ms": 2891.1,
+        "estimated_cost_usd": 0.0009516
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "young connected account exhibits rapid transaction activity",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-003"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-003"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2331.614699913189,
+      "estimated_cost_usd": 0.0008880000000000001,
+      "completed": true,
+      "investigation_id": "6cf16c03-0d59-4ab5-b64a-13fe9694b880",
+      "llm_usage": {
+        "input_tokens": 1372,
+        "output_tokens": 212,
+        "latency_ms": 2035.4,
+        "estimated_cost_usd": 0.0008880000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "oversized new-payee transfer across known connected accounts",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-003"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-003"
+      ],
+      "llm_fallback_used": false,
+      "latency_ms": 2303.800799883902,
+      "estimated_cost_usd": 0.0008803999999999999,
+      "completed": true,
+      "investigation_id": "e000f8f9-a742-4b69-8ea0-5b3010effc05",
+      "llm_usage": {
+        "input_tokens": 1361,
+        "output_tokens": 210,
+        "latency_ms": 1958.9,
+        "estimated_cost_usd": 0.0008803999999999999
+      },
+      "workflow_error": null
+    }
+  ]
+}

@@ -15,7 +15,7 @@ from typing import Any, Literal
 from pydantic import Field, StrictBool
 
 from app.config import PersistenceBackend, Settings
-from app.models.base import DomainModel, Identifier
+from app.models.base import DomainModel, Identifier, ShortText, UnitInterval
 from app.models.domain import Recommendation
 from app.models.transaction import Transaction
 from app.services.investigation_service import (
@@ -57,6 +57,12 @@ class DecisionObservation(DomainModel):
     actual_requires_human_review: StrictBool | None
     expected_policy_ids: list[Identifier]
     actual_policy_ids: list[Identifier]
+    confidence: UnitInterval | None = None
+    evidence_sufficient: StrictBool | None = None
+    routing_rule_fired: Identifier | None = None
+    policy_references: list[Identifier] = Field(default_factory=list)
+    policies_considered: list[Identifier] = Field(default_factory=list)
+    llm_reasons: list[ShortText] = Field(default_factory=list)
     llm_fallback_used: StrictBool
     latency_ms: float = Field(ge=0, allow_inf_nan=False)
     estimated_cost_usd: float = Field(ge=0, allow_inf_nan=False)
@@ -184,6 +190,16 @@ def _policy_fallback_used(audit_record: Mapping[str, Any] | None) -> bool:
     )
 
 
+def _routing_rule_fired(audit_record: Mapping[str, Any] | None) -> str | None:
+    if audit_record is None:
+        return None
+    routing = audit_record.get("routing")
+    if not isinstance(routing, Mapping):
+        return None
+    rule = routing.get("triggered_rule")
+    return rule if isinstance(rule, str) and rule else None
+
+
 def _evaluate_case(
     service: InvestigationService,
     case: DecisionEvaluationCase,
@@ -212,6 +228,12 @@ def _evaluate_case(
             actual_requires_human_review=None,
             expected_policy_ids=case.expected_policy_ids,
             actual_policy_ids=[],
+            confidence=None,
+            evidence_sufficient=None,
+            routing_rule_fired=None,
+            policy_references=[],
+            policies_considered=[],
+            llm_reasons=[],
             llm_fallback_used=False,
             latency_ms=float(latency_ms),
             estimated_cost_usd=0.0,
@@ -220,7 +242,19 @@ def _evaluate_case(
         )
 
     latency_ms = (time.perf_counter() - started_at) * 1_000
-    audit_record = service.get_investigation(result.investigation_id)
+    try:
+        audit_record = service.get_investigation(result.investigation_id)
+    except Exception as exc:
+        logger.exception(
+            "decision_evaluation_audit_lookup_failed",
+            extra={
+                "event": "decision_evaluation_audit_lookup_failed",
+                "case_name": case.name,
+                "investigation_id": result.investigation_id,
+                "exception_type": type(exc).__name__,
+            },
+        )
+        audit_record = None
     usage = (
         result.llm_usage.model_dump(mode="json")
         if result.llm_usage is not None
@@ -231,6 +265,7 @@ def _evaluate_case(
         if result.llm_usage is not None
         else 0.0
     )
+    policy_references = list(result.policy_assessment.policy_references)
     return DecisionObservation(
         name=case.name,
         expected_recommendation=case.expected_recommendation,
@@ -238,7 +273,15 @@ def _evaluate_case(
         expected_requires_human_review=case.expected_requires_human_review,
         actual_requires_human_review=result.requires_human_review,
         expected_policy_ids=case.expected_policy_ids,
-        actual_policy_ids=list(result.policy_assessment.policy_references),
+        actual_policy_ids=policy_references,
+        confidence=result.policy_assessment.confidence,
+        evidence_sufficient=result.policy_assessment.evidence_sufficient,
+        routing_rule_fired=_routing_rule_fired(audit_record),
+        policy_references=policy_references,
+        policies_considered=list(
+            result.policy_assessment.policies_considered
+        ),
+        llm_reasons=list(result.policy_assessment.reasons),
         llm_fallback_used=_policy_fallback_used(audit_record),
         latency_ms=float(latency_ms),
         estimated_cost_usd=float(cost),
