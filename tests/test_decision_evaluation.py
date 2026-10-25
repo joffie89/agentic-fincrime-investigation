@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from app.evaluation.decision_eval import (
     DecisionObservation,
+    _fallback_reason,
+    _rejected_citations,
+    _retrieval_source_ids,
     calculate_decision_metrics,
 )
 
@@ -20,13 +25,18 @@ def test_decision_metrics_cover_accuracy_escalations_latency_and_cost() -> None:
             "actual_requires_human_review": False,
             "expected_policy_ids": [],
             "actual_policy_ids": [],
+            "retrieved_policy_ids": ["POL-A"],
+            "semantic_retrieved_policy_ids": ["POL-A"],
+            "signal_included_policy_ids": [],
             "confidence": 0.98,
             "evidence_sufficient": True,
             "routing_rule_fired": "automatic_completion_criteria_met",
             "policy_references": [],
             "policies_considered": ["POL-A"],
+            "rejected_citations": [],
             "llm_reasons": ["No relevant concern was identified."],
             "llm_fallback_used": False,
+            "fallback_reason": None,
             "latency_ms": 10.0,
             "estimated_cost_usd": 0.0,
             "completed": True,
@@ -39,13 +49,18 @@ def test_decision_metrics_cover_accuracy_escalations_latency_and_cost() -> None:
             "actual_requires_human_review": False,
             "expected_policy_ids": ["POL-A"],
             "actual_policy_ids": [],
+            "retrieved_policy_ids": [],
+            "semantic_retrieved_policy_ids": [],
+            "signal_included_policy_ids": [],
             "confidence": 0.95,
             "evidence_sufficient": True,
             "routing_rule_fired": "automatic_completion_criteria_met",
             "policy_references": [],
             "policies_considered": ["POL-A"],
+            "rejected_citations": ["POL-NOT-PROVIDED"],
             "llm_reasons": ["The transaction appears routine."],
             "llm_fallback_used": True,
+            "fallback_reason": "TimeoutError: assessment timed out",
             "latency_ms": 20.0,
             "estimated_cost_usd": 0.02,
             "completed": True,
@@ -58,13 +73,18 @@ def test_decision_metrics_cover_accuracy_escalations_latency_and_cost() -> None:
             "actual_requires_human_review": True,
             "expected_policy_ids": ["POL-B"],
             "actual_policy_ids": ["POL-B"],
+            "retrieved_policy_ids": ["POL-B"],
+            "semantic_retrieved_policy_ids": [],
+            "signal_included_policy_ids": ["POL-B"],
             "confidence": 0.75,
             "evidence_sufficient": True,
             "routing_rule_fired": "medium_risk_assessment_not_clear",
             "policy_references": ["POL-B"],
             "policies_considered": [],
+            "rejected_citations": [],
             "llm_reasons": ["Additional evidence is needed."],
             "llm_fallback_used": False,
+            "fallback_reason": None,
             "latency_ms": 30.0,
             "estimated_cost_usd": 0.03,
             "completed": True,
@@ -77,13 +97,18 @@ def test_decision_metrics_cover_accuracy_escalations_latency_and_cost() -> None:
             "actual_requires_human_review": True,
             "expected_policy_ids": [],
             "actual_policy_ids": ["POL-C"],
+            "retrieved_policy_ids": ["POL-C"],
+            "semantic_retrieved_policy_ids": ["POL-C"],
+            "signal_included_policy_ids": [],
             "confidence": 0.8,
             "evidence_sufficient": True,
             "routing_rule_fired": "policy_assessment_requires_human_review",
             "policy_references": ["POL-C"],
             "policies_considered": [],
+            "rejected_citations": [],
             "llm_reasons": ["Manual review was recommended."],
             "llm_fallback_used": False,
+            "fallback_reason": None,
             "latency_ms": 40.0,
             "estimated_cost_usd": 0.05,
             "completed": True,
@@ -97,10 +122,20 @@ def test_decision_metrics_cover_accuracy_escalations_latency_and_cost() -> None:
         "total": 4,
         "accuracy": 0.5,
     }
+    assert metrics["recommendation_accuracy_excluding_fallbacks"] == {
+        "correct": 2,
+        "total": 3,
+        "accuracy": pytest.approx(2 / 3),
+    }
     assert metrics["human_review_routing_accuracy"] == {
         "correct": 2,
         "total": 4,
         "accuracy": 0.5,
+    }
+    assert metrics["human_review_routing_accuracy_excluding_fallbacks"] == {
+        "correct": 2,
+        "total": 3,
+        "accuracy": pytest.approx(2 / 3),
     }
     assert metrics["missed_escalations"] == {
         "count": 1,
@@ -116,6 +151,18 @@ def test_decision_metrics_cover_accuracy_escalations_latency_and_cost() -> None:
         "accuracy": 0.5,
     }
     assert metrics["llm_fallback_count"] == 1
+    assert metrics["llm_fallback_count_by_reason"] == {
+        "TimeoutError: assessment timed out": 1
+    }
+    assert metrics["retrieval_recall"] == {
+        "retrieved_expected_policy_count": 1,
+        "expected_policy_count": 2,
+        "missing_expected_policy_count": 1,
+        "recall": 0.5,
+        "cases_with_complete_retrieval": 3,
+        "case_count": 4,
+        "missing_policy_ids": {"POL-A": 1},
+    }
     assert metrics["workflow_failure_count"] == 0
     assert metrics["latency_ms"]["p50"] == pytest.approx(25.0)
     assert metrics["latency_ms"]["p95"] == pytest.approx(38.5)
@@ -132,13 +179,18 @@ def test_decision_observation_records_diagnostics_and_failure_defaults() -> None
         actual_requires_human_review=True,
         expected_policy_ids=["POL-A"],
         actual_policy_ids=["POL-A"],
+        retrieved_policy_ids=["POL-A", "POL-B"],
+        semantic_retrieved_policy_ids=["POL-B"],
+        signal_included_policy_ids=["POL-A"],
         confidence=0.86,
         evidence_sufficient=True,
         routing_rule_fired="medium_risk_assessment_not_clear",
         policy_references=["POL-A"],
         policies_considered=["POL-B"],
+        rejected_citations=["POL-X"],
         llm_reasons=["One risk signal needs supporting information."],
         llm_fallback_used=False,
+        fallback_reason=None,
         latency_ms=12.0,
         estimated_cost_usd=0.001,
         completed=True,
@@ -151,6 +203,11 @@ def test_decision_observation_records_diagnostics_and_failure_defaults() -> None
     )
     assert completed["policy_references"] == ["POL-A"]
     assert completed["policies_considered"] == ["POL-B"]
+    assert completed["retrieved_policy_ids"] == ["POL-A", "POL-B"]
+    assert completed["semantic_retrieved_policy_ids"] == ["POL-B"]
+    assert completed["signal_included_policy_ids"] == ["POL-A"]
+    assert completed["rejected_citations"] == ["POL-X"]
+    assert completed["fallback_reason"] is None
     assert completed["llm_reasons"] == [
         "One risk signal needs supporting information."
     ]
@@ -175,4 +232,41 @@ def test_decision_observation_records_diagnostics_and_failure_defaults() -> None
     assert failed["routing_rule_fired"] is None
     assert failed["policy_references"] == []
     assert failed["policies_considered"] == []
+    assert failed["retrieved_policy_ids"] == []
+    assert failed["semantic_retrieved_policy_ids"] == []
+    assert failed["signal_included_policy_ids"] == []
+    assert failed["rejected_citations"] == []
+    assert failed["fallback_reason"] is None
     assert failed["llm_reasons"] == []
+
+
+def test_decision_diagnostics_read_current_audit_shape() -> None:
+    audit_record = {
+        "policy_retrieval_sources": {
+            "semantic_search": ["POL-SEMANTIC"],
+            "signal_mapping": ["POL-SIGNAL", "POL-SEMANTIC"],
+        },
+        "policy_assessment": {
+            "rejected_citations": ["POL-INVENTED"],
+        },
+        "fallbacks": [
+            {
+                "step": "policy_validation",
+                "error_type": "ValidationError",
+                "message": "invalid structured response",
+            }
+        ],
+    }
+    assessment = SimpleNamespace(
+        fallback_reason=None,
+        rejected_citations=[],
+    )
+
+    assert _retrieval_source_ids(audit_record) == (
+        ["POL-SEMANTIC"],
+        ["POL-SIGNAL", "POL-SEMANTIC"],
+    )
+    assert _fallback_reason(assessment, audit_record) == (
+        "ValidationError: invalid structured response"
+    )
+    assert _rejected_citations(assessment, audit_record) == ["POL-INVENTED"]

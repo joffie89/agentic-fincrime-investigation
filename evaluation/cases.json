@@ -148,7 +148,9 @@
       "expected_policy_ids": [
         "DEMO-AML-001",
         "DEMO-AML-002",
-        "DEMO-AML-005"
+        "DEMO-AML-004",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
       ]
     },
     {

@@ -174,6 +174,43 @@ def test_retriever_supports_vector_bm25_and_hybrid_modes(
     assert service.calls == expected_embedding_calls
 
 
+def test_exact_policy_lookup_does_not_call_embedding_service() -> None:
+    class StubEmbeddingService:
+        dimension = 2
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def embed(self, _text: str) -> list[float]:
+            self.calls += 1
+            return [1.0, 0.0]
+
+    chunks = [
+        {
+            "policy_id": "POL-SIGNAL",
+            "chunk_id": "POL-SIGNAL#001",
+            "text": "Policy passage selected by a deterministic signal.",
+            "embedding": [1.0, 0.0],
+        }
+    ]
+    service = StubEmbeddingService()
+    retriever = PolicyRetriever(
+        chunks,
+        service,
+        minimum_relevance_score=0.0,
+        retrieval_mode=RetrievalMode.VECTOR,
+    )
+
+    results = retriever.get_by_policy_ids(
+        ["POL-SIGNAL", "POL-UNKNOWN", "POL-SIGNAL"]
+    )
+
+    assert [item.policy_id for item in results] == ["POL-SIGNAL"]
+    assert results[0].text == chunks[0]["text"]
+    assert results[0].relevance_score == 1.0
+    assert service.calls == 0
+
+
 def test_ingestion_chunks_and_persists_a_portable_json_index(
     policy_file, tmp_path
 ) -> None:

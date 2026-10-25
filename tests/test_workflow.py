@@ -12,6 +12,7 @@ from app.models.domain import (
     PersistenceResult,
     PolicyAssessment,
     Recommendation,
+    RetrievedPolicy,
 )
 from app.repositories.memory import InMemoryInvestigationRepository
 from app.services.policy_assessment import (
@@ -44,13 +45,26 @@ class StaticRelationshipAnomalyScorer:
 
 
 class StaticRetriever:
-    def __init__(self, policies) -> None:
+    def __init__(self, policies, catalog=None) -> None:
         self.policies = policies
+        self.catalog = {
+            item.policy_id: item
+            for item in (catalog if catalog is not None else policies)
+        }
         self.queries: list[str] = []
+        self.lookup_requests: list[list[str]] = []
 
     def retrieve(self, query: str, top_k: int = 3):
         self.queries.append(query)
         return self.policies[:top_k]
+
+    def get_by_policy_ids(self, policy_ids: list[str]):
+        self.lookup_requests.append(policy_ids)
+        return [
+            self.catalog[policy_id]
+            for policy_id in policy_ids
+            if policy_id in self.catalog
+        ]
 
 
 class StaticAssessor:
@@ -181,7 +195,13 @@ def test_successful_investigation_persists_complete_audit_trail(
             "relevance_score": retrieved_policy.relevance_score,
         }
     ]
+    assert record["policy_retrieval_sources"] == {
+        "semantic_search": [retrieved_policy.policy_id],
+        "signal_mapping": [],
+    }
     assert record["policy_assessment"] == assessment.model_dump(mode="json")
+    assert record["fallback_reason"] is None
+    assert record["rejected_citations"] == []
     assert record["routing"]["decision"] == "complete"
     assert record["routing"]["triggered_rule"]
     assert record["routing"]["triggered_rule"] in record["routing"][
@@ -207,6 +227,94 @@ def test_successful_investigation_persists_complete_audit_trail(
         assert step["status"] == "completed"
         assert datetime.fromisoformat(step["started_at"]).tzinfo is not None
         assert datetime.fromisoformat(step["completed_at"]).tzinfo is not None
+
+
+def test_signal_mapped_policy_is_added_to_semantic_results(
+    transaction_factory, clean_graph_result, retrieved_policy
+):
+    repository = InMemoryInvestigationRepository()
+    cross_border_policy = RetrievedPolicy(
+        policy_id="DEMO-AML-004",
+        chunk_id="DEMO-AML-004#001",
+        text="Synthetic policy evidence for cross-border payment context.",
+        relevance_score=1.0,
+    )
+    retriever = StaticRetriever(
+        [retrieved_policy],
+        catalog=[retrieved_policy, cross_border_policy],
+    )
+    workflow = InvestigationWorkflow(
+        risk_assessor=assess_transaction,
+        graph_analyzer=StaticGraphAnalyzer(clean_graph_result),
+        policy_retriever=retriever,
+        policy_assessor=DemoPolicyAssessmentService(),
+        repository=repository,
+        retrieval_top_k=3,
+        relationship_anomaly_scorer=StaticRelationshipAnomalyScorer(
+            (-0.1, False)
+        ),
+    )
+
+    result = workflow.invoke(
+        transaction_factory(
+            transaction_id="txn-cross-border-policy-inclusion",
+            destination_country="FR",
+        )
+    )
+
+    assert [item.policy_id for item in result.retrieved_policies] == [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+    ]
+    assert retriever.lookup_requests == [["DEMO-AML-004"]]
+    assert repository.records[0]["policy_retrieval_sources"] == {
+        "semantic_search": ["DEMO-AML-001"],
+        "signal_mapping": ["DEMO-AML-004"],
+    }
+
+
+def test_suspicious_graph_always_adds_network_policy(
+    transaction_factory, clean_graph_result, retrieved_policy
+):
+    repository = InMemoryInvestigationRepository()
+    network_policy = RetrievedPolicy(
+        policy_id="DEMO-AML-003",
+        chunk_id="DEMO-AML-003#001",
+        text="Synthetic policy evidence for suspicious account links.",
+        relevance_score=1.0,
+    )
+    retriever = StaticRetriever(
+        [retrieved_policy],
+        catalog=[retrieved_policy, network_policy],
+    )
+    suspicious_graph = clean_graph_result.model_copy(
+        update={"signals": [], "suspicious": True}
+    )
+    workflow = InvestigationWorkflow(
+        risk_assessor=assess_transaction,
+        graph_analyzer=StaticGraphAnalyzer(suspicious_graph),
+        policy_retriever=retriever,
+        policy_assessor=DemoPolicyAssessmentService(),
+        repository=repository,
+        retrieval_top_k=3,
+        relationship_anomaly_scorer=StaticRelationshipAnomalyScorer(
+            (-0.1, False)
+        ),
+    )
+
+    result = workflow.invoke(
+        transaction_factory(transaction_id="txn-network-policy-inclusion")
+    )
+
+    assert [item.policy_id for item in result.retrieved_policies] == [
+        "DEMO-AML-001",
+        "DEMO-AML-003",
+    ]
+    assert retriever.lookup_requests == [["DEMO-AML-003"]]
+    assert repository.records[0]["policy_retrieval_sources"] == {
+        "semantic_search": ["DEMO-AML-001"],
+        "signal_mapping": ["DEMO-AML-003"],
+    }
 
 
 def test_graph_failure_persists_partial_audit_trail(
@@ -476,9 +584,25 @@ def test_provider_failure_uses_safe_validated_fallback(
     assert result.policy_assessment.evidence_sufficient is False
     assert result.policy_assessment.policy_references == []
     assert result.policy_assessment.policies_considered == [retrieved_policy.policy_id]
+    assert (
+        result.policy_assessment.fallback_reason
+        == "PolicyAssessmentError: provider unavailable"
+    )
     record = repository.records[0]
+    assert (
+        record["fallback_reason"]
+        == "PolicyAssessmentError: provider unavailable"
+    )
+    assert (
+        record["policy_assessment"]["fallback_reason"]
+        == "PolicyAssessmentError: provider unavailable"
+    )
     assert record["fallbacks"]
     assert record["fallbacks"][0]["step"] == "policy_validation"
+    assert (
+        record["fallbacks"][0]["fallback_reason"]
+        == "PolicyAssessmentError: provider unavailable"
+    )
     assert "provider unavailable" in record["fallbacks"][0]["message"]
     assert any("provider unavailable" in error for error in record["errors"])
 

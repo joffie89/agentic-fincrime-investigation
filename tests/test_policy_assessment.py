@@ -71,6 +71,7 @@ def test_demo_policy_trigger_mapping_matches_citation_rubric() -> None:
     }
     assert DEMO_POLICY_TRIGGER_SIGNALS["DEMO-AML-002"] == {"HIGH_VELOCITY"}
     assert DEMO_POLICY_TRIGGER_SIGNALS["DEMO-AML-003"] == {
+        "NETWORK_LINK",
         "HIGH_CONNECTIVITY",
         "SHARED_COUNTERPARTIES",
         "REPEATED_DIRECT_TRANSACTIONS",
@@ -190,7 +191,10 @@ def valid_azure_payload() -> dict[str, object]:
         missing_information=[],
         requires_human_review=False,
         evidence_sufficient=True,
-    ).model_dump(mode="json")
+    ).model_dump(
+        mode="json",
+        exclude={"fallback_reason", "rejected_citations"},
+    )
 
 
 def test_azure_assessor_validates_structured_output_and_prompt(
@@ -304,6 +308,8 @@ def assert_openai_failure_fallback(result: PolicyAssessment) -> None:
     assert result.policies_considered == []
     assert result.requires_human_review is True
     assert result.evidence_sufficient is False
+    assert result.fallback_reason
+    assert result.rejected_citations == []
     assert any("AI assessment failed" in reason for reason in result.reasons)
     assert getattr(result, "fallback_used", False) is True
     assert getattr(result, "fallback_error_type", None)
@@ -672,19 +678,86 @@ def test_openai_clean_clear_policy_reference_without_signals_logs_warning(
     assert warning.policy_references == [retrieved_policy.policy_id]
 
 
-@pytest.mark.parametrize("field", ["policy_references", "policies_considered"])
-def test_openai_assessor_rejects_hallucinated_policy_id_with_fallback(
-    field,
-    transaction_factory, clean_graph_result, retrieved_policy
+def test_openai_assessor_drops_invalid_citation_without_fallback(
+    transaction_factory,
+    clean_graph_result,
+    retrieved_policy,
+    caplog,
 ):
-    client, _ = openai_client(valid_openai_output(**{field: ["FABRICATED-POLICY"]}))
+    overlong_policy_id = "X" * 256
+    client, _ = openai_client(
+        valid_openai_output(
+            recommendation=Recommendation.REQUEST_MORE_INFO,
+            policy_references=[
+                retrieved_policy.policy_id,
+                "FABRICATED-POLICY",
+                overlong_policy_id,
+            ],
+            policies_considered=[],
+        )
+    )
     service = OpenAIPolicyAssessmentService(client, "gpt-4.1-mini")
 
-    result = service.assess(
-        transaction_factory(), low_risk(), clean_graph_result, [retrieved_policy]
+    with caplog.at_level(logging.WARNING, logger="app.services.policy_assessment"):
+        result = service.assess(
+            transaction_factory(account_age_days=20),
+            low_risk(),
+            clean_graph_result,
+            [retrieved_policy],
+        )
+
+    assert result.recommendation is Recommendation.REQUEST_MORE_INFO
+    assert result.policy_references == [retrieved_policy.policy_id]
+    assert result.rejected_citations == [
+        "FABRICATED-POLICY",
+        overlong_policy_id,
+    ]
+    assert result.fallback_reason is None
+    assert getattr(result, "fallback_used", False) is False
+    warning = next(
+        record
+        for record in caplog.records
+        if getattr(record, "event", None) == "openai_policy_citations_rejected"
+    )
+    assert warning.rejected_citations == [
+        "FABRICATED-POLICY",
+        overlong_policy_id,
+    ]
+
+
+def test_openai_assessor_drops_unknown_considered_policy_without_fallback(
+    transaction_factory,
+    clean_graph_result,
+    retrieved_policy,
+    caplog,
+):
+    client, _ = openai_client(
+        valid_openai_output(
+            policy_references=[],
+            policies_considered=[retrieved_policy.policy_id, "FABRICATED-POLICY"],
+        )
     )
 
-    assert_openai_failure_fallback(result)
+    with caplog.at_level(logging.WARNING, logger="app.services.policy_assessment"):
+        result = OpenAIPolicyAssessmentService(
+            client, "gpt-4.1-mini"
+        ).assess(
+            transaction_factory(),
+            low_risk(),
+            clean_graph_result,
+            [retrieved_policy],
+        )
+
+    assert result.policy_references == []
+    assert result.policies_considered == [retrieved_policy.policy_id]
+    assert result.rejected_citations == []
+    assert result.fallback_reason is None
+    assert getattr(result, "fallback_used", False) is False
+    assert any(
+        getattr(record, "event", None)
+        == "openai_policies_considered_rejected"
+        for record in caplog.records
+    )
 
 
 def test_openai_fallback_logs_exception_details_without_prompt(
@@ -693,9 +766,7 @@ def test_openai_fallback_logs_exception_details_without_prompt(
     retrieved_policy,
     caplog,
 ):
-    client, _ = openai_client(
-        valid_openai_output(policy_references=["FABRICATED-POLICY"])
-    )
+    client, _ = openai_client(parsed={"unexpected": "shape"})
     service = OpenAIPolicyAssessmentService(client, "gpt-4.1-mini")
     prompt_only_marker = "prompt-only-secret-marker"
 
@@ -713,9 +784,49 @@ def test_openai_fallback_logs_exception_details_without_prompt(
         for record in caplog.records
         if getattr(record, "event", None) == "openai_policy_assessment_failed"
     )
-    assert failure.exception_type == "PolicyAssessmentError"
-    assert "not retrieved" in failure.exception_message
+    assert failure.exception_type == "ValidationError"
+    assert "validation errors" in failure.exception_message
     assert prompt_only_marker not in caplog.text
+    assert result.fallback_reason is not None
+    assert result.fallback_reason.startswith("ValidationError:")
+
+
+def test_openai_fallback_redacts_prompt_and_api_key_from_record_and_log(
+    transaction_factory,
+    clean_graph_result,
+    retrieved_policy,
+    caplog,
+):
+    fake_key = "sk-test-secret-123456"
+    echoed_prompt = (
+        "<untrusted_transaction_data>private customer facts"
+        "</untrusted_transaction_data>"
+    )
+    client, _ = openai_client(
+        error=RuntimeError(
+            f"Authorization: Bearer {fake_key}; request={echoed_prompt}"
+        )
+    )
+
+    with caplog.at_level(logging.ERROR, logger="app.services.policy_assessment"):
+        result = OpenAIPolicyAssessmentService(
+            client,
+            "gpt-4.1-mini",
+            api_key=fake_key,
+        ).assess(
+            transaction_factory(),
+            low_risk(),
+            clean_graph_result,
+            [retrieved_policy],
+        )
+
+    assert_openai_failure_fallback(result)
+    assert result.fallback_reason is not None
+    assert "RuntimeError:" in result.fallback_reason
+    assert fake_key not in result.fallback_reason
+    assert "private customer facts" not in result.fallback_reason
+    assert fake_key not in caplog.text
+    assert "private customer facts" not in caplog.text
 
 
 def test_openai_assessor_timeout_returns_fallback_without_policy_citations(
@@ -729,6 +840,7 @@ def test_openai_assessor_timeout_returns_fallback_without_policy_citations(
     )
 
     assert_openai_failure_fallback(result)
+    assert result.fallback_reason == "TimeoutError: provider timed out"
 
 
 def test_openai_assessor_malformed_output_returns_fallback(

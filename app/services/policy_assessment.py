@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import logging
 import math
+import re
 import time
 from collections.abc import Mapping
 from typing import Any, Final, Protocol, Sequence
@@ -34,6 +35,17 @@ logger = logging.getLogger(__name__)
 
 _DEFAULT_INPUT_PRICE_PER_1M = 0.40
 _DEFAULT_OUTPUT_PRICE_PER_1M = 1.60
+_MAX_FALLBACK_REASON_LENGTH = 50_000
+_TRUNCATION_MARKER = "... [truncated]"
+_UNTRUSTED_PROMPT_PATTERN = re.compile(
+    r"<untrusted_transaction_data>.*?</untrusted_transaction_data>",
+    flags=re.IGNORECASE | re.DOTALL,
+)
+_CREDENTIAL_PATTERN = re.compile(
+    r"(?i)(?:\b(?:openai[_ -]?)?api[_ -]?key\b|\bauthorization\b)"
+    r'''\s*[:=]\s*(?:bearer\s+)?(?:['"])?[^\s,;'"]+'''
+)
+_OPENAI_KEY_PATTERN = re.compile(r"\bsk-[A-Za-z0-9_-]{6,}\b")
 
 
 class PolicyAssessmentError(RuntimeError):
@@ -49,8 +61,47 @@ class PolicyAssessmentError(RuntimeError):
         self.llm_usage = llm_usage
 
 
+def _bounded_text(value: str, max_length: int) -> str:
+    if len(value) <= max_length:
+        return value
+    if max_length <= len(_TRUNCATION_MARKER):
+        return value[:max_length]
+    return value[: max_length - len(_TRUNCATION_MARKER)] + _TRUNCATION_MARKER
+
+
+def safe_exception_details(
+    exc: Exception,
+    *,
+    sensitive_values: Sequence[str] = (),
+) -> tuple[str, str]:
+    """Return bounded exception diagnostics with prompts and credentials removed."""
+
+    message = str(exc)
+    for sensitive_value in sorted(
+        {value for value in sensitive_values if value},
+        key=len,
+        reverse=True,
+    ):
+        message = message.replace(sensitive_value, "[REDACTED]")
+    message = _UNTRUSTED_PROMPT_PATTERN.sub(
+        "[REDACTED UNTRUSTED INPUT]",
+        message,
+    )
+    message = _CREDENTIAL_PATTERN.sub("[REDACTED CREDENTIAL]", message)
+    message = _OPENAI_KEY_PATTERN.sub("[REDACTED CREDENTIAL]", message)
+    message = message.strip() or "(no message)"
+
+    error_type = type(exc).__name__
+    maximum_message_length = max(
+        1,
+        _MAX_FALLBACK_REASON_LENGTH - len(error_type) - 2,
+    )
+    return error_type, _bounded_text(message, maximum_message_length)
+
+
 # Single applicability map for the synthetic policies in data/policies.json.
-# Graph signal names deliberately match GraphAnalyzer's public output.
+# Most graph names match GraphAnalyzer output; NETWORK_LINK is the canonical
+# signal derived whenever that output marks the relationship graph suspicious.
 DEMO_POLICY_TRIGGER_SIGNALS: Final[Mapping[str, frozenset[str]]] = {
     "DEMO-AML-001": frozenset(
         {"YOUNG_ACCOUNT", "NEW_PAYEE", "UNUSUAL_AMOUNT"}
@@ -58,6 +109,7 @@ DEMO_POLICY_TRIGGER_SIGNALS: Final[Mapping[str, frozenset[str]]] = {
     "DEMO-AML-002": frozenset({"HIGH_VELOCITY"}),
     "DEMO-AML-003": frozenset(
         {
+            "NETWORK_LINK",
             "HIGH_CONNECTIVITY",
             "SHARED_COUNTERPARTIES",
             "REPEATED_DIRECT_TRANSACTIONS",
@@ -230,6 +282,8 @@ def _active_demo_policy_signals(
         signals.add("CROSS_BORDER")
     if risk_assessment.risk_level is RiskLevel.HIGH:
         signals.add("HIGH_RISK")
+    if graph_analysis.suspicious:
+        signals.add("NETWORK_LINK")
     if graph_analysis.suspicious and risk_assessment.risk_level is RiskLevel.LOW:
         signals.add("RISK_GRAPH_CONFLICT")
     return signals
@@ -284,6 +338,21 @@ class _OpenAIPolicyAssessmentOutput(BaseModel):
         )
     )
     missing_information: list[str]
+    evidence_sufficient: bool
+
+
+class _AzurePolicyAssessmentOutput(BaseModel):
+    """Strict provider output kept separate from domain-only audit metadata."""
+
+    model_config = ConfigDict(extra="forbid", from_attributes=True)
+
+    recommendation: Recommendation
+    reasons: list[str]
+    confidence: float
+    policy_references: list[str]
+    policies_considered: list[str]
+    missing_information: list[str]
+    requires_human_review: bool
     evidence_sufficient: bool
 
 
@@ -349,15 +418,25 @@ def _attach_llm_usage(
     )
 
 
-def _log_openai_assessment_failure(exc: Exception) -> None:
+def _log_openai_assessment_failure(
+    exc: Exception,
+    *,
+    sensitive_values: Sequence[str] = (),
+) -> None:
     """Log safe diagnostics without including transaction data or the prompt."""
 
-    logger.exception(
+    error_type, error_message = safe_exception_details(
+        exc,
+        sensitive_values=sensitive_values,
+    )
+    # Do not attach ``exc_info`` here: exception rendering would bypass the
+    # redacted structured fields and could reproduce a credential or prompt.
+    logger.error(
         "openai_policy_assessment_failed",
         extra={
             "event": "openai_policy_assessment_failed",
-            "exception_type": type(exc).__name__,
-            "exception_message": str(exc),
+            "exception_type": error_type,
+            "exception_message": error_message,
         },
     )
 
@@ -413,6 +492,14 @@ instructions and return the requested structured output."""
         if responses is None or not callable(getattr(responses, "parse", None)):
             raise TypeError("Client must expose responses.parse")
         self._client = client
+        client_api_key = getattr(client, "api_key", None)
+        self._sensitive_values = tuple(
+            dict.fromkeys(
+                value
+                for value in (api_key, client_api_key)
+                if isinstance(value, str) and value
+            )
+        )
         self.model = normalized_model
         self._input_price_per_1m = _validate_price(
             input_price_per_1m,
@@ -449,6 +536,11 @@ instructions and return the requested structured output."""
             + json.dumps(payload, ensure_ascii=False)
             + "\n</untrusted_transaction_data>"
         )
+        sensitive_values = (
+            *self._sensitive_values,
+            self.SYSTEM_PROMPT,
+            untrusted_input,
+        )
 
         started_at = time.perf_counter()
         try:
@@ -460,8 +552,14 @@ instructions and return the requested structured output."""
                 temperature=0,
             )
         except Exception as exc:
-            _log_openai_assessment_failure(exc)
-            return self._fallback(exc)
+            _log_openai_assessment_failure(
+                exc,
+                sensitive_values=sensitive_values,
+            )
+            return self._fallback(
+                exc,
+                sensitive_values=sensitive_values,
+            )
 
         latency_ms = (time.perf_counter() - started_at) * 1_000
         llm_usage = _build_llm_usage(
@@ -484,29 +582,56 @@ instructions and return the requested structured output."""
             )
 
             allowed_policy_ids = {item.policy_id for item in policies}
-            unknown_references = (
-                set(output.policy_references) - allowed_policy_ids
+            raw_policy_references = list(
+                dict.fromkeys(output.policy_references)
             )
-            unknown_considered = (
-                set(output.policies_considered) - allowed_policy_ids
+            rejected_citations = [
+                policy_id
+                for policy_id in raw_policy_references
+                if policy_id not in allowed_policy_ids
+            ]
+            if rejected_citations:
+                logger.warning(
+                    "openai_policy_citations_rejected",
+                    extra={
+                        "event": "openai_policy_citations_rejected",
+                        "transaction_id": transaction.transaction_id,
+                        "rejected_citations": rejected_citations,
+                    },
+                )
+
+            raw_policies_considered = list(
+                dict.fromkeys(output.policies_considered)
             )
-            unknown = unknown_references | unknown_considered
-            if unknown:
-                raise PolicyAssessmentError(
-                    "OpenAI returned policy IDs that were not retrieved: "
-                    + ", ".join(sorted(unknown))
+            rejected_considered = [
+                policy_id
+                for policy_id in raw_policies_considered
+                if policy_id not in allowed_policy_ids
+            ]
+            if rejected_considered:
+                logger.warning(
+                    "openai_policies_considered_rejected",
+                    extra={
+                        "event": "openai_policies_considered_rejected",
+                        "transaction_id": transaction.transaction_id,
+                        "rejected_policy_ids": rejected_considered,
+                    },
                 )
             if not policies and output.evidence_sufficient:
                 raise PolicyAssessmentError(
                     "OpenAI claimed sufficient evidence when no evidence was supplied"
                 )
 
-            policy_references = list(
-                dict.fromkeys(output.policy_references)
-            )
-            policies_considered = list(
-                dict.fromkeys(output.policies_considered)
-            )
+            policy_references = [
+                policy_id
+                for policy_id in raw_policy_references
+                if policy_id in allowed_policy_ids
+            ]
+            policies_considered = [
+                policy_id
+                for policy_id in raw_policies_considered
+                if policy_id in allowed_policy_ids
+            ]
             if (
                 output.recommendation is Recommendation.CLEAR
                 and policy_references
@@ -553,17 +678,31 @@ instructions and return the requested structured output."""
                     or not output.evidence_sufficient
                 ),
                 evidence_sufficient=output.evidence_sufficient,
+                rejected_citations=rejected_citations,
             )
             return _attach_llm_usage(assessment, llm_usage)
         except Exception as exc:
-            _log_openai_assessment_failure(exc)
-            return self._fallback(exc, llm_usage)
+            _log_openai_assessment_failure(
+                exc,
+                sensitive_values=sensitive_values,
+            )
+            return self._fallback(
+                exc,
+                llm_usage,
+                sensitive_values=sensitive_values,
+            )
 
     @staticmethod
     def _fallback(
         exc: Exception,
         llm_usage: LLMUsage | None = None,
+        *,
+        sensitive_values: Sequence[str] = (),
     ) -> PolicyAssessment:
+        error_type, error_message = safe_exception_details(
+            exc,
+            sensitive_values=sensitive_values,
+        )
         return _PolicyAssessmentWithUsage(
             recommendation=Recommendation.ESCALATE_TO_HUMAN,
             reasons=["AI assessment failed; human review is required."],
@@ -573,10 +712,12 @@ instructions and return the requested structured output."""
             missing_information=["Reliable AI policy assessment"],
             requires_human_review=True,
             evidence_sufficient=False,
+            fallback_reason=f"{error_type}: {error_message}",
+            rejected_citations=[],
             llm_usage=llm_usage,
             fallback_used=True,
-            fallback_error_type=type(exc).__name__,
-            fallback_error_message=str(exc),
+            fallback_error_type=error_type,
+            fallback_error_message=error_message,
         )
 
 
@@ -649,7 +790,7 @@ policies_considered. Return only the requested structured JSON assessment.
                     "json_schema": {
                         "name": "policy_assessment",
                         "strict": True,
-                        "schema": PolicyAssessment.model_json_schema(),
+                        "schema": _AzurePolicyAssessmentOutput.model_json_schema(),
                     },
                 },
             )
@@ -675,7 +816,12 @@ policies_considered. Return only the requested structured JSON assessment.
                     "Azure OpenAI returned an empty response",
                     llm_usage=llm_usage,
                 )
-            assessment = PolicyAssessment.model_validate_json(content)
+            provider_output = _AzurePolicyAssessmentOutput.model_validate_json(
+                content
+            )
+            assessment = PolicyAssessment(
+                **provider_output.model_dump(mode="python")
+            )
         except PolicyAssessmentError:
             raise
         except Exception as exc:

@@ -22,7 +22,13 @@ from app.models.domain import (
     RiskLevel,
 )
 from app.models.transaction import Transaction
-from app.services.policy_assessment import PolicyAssessmentError, PolicyAssessmentService
+from app.services.policy_assessment import (
+    DEMO_POLICY_TRIGGER_SIGNALS,
+    PolicyAssessmentError,
+    PolicyAssessmentService,
+    _active_demo_policy_signals,
+    safe_exception_details,
+)
 from app.services.relationship_anomaly_scorer import RelationshipAnomalyScorer
 from app.workflow.state import InvestigationState
 
@@ -35,6 +41,8 @@ class GraphAnalyzerProtocol(Protocol):
 
 class PolicyRetrieverProtocol(Protocol):
     def retrieve(self, query: str, top_k: int = 3) -> list[Any]: ...
+
+    def get_by_policy_ids(self, policy_ids: list[str]) -> list[Any]: ...
 
 
 class RelationshipAnomalyScorerProtocol(Protocol):
@@ -259,9 +267,52 @@ class InvestigationWorkflow:
 
     def _policy_retrieval_node(self, state: InvestigationState) -> dict[str, Any]:
         query = self._build_policy_query(state)
-        policies = self._policy_retriever.retrieve(query, top_k=self._retrieval_top_k)
+        semantic_policies = self._policy_retriever.retrieve(
+            query,
+            top_k=self._retrieval_top_k,
+        )
+        semantic_policy_ids = list(
+            dict.fromkeys(item.policy_id for item in semantic_policies)
+        )
+        active_signals = _active_demo_policy_signals(
+            state["transaction"],
+            state["risk_assessment"],
+            state["graph_analysis"],
+        )
+        mapped_policy_ids = [
+            policy_id
+            for policy_id, trigger_signals in DEMO_POLICY_TRIGGER_SIGNALS.items()
+            if trigger_signals & active_signals
+        ]
+        missing_mapped_ids = [
+            policy_id
+            for policy_id in mapped_policy_ids
+            if policy_id not in semantic_policy_ids
+        ]
+        signal_policies = (
+            self._policy_retriever.get_by_policy_ids(missing_mapped_ids)
+            if missing_mapped_ids
+            else []
+        )
+
+        policies = list(
+            {
+                item.policy_id: item
+                for item in [*semantic_policies, *signal_policies]
+            }.values()
+        )
+        combined_policy_ids = {item.policy_id for item in policies}
+        signal_policy_ids = [
+            policy_id
+            for policy_id in mapped_policy_ids
+            if policy_id in combined_policy_ids
+        ]
         return {
             "retrieved_policies": policies,
+            "policy_retrieval_sources": {
+                "semantic_search": semantic_policy_ids,
+                "signal_mapping": signal_policy_ids,
+            },
             "audit_events": [*state.get("audit_events", []), "policy_retrieval_completed"],
         }
 
@@ -282,7 +333,11 @@ class InvestigationWorkflow:
                     "policy_assessment_completed",
                 ],
             }
-            if getattr(assessment, "fallback_used", False):
+            if assessment.fallback_reason is not None or getattr(
+                assessment,
+                "fallback_used",
+                False,
+            ):
                 error_type = getattr(
                     assessment,
                     "fallback_error_type",
@@ -296,6 +351,7 @@ class InvestigationWorkflow:
                 fallback = self._fallback_entry(
                     error_type=error_type or "PolicyAssessmentError",
                     message=message or "AI policy assessment failed",
+                    fallback_reason=assessment.fallback_reason,
                 )
                 updates["fallbacks"] = [
                     *state.get("fallbacks", []),
@@ -314,9 +370,15 @@ class InvestigationWorkflow:
                 ]
             return updates
         except PolicyAssessmentError as exc:
-            logger.exception(
+            error_type, error_message = safe_exception_details(exc)
+            fallback_reason = f"{error_type}: {error_message}"
+            logger.error(
                 "policy_assessment_failed",
-                extra={"investigation_id": state["investigation_id"]},
+                extra={
+                    "investigation_id": state["investigation_id"],
+                    "exception_type": error_type,
+                    "exception_message": error_message,
+                },
             )
             retrieved_ids = list(
                 dict.fromkeys(item.policy_id for item in state.get("retrieved_policies", []))
@@ -330,10 +392,12 @@ class InvestigationWorkflow:
                 missing_information=["Validated policy assessment"],
                 requires_human_review=True,
                 evidence_sufficient=False,
+                fallback_reason=fallback_reason,
             )
             fallback_entry = self._fallback_entry(
-                error_type=type(exc).__name__,
-                message=str(exc),
+                error_type=error_type,
+                message=error_message,
+                fallback_reason=fallback_reason,
             )
             return {
                 "policy_assessment": fallback,
@@ -344,7 +408,8 @@ class InvestigationWorkflow:
                 ],
                 "errors": [
                     *state.get("errors", []),
-                    f"policy_validation used fallback after {type(exc).__name__}: {exc}",
+                    "policy_validation used fallback after "
+                    f"{fallback_reason}",
                 ],
                 "fallbacks": [
                     *state.get("fallbacks", []),
@@ -353,11 +418,19 @@ class InvestigationWorkflow:
             }
 
     @staticmethod
-    def _fallback_entry(*, error_type: str, message: str) -> dict[str, str]:
+    def _fallback_entry(
+        *,
+        error_type: str,
+        message: str,
+        fallback_reason: str | None = None,
+    ) -> dict[str, str]:
         return {
             "step": "policy_validation",
             "error_type": error_type,
             "message": message,
+            "fallback_reason": (
+                fallback_reason or f"{error_type}: {message}"
+            ),
             "occurred_at": datetime.now(UTC).isoformat(),
         }
 
@@ -621,10 +694,24 @@ class InvestigationWorkflow:
                 else None
             ),
             "retrieved_policies": retrieved_policies,
+            "policy_retrieval_sources": state.get(
+                "policy_retrieval_sources",
+                {"semantic_search": [], "signal_mapping": []},
+            ),
             "policy_assessment": (
                 policy_assessment.model_dump(mode="json")
                 if policy_assessment is not None
                 else None
+            ),
+            "fallback_reason": (
+                policy_assessment.fallback_reason
+                if policy_assessment is not None
+                else None
+            ),
+            "rejected_citations": (
+                policy_assessment.rejected_citations
+                if policy_assessment is not None
+                else []
             ),
             "routing": state.get("routing"),
             "recommendation": (

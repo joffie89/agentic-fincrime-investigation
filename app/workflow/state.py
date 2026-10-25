@@ -29,6 +29,7 @@ class InvestigationState(TypedDict, total=False):
     graph_analysis: GraphAnalysisResult
     relationship_anomaly: RelationshipAnomalyResult
     retrieved_policies: list[RetrievedPolicy]
+    policy_retrieval_sources: dict[str, list[str]]
     policy_assessment: PolicyAssessment
     llm_usage: LLMUsage | None
     recommendation: InvestigationRecommendation

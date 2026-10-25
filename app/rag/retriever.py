@@ -196,6 +196,26 @@ class PolicyRetriever:
             return self._retrieve_bm25(query, top_k)
         return self._retrieve_hybrid(query, top_k)
 
+    def get_by_policy_ids(self, policy_ids: Sequence[str]) -> list[RetrievedPolicy]:
+        """Return indexed policy passages without running an embedding search.
+
+        Signal-based inclusion is an exact policy lookup rather than another
+        relevance search. A score of ``1.0`` denotes that deterministic match;
+        semantic results retain their original search scores when the workflow
+        de-duplicates the combined evidence.
+        """
+
+        chunks_by_policy_id: dict[str, dict[str, Any]] = {}
+        for chunk in self._chunks:
+            chunks_by_policy_id.setdefault(str(chunk["policy_id"]), chunk)
+
+        policies: list[RetrievedPolicy] = []
+        for policy_id in dict.fromkeys(policy_ids):
+            chunk = chunks_by_policy_id.get(policy_id)
+            if chunk is not None:
+                policies.append(self._retrieved_policy(chunk, 1.0))
+        return policies
+
     def _retrieve_vector(self, query: str, top_k: int) -> list[RetrievedPolicy]:
         ranked = [
             item

@@ -7,6 +7,7 @@ import json
 import logging
 import math
 import time
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
@@ -57,13 +58,20 @@ class DecisionObservation(DomainModel):
     actual_requires_human_review: StrictBool | None
     expected_policy_ids: list[Identifier]
     actual_policy_ids: list[Identifier]
+    retrieved_policy_ids: list[Identifier] = Field(default_factory=list)
+    semantic_retrieved_policy_ids: list[Identifier] = Field(
+        default_factory=list
+    )
+    signal_included_policy_ids: list[Identifier] = Field(default_factory=list)
     confidence: UnitInterval | None = None
     evidence_sufficient: StrictBool | None = None
     routing_rule_fired: Identifier | None = None
     policy_references: list[Identifier] = Field(default_factory=list)
     policies_considered: list[Identifier] = Field(default_factory=list)
+    rejected_citations: list[str] = Field(default_factory=list)
     llm_reasons: list[ShortText] = Field(default_factory=list)
     llm_fallback_used: StrictBool
+    fallback_reason: str | None = None
     latency_ms: float = Field(ge=0, allow_inf_nan=False)
     estimated_cost_usd: float = Field(ge=0, allow_inf_nan=False)
     completed: StrictBool
@@ -76,7 +84,7 @@ def _accuracy(correct: int, total: int) -> dict[str, int | float]:
     return {
         "correct": correct,
         "total": total,
-        "accuracy": correct / total,
+        "accuracy": correct / total if total else 0.0,
     }
 
 
@@ -122,6 +130,20 @@ def calculate_decision_metrics(
         is item.expected_requires_human_review
         for item in validated
     )
+    without_fallbacks = [
+        item for item in validated if not item.llm_fallback_used
+    ]
+    recommendation_correct_without_fallbacks = sum(
+        item.completed
+        and item.actual_recommendation is item.expected_recommendation
+        for item in without_fallbacks
+    )
+    routing_correct_without_fallbacks = sum(
+        item.completed
+        and item.actual_requires_human_review
+        is item.expected_requires_human_review
+        for item in without_fallbacks
+    )
     citation_correct = sum(
         item.completed
         and set(item.actual_policy_ids) == set(item.expected_policy_ids)
@@ -143,11 +165,37 @@ def calculate_decision_metrics(
     ]
     latencies = [item.latency_ms for item in validated]
     total_cost = math.fsum(item.estimated_cost_usd for item in validated)
+    expected_policy_count = 0
+    retrieved_expected_policy_count = 0
+    missing_policy_counts: Counter[str] = Counter()
+    cases_with_complete_retrieval = 0
+    for item in validated:
+        expected_ids = set(item.expected_policy_ids)
+        retrieved_ids = set(item.retrieved_policy_ids)
+        expected_policy_count += len(expected_ids)
+        retrieved_expected_policy_count += len(expected_ids & retrieved_ids)
+        missing_ids = expected_ids - retrieved_ids
+        missing_policy_counts.update(missing_ids)
+        if not missing_ids:
+            cases_with_complete_retrieval += 1
+
+    fallback_reasons: Counter[str] = Counter()
+    for item in validated:
+        if item.llm_fallback_used:
+            fallback_reasons[item.fallback_reason or "unknown"] += 1
 
     return {
         "case_count": total,
         "recommendation_accuracy": _accuracy(recommendation_correct, total),
+        "recommendation_accuracy_excluding_fallbacks": _accuracy(
+            recommendation_correct_without_fallbacks,
+            len(without_fallbacks),
+        ),
         "human_review_routing_accuracy": _accuracy(routing_correct, total),
+        "human_review_routing_accuracy_excluding_fallbacks": _accuracy(
+            routing_correct_without_fallbacks,
+            len(without_fallbacks),
+        ),
         "missed_escalations": {
             "count": len(missed),
             "case_names": missed,
@@ -160,6 +208,22 @@ def calculate_decision_metrics(
         "llm_fallback_count": sum(
             item.llm_fallback_used for item in validated
         ),
+        "llm_fallback_count_by_reason": dict(sorted(fallback_reasons.items())),
+        "retrieval_recall": {
+            "retrieved_expected_policy_count": retrieved_expected_policy_count,
+            "expected_policy_count": expected_policy_count,
+            "missing_expected_policy_count": (
+                expected_policy_count - retrieved_expected_policy_count
+            ),
+            "recall": (
+                retrieved_expected_policy_count / expected_policy_count
+                if expected_policy_count
+                else 1.0
+            ),
+            "cases_with_complete_retrieval": cases_with_complete_retrieval,
+            "case_count": total,
+            "missing_policy_ids": dict(sorted(missing_policy_counts.items())),
+        },
         "workflow_failure_count": sum(not item.completed for item in validated),
         "latency_ms": {
             "p50": _percentile(latencies, 0.50),
@@ -200,6 +264,93 @@ def _routing_rule_fired(audit_record: Mapping[str, Any] | None) -> str | None:
     return rule if isinstance(rule, str) and rule else None
 
 
+def _string_list(value: Any) -> list[str]:
+    """Return de-duplicated string values from an audit/result field."""
+
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        return []
+    return list(
+        dict.fromkeys(item for item in value if isinstance(item, str) and item)
+    )
+
+
+def _retrieval_source_ids(
+    audit_record: Mapping[str, Any] | None,
+) -> tuple[list[str], list[str]]:
+    """Read semantic and signal-derived policy IDs from current or older audits."""
+
+    if audit_record is None:
+        return [], []
+    sources = audit_record.get("policy_retrieval_sources")
+    if isinstance(sources, Mapping):
+        semantic = _string_list(sources.get("semantic_search"))
+        signal = _string_list(sources.get("signal_mapping"))
+    else:
+        semantic = []
+        signal = []
+    # Keep the evaluator able to read intermediate/older result files that
+    # recorded these fields flat while the audit schema was being introduced.
+    if not semantic:
+        semantic = _string_list(
+            audit_record.get("semantic_retrieved_policy_ids")
+        )
+    if not signal:
+        signal = _string_list(audit_record.get("signal_included_policy_ids"))
+    return semantic, signal
+
+
+def _fallback_reason(
+    policy_assessment: Any,
+    audit_record: Mapping[str, Any] | None,
+) -> str | None:
+    """Read the safe exception summary attached to an assessment or audit."""
+
+    reason = getattr(policy_assessment, "fallback_reason", None)
+    if isinstance(reason, str) and reason:
+        return reason
+    if audit_record is None:
+        return None
+    recorded_assessment = audit_record.get("policy_assessment")
+    if isinstance(recorded_assessment, Mapping):
+        reason = recorded_assessment.get("fallback_reason")
+        if isinstance(reason, str) and reason:
+            return reason
+    for fallback in audit_record.get("fallbacks", []):
+        if not isinstance(fallback, Mapping):
+            continue
+        if fallback.get("step") != "policy_validation":
+            continue
+        reason = fallback.get("fallback_reason")
+        if isinstance(reason, str) and reason:
+            return reason
+        exception_type = fallback.get("exception_type") or fallback.get(
+            "error_type"
+        )
+        exception_message = fallback.get("exception_message") or fallback.get(
+            "message"
+        )
+        if isinstance(exception_type, str) and exception_type:
+            if isinstance(exception_message, str) and exception_message:
+                return f"{exception_type}: {exception_message}"
+            return exception_type
+    return None
+
+
+def _rejected_citations(
+    policy_assessment: Any,
+    audit_record: Mapping[str, Any] | None,
+) -> list[str]:
+    citations = _string_list(
+        getattr(policy_assessment, "rejected_citations", None)
+    )
+    if citations or audit_record is None:
+        return citations
+    recorded_assessment = audit_record.get("policy_assessment")
+    if isinstance(recorded_assessment, Mapping):
+        return _string_list(recorded_assessment.get("rejected_citations"))
+    return []
+
+
 def _evaluate_case(
     service: InvestigationService,
     case: DecisionEvaluationCase,
@@ -228,13 +379,18 @@ def _evaluate_case(
             actual_requires_human_review=None,
             expected_policy_ids=case.expected_policy_ids,
             actual_policy_ids=[],
+            retrieved_policy_ids=[],
+            semantic_retrieved_policy_ids=[],
+            signal_included_policy_ids=[],
             confidence=None,
             evidence_sufficient=None,
             routing_rule_fired=None,
             policy_references=[],
             policies_considered=[],
+            rejected_citations=[],
             llm_reasons=[],
             llm_fallback_used=False,
+            fallback_reason=None,
             latency_ms=float(latency_ms),
             estimated_cost_usd=0.0,
             completed=False,
@@ -266,6 +422,8 @@ def _evaluate_case(
         else 0.0
     )
     policy_references = list(result.policy_assessment.policy_references)
+    semantic_policy_ids, signal_policy_ids = _retrieval_source_ids(audit_record)
+    fallback_reason = _fallback_reason(result.policy_assessment, audit_record)
     return DecisionObservation(
         name=case.name,
         expected_recommendation=case.expected_recommendation,
@@ -274,6 +432,11 @@ def _evaluate_case(
         actual_requires_human_review=result.requires_human_review,
         expected_policy_ids=case.expected_policy_ids,
         actual_policy_ids=policy_references,
+        retrieved_policy_ids=list(
+            dict.fromkeys(item.policy_id for item in result.retrieved_policies)
+        ),
+        semantic_retrieved_policy_ids=semantic_policy_ids,
+        signal_included_policy_ids=signal_policy_ids,
         confidence=result.policy_assessment.confidence,
         evidence_sufficient=result.policy_assessment.evidence_sufficient,
         routing_rule_fired=_routing_rule_fired(audit_record),
@@ -281,8 +444,15 @@ def _evaluate_case(
         policies_considered=list(
             result.policy_assessment.policies_considered
         ),
+        rejected_citations=_rejected_citations(
+            result.policy_assessment,
+            audit_record,
+        ),
         llm_reasons=list(result.policy_assessment.reasons),
-        llm_fallback_used=_policy_fallback_used(audit_record),
+        llm_fallback_used=(
+            fallback_reason is not None or _policy_fallback_used(audit_record)
+        ),
+        fallback_reason=fallback_reason,
         latency_ms=float(latency_ms),
         estimated_cost_usd=float(cost),
         completed=True,
@@ -347,8 +517,15 @@ def run_decision_evaluation(
 def _print_results(results: Mapping[str, Any]) -> None:
     metrics = results["metrics"]
     recommendation = metrics["recommendation_accuracy"]
+    recommendation_without_fallbacks = metrics[
+        "recommendation_accuracy_excluding_fallbacks"
+    ]
     routing = metrics["human_review_routing_accuracy"]
+    routing_without_fallbacks = metrics[
+        "human_review_routing_accuracy_excluding_fallbacks"
+    ]
     citations = metrics["exact_citation_match_rate"]
+    retrieval = metrics["retrieval_recall"]
     latency = metrics["latency_ms"]
     cost = metrics["cost_usd"]
     rows = [
@@ -358,9 +535,21 @@ def _print_results(results: Mapping[str, Any]) -> None:
             f"({recommendation['accuracy']:.1%})",
         ),
         (
+            "Recommendation accuracy (no fallbacks)",
+            f"{recommendation_without_fallbacks['correct']}/"
+            f"{recommendation_without_fallbacks['total']} "
+            f"({recommendation_without_fallbacks['accuracy']:.1%})",
+        ),
+        (
             "Human-review routing accuracy",
             f"{routing['correct']}/{routing['total']} "
             f"({routing['accuracy']:.1%})",
+        ),
+        (
+            "Human-review routing accuracy (no fallbacks)",
+            f"{routing_without_fallbacks['correct']}/"
+            f"{routing_without_fallbacks['total']} "
+            f"({routing_without_fallbacks['accuracy']:.1%})",
         ),
         ("MISSED ESCALATIONS", str(metrics["missed_escalations"]["count"])),
         (
@@ -372,7 +561,23 @@ def _print_results(results: Mapping[str, Any]) -> None:
             f"{citations['correct']}/{citations['total']} "
             f"({citations['accuracy']:.1%})",
         ),
+        (
+            "Expected-policy retrieval recall",
+            f"{retrieval['retrieved_expected_policy_count']}/"
+            f"{retrieval['expected_policy_count']} "
+            f"({retrieval['recall']:.1%})",
+        ),
         ("LLM fallback count", str(metrics["llm_fallback_count"])),
+        (
+            "LLM fallback reasons",
+            ", ".join(
+                f"{reason} ({count})"
+                for reason, count in metrics[
+                    "llm_fallback_count_by_reason"
+                ].items()
+            )
+            or "none",
+        ),
         ("Workflow failure count", str(metrics["workflow_failure_count"])),
         ("End-to-end latency p50", f"{latency['p50']:.1f} ms"),
         ("End-to-end latency p95", f"{latency['p95']:.1f} ms"),

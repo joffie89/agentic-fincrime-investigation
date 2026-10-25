@@ -47,8 +47,9 @@ class StaticRelationshipAnomalyScorer:
 
 
 class StaticRetriever:
-    def retrieve(self, _query: str, top_k: int = 3):
-        policies = [
+    @staticmethod
+    def _policies():
+        return [
             RetrievedPolicy(
                 policy_id="DEMO-AML-001",
                 chunk_id="DEMO-AML-001#001",
@@ -56,7 +57,15 @@ class StaticRetriever:
                 relevance_score=0.8,
             )
         ]
-        return policies[:top_k]
+
+    def retrieve(self, _query: str, top_k: int = 3):
+        return self._policies()[:top_k]
+
+    def get_by_policy_ids(self, policy_ids: list[str]):
+        requested = set(policy_ids)
+        return [
+            policy for policy in self._policies() if policy.policy_id in requested
+        ]
 
 
 class RaisingService:
