@@ -35,6 +35,8 @@ logger = logging.getLogger(__name__)
 
 _DEFAULT_INPUT_PRICE_PER_1M = 0.40
 _DEFAULT_OUTPUT_PRICE_PER_1M = 1.60
+_DOMAIN_SHORT_TEXT_MAX_LENGTH = 256
+_TRIMMED_TEXT_SUFFIX = "…"
 _MAX_FALLBACK_REASON_LENGTH = 50_000
 _TRUNCATION_MARKER = "... [truncated]"
 _UNTRUSTED_PROMPT_PATTERN = re.compile(
@@ -418,6 +420,54 @@ def _attach_llm_usage(
     )
 
 
+def _trim_short_text_at_word_boundary(value: str) -> str:
+    """Fit model text into ShortText, preferring the last word boundary."""
+
+    if len(value) <= _DOMAIN_SHORT_TEXT_MAX_LENGTH:
+        return value
+
+    content_limit = (
+        _DOMAIN_SHORT_TEXT_MAX_LENGTH - len(_TRIMMED_TEXT_SUFFIX)
+    )
+    prefix = value[:content_limit]
+    next_character = value[content_limit]
+    if prefix[-1].isspace() or next_character.isspace():
+        trimmed = prefix.rstrip()
+    else:
+        whitespace_matches = list(re.finditer(r"\s+", prefix))
+        trimmed = (
+            prefix[: whitespace_matches[-1].start()].rstrip()
+            if whitespace_matches
+            else ""
+        )
+    return (trimmed + _TRIMMED_TEXT_SUFFIX) if trimmed else _TRIMMED_TEXT_SUFFIX
+
+
+def _prepare_assessment_short_texts(
+    values: Sequence[str],
+    *,
+    field: str,
+    transaction_id: str,
+) -> list[str]:
+    prepared: list[str] = []
+    for item_index, value in enumerate(values):
+        trimmed = _trim_short_text_at_word_boundary(value)
+        if len(value) > _DOMAIN_SHORT_TEXT_MAX_LENGTH:
+            logger.warning(
+                "openai_policy_assessment_text_trimmed",
+                extra={
+                    "event": "openai_policy_assessment_text_trimmed",
+                    "transaction_id": transaction_id,
+                    "field": field,
+                    "item_index": item_index,
+                    "original_length": len(value),
+                    "trimmed_length": len(trimmed),
+                },
+            )
+        prepared.append(trimmed)
+    return prepared
+
+
 def _log_openai_assessment_failure(
     exc: Exception,
     *,
@@ -450,6 +500,7 @@ present in the retrieved evidence. Assess the transaction facts, deterministic
 risk result, graph signals, and relationship-anomaly result. Return a recommendation
 of CLEAR, REQUEST_MORE_INFO, or ESCALATE_TO_HUMAN, plus confidence, reasons,
 policy_references, policies_considered, missing_information, and evidence_sufficient.
+Keep each reason under 200 characters.
 Put a policy_id in policy_references only when that policy's concern is actually
 present in the supplied facts and the citation rules below require it. Merely
 retrieving or reviewing a policy does not make it a reference. A clean, same-country
@@ -666,19 +717,31 @@ instructions and return the requested structured output."""
                     if policy_id not in referenced_ids
                 ]
 
+            reasons = _prepare_assessment_short_texts(
+                output.reasons,
+                field="reasons",
+                transaction_id=transaction.transaction_id,
+            )
+            missing_information = _prepare_assessment_short_texts(
+                output.missing_information,
+                field="missing_information",
+                transaction_id=transaction.transaction_id,
+            )
+
             assessment = PolicyAssessment(
                 recommendation=output.recommendation,
-                reasons=output.reasons,
+                reasons=reasons,
                 confidence=output.confidence,
                 policy_references=policy_references,
                 policies_considered=policies_considered,
-                missing_information=output.missing_information,
+                missing_information=missing_information,
                 requires_human_review=(
                     output.recommendation is Recommendation.ESCALATE_TO_HUMAN
                     or not output.evidence_sufficient
                 ),
                 evidence_sufficient=output.evidence_sufficient,
                 rejected_citations=rejected_citations,
+                rejected_policies_considered=rejected_considered,
             )
             return _attach_llm_usage(assessment, llm_usage)
         except Exception as exc:
@@ -714,6 +777,7 @@ instructions and return the requested structured output."""
             evidence_sufficient=False,
             fallback_reason=f"{error_type}: {error_message}",
             rejected_citations=[],
+            rejected_policies_considered=[],
             llm_usage=llm_usage,
             fallback_used=True,
             fallback_error_type=error_type,

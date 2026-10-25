@@ -10,6 +10,7 @@ from app.evaluation.decision_eval import (
     DecisionObservation,
     _fallback_reason,
     _rejected_citations,
+    _rejected_policies_considered,
     _retrieval_source_ids,
     calculate_decision_metrics,
 )
@@ -188,6 +189,7 @@ def test_decision_observation_records_diagnostics_and_failure_defaults() -> None
         policy_references=["POL-A"],
         policies_considered=["POL-B"],
         rejected_citations=["POL-X"],
+        rejected_policies_considered=["POL-Y"],
         llm_reasons=["One risk signal needs supporting information."],
         llm_fallback_used=False,
         fallback_reason=None,
@@ -207,6 +209,7 @@ def test_decision_observation_records_diagnostics_and_failure_defaults() -> None
     assert completed["semantic_retrieved_policy_ids"] == ["POL-B"]
     assert completed["signal_included_policy_ids"] == ["POL-A"]
     assert completed["rejected_citations"] == ["POL-X"]
+    assert completed["rejected_policies_considered"] == ["POL-Y"]
     assert completed["fallback_reason"] is None
     assert completed["llm_reasons"] == [
         "One risk signal needs supporting information."
@@ -236,6 +239,7 @@ def test_decision_observation_records_diagnostics_and_failure_defaults() -> None
     assert failed["semantic_retrieved_policy_ids"] == []
     assert failed["signal_included_policy_ids"] == []
     assert failed["rejected_citations"] == []
+    assert failed["rejected_policies_considered"] == []
     assert failed["fallback_reason"] is None
     assert failed["llm_reasons"] == []
 
@@ -248,6 +252,7 @@ def test_decision_diagnostics_read_current_audit_shape() -> None:
         },
         "policy_assessment": {
             "rejected_citations": ["POL-INVENTED"],
+            "rejected_policies_considered": ["POL-NOT-REVIEWED"],
         },
         "fallbacks": [
             {
@@ -260,6 +265,7 @@ def test_decision_diagnostics_read_current_audit_shape() -> None:
     assessment = SimpleNamespace(
         fallback_reason=None,
         rejected_citations=[],
+        rejected_policies_considered=[],
     )
 
     assert _retrieval_source_ids(audit_record) == (
@@ -270,3 +276,6 @@ def test_decision_diagnostics_read_current_audit_shape() -> None:
         "ValidationError: invalid structured response"
     )
     assert _rejected_citations(assessment, audit_record) == ["POL-INVENTED"]
+    assert _rejected_policies_considered(assessment, audit_record) == [
+        "POL-NOT-REVIEWED"
+    ]

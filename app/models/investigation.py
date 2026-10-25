@@ -124,6 +124,7 @@ class PolicyAssessment(DomainModel):
     # application's Identifier constraints. Keeping them as raw strings lets
     # us audit a malformed citation without turning it into another fallback.
     rejected_citations: list[str] = Field(default_factory=list)
+    rejected_policies_considered: list[str] = Field(default_factory=list)
 
 
 class LLMUsage(DomainModel):

@@ -713,6 +713,11 @@ class InvestigationWorkflow:
                 if policy_assessment is not None
                 else []
             ),
+            "rejected_policies_considered": (
+                policy_assessment.rejected_policies_considered
+                if policy_assessment is not None
+                else []
+            ),
             "routing": state.get("routing"),
             "recommendation": (
                 recommendation.model_dump(mode="json")

@@ -202,6 +202,7 @@ def test_successful_investigation_persists_complete_audit_trail(
     assert record["policy_assessment"] == assessment.model_dump(mode="json")
     assert record["fallback_reason"] is None
     assert record["rejected_citations"] == []
+    assert record["rejected_policies_considered"] == []
     assert record["routing"]["decision"] == "complete"
     assert record["routing"]["triggered_rule"]
     assert record["routing"]["triggered_rule"] in record["routing"][

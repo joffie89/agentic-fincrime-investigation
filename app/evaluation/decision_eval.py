@@ -69,6 +69,7 @@ class DecisionObservation(DomainModel):
     policy_references: list[Identifier] = Field(default_factory=list)
     policies_considered: list[Identifier] = Field(default_factory=list)
     rejected_citations: list[str] = Field(default_factory=list)
+    rejected_policies_considered: list[str] = Field(default_factory=list)
     llm_reasons: list[ShortText] = Field(default_factory=list)
     llm_fallback_used: StrictBool
     fallback_reason: str | None = None
@@ -351,6 +352,23 @@ def _rejected_citations(
     return []
 
 
+def _rejected_policies_considered(
+    policy_assessment: Any,
+    audit_record: Mapping[str, Any] | None,
+) -> list[str]:
+    rejected = _string_list(
+        getattr(policy_assessment, "rejected_policies_considered", None)
+    )
+    if rejected or audit_record is None:
+        return rejected
+    recorded_assessment = audit_record.get("policy_assessment")
+    if isinstance(recorded_assessment, Mapping):
+        return _string_list(
+            recorded_assessment.get("rejected_policies_considered")
+        )
+    return _string_list(audit_record.get("rejected_policies_considered"))
+
+
 def _evaluate_case(
     service: InvestigationService,
     case: DecisionEvaluationCase,
@@ -388,6 +406,7 @@ def _evaluate_case(
             policy_references=[],
             policies_considered=[],
             rejected_citations=[],
+            rejected_policies_considered=[],
             llm_reasons=[],
             llm_fallback_used=False,
             fallback_reason=None,
@@ -445,6 +464,10 @@ def _evaluate_case(
             result.policy_assessment.policies_considered
         ),
         rejected_citations=_rejected_citations(
+            result.policy_assessment,
+            audit_record,
+        ),
+        rejected_policies_considered=_rejected_policies_considered(
             result.policy_assessment,
             audit_record,
         ),
