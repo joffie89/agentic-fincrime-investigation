@@ -1,0 +1,5222 @@
+{
+  "generated_at": "2026-10-26T08:42:44.543887+00:00",
+  "dataset": "C:\\Users\\joffi\\agentic-fincrime-investigation\\evaluation\\decision_cases_holdout.json",
+  "service_mode": "openai",
+  "embedding_mode": "openai",
+  "retrieval_mode": "vector",
+  "openai_assessment_temperature": 0.0,
+  "case_count": 20,
+  "run_count": 3,
+  "total_case_evaluations": 60,
+  "cost_scope": "Policy-assessment LLM usage only; embedding API cost is not included.",
+  "metrics": {
+    "case_count": 20,
+    "recommendation_accuracy": {
+      "correct": 18,
+      "total": 20,
+      "accuracy": 0.9
+    },
+    "llm_recommendation_accuracy": {
+      "correct": 17,
+      "total": 20,
+      "accuracy": 0.85
+    },
+    "recommendation_accuracy_excluding_fallbacks": {
+      "correct": 18,
+      "total": 20,
+      "accuracy": 0.9
+    },
+    "human_review_routing_accuracy": {
+      "correct": 18,
+      "total": 20,
+      "accuracy": 0.9
+    },
+    "human_review_routing_accuracy_excluding_fallbacks": {
+      "correct": 18,
+      "total": 20,
+      "accuracy": 0.9
+    },
+    "missed_escalations": {
+      "count": 0,
+      "case_names": []
+    },
+    "unnecessary_escalations": {
+      "count": 2,
+      "case_names": [
+        "holdout single signal velocity on mature account",
+        "holdout single signal velocity cross border"
+      ]
+    },
+    "exact_citation_match_rate": {
+      "correct": 20,
+      "total": 20,
+      "accuracy": 1.0
+    },
+    "llm_fallback_count": 0,
+    "llm_fallback_count_by_reason": {},
+    "rubric_override_count": 1,
+    "rubric_override_case_names": [
+      "holdout multi signal young account unusual amount"
+    ],
+    "deterministic_citation_case_count": 5,
+    "deterministic_citation_count": 5,
+    "deterministic_citation_case_names": [
+      "holdout single signal young account cross border",
+      "holdout single signal velocity cross border",
+      "holdout multi signal velocity and unusual amount",
+      "holdout multi all signals high risk cross border",
+      "holdout boundary cross border without risk signals"
+    ],
+    "retrieval_recall": {
+      "retrieved_expected_policy_count": 25,
+      "expected_policy_count": 25,
+      "missing_expected_policy_count": 0,
+      "recall": 1.0,
+      "cases_with_complete_retrieval": 20,
+      "case_count": 20,
+      "missing_policy_ids": {}
+    },
+    "workflow_failure_count": 0,
+    "latency_ms": {
+      "p50": 2217.2448000637814,
+      "p95": 3293.5069600818697
+    },
+    "cost_usd": {
+      "total": 0.0183,
+      "average_per_case": 0.000915
+    }
+  },
+  "cases": [
+    {
+      "name": "holdout clean domestic subscription payment",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "original_llm_recommendation": "CLEAR",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "signal_included_policy_ids": [],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "automatic_completion_criteria_met",
+      "policy_references": [],
+      "policies_considered": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "No risk signals present: account age >30 days, not a new payee, amount not unusually high, low transaction velocity, no network link."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 5780.030499910936,
+      "estimated_cost_usd": 0.0008568000000000001,
+      "completed": true,
+      "investigation_id": "478bd331-a375-4081-8170-fae86d645147",
+      "llm_usage": {
+        "input_tokens": 1782,
+        "output_tokens": 90,
+        "latency_ms": 3204.6,
+        "estimated_cost_usd": 0.0008568000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout clean established household payment",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "original_llm_recommendation": "CLEAR",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "signal_included_policy_ids": [],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "automatic_completion_criteria_met",
+      "policy_references": [],
+      "policies_considered": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "No risk signals triggered: account is old, payee is not new, amount is not unusual, velocity is low, no network link.",
+        "Cross-border context not applicable as origin and destination countries are the same."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2224.643300054595,
+      "estimated_cost_usd": 0.0008760000000000002,
+      "completed": true,
+      "investigation_id": "176a99a9-36f2-42ee-a7a8-0ed12d6d0f33",
+      "llm_usage": {
+        "input_tokens": 1782,
+        "output_tokens": 102,
+        "latency_ms": 1854.1,
+        "estimated_cost_usd": 0.0008760000000000002
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout clean routine insurance debit",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "original_llm_recommendation": "CLEAR",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "signal_included_policy_ids": [],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "automatic_completion_criteria_met",
+      "policy_references": [],
+      "policies_considered": [
+        "DEMO-AML-004",
+        "DEMO-AML-019",
+        "DEMO-AML-001"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "No risk signals present: account is old, payee is not new, amount is not unusual, low transaction velocity, no network link.",
+        "Cross-border policy DEMO-AML-004 reviewed but not applicable as transaction is domestic."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 1897.354699904099,
+      "estimated_cost_usd": 0.0008820000000000001,
+      "completed": true,
+      "investigation_id": "fb99cf7c-b002-464f-8c20-b2a9ac36a345",
+      "llm_usage": {
+        "input_tokens": 1781,
+        "output_tokens": 106,
+        "latency_ms": 1548.8,
+        "estimated_cost_usd": 0.0008820000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout clean known contractor invoice",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "original_llm_recommendation": "CLEAR",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-019"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-019"
+      ],
+      "signal_included_policy_ids": [],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "automatic_completion_criteria_met",
+      "policy_references": [],
+      "policies_considered": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-019"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "No risk signals present: account is old, payee is not new, amount is not unusual, velocity is low, no network link.",
+        "Cross-border activity absent, so no additional risk from geography."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 3162.6373000908643,
+      "estimated_cost_usd": 0.0008728000000000001,
+      "completed": true,
+      "investigation_id": "d63530db-bda5-4d95-a895-cef7ebce5d0d",
+      "llm_usage": {
+        "input_tokens": 1782,
+        "output_tokens": 100,
+        "latency_ms": 1753.1,
+        "estimated_cost_usd": 0.0008728000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout clean mature low value transfer",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "original_llm_recommendation": "CLEAR",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "signal_included_policy_ids": [],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "automatic_completion_criteria_met",
+      "policy_references": [],
+      "policies_considered": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "No risk signals triggered: account age >30 days, not a new payee, amount not unusually high, velocity moderate, no network link.",
+        "Cross-border activity absent, so no additional risk signal.",
+        "Deterministic risk assessment is LOW risk level.",
+        "Graph analysis shows no suspicious signals or network links.",
+        "Relationship anomaly is not anomalous."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2731.7480000201613,
+      "estimated_cost_usd": 0.0009156000000000001,
+      "completed": true,
+      "investigation_id": "a1feb9e2-58a7-42ee-9ec8-51a6ff68a3f6",
+      "llm_usage": {
+        "input_tokens": 1781,
+        "output_tokens": 127,
+        "latency_ms": 2342.4,
+        "estimated_cost_usd": 0.0009156000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout single signal young account only",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001"
+      ],
+      "original_llm_recommendation": "REQUEST_MORE_INFO",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-019"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-019"
+      ],
+      "signal_included_policy_ids": [
+        "DEMO-AML-001"
+      ],
+      "confidence": 0.9,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "automatic_completion_criteria_met",
+      "policy_references": [
+        "DEMO-AML-001"
+      ],
+      "policies_considered": [
+        "DEMO-AML-004",
+        "DEMO-AML-019"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "Account is less than 30 days old, triggering a risk signal.",
+        "No other risk signals present, so further info is needed."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2466.7811000254005,
+      "estimated_cost_usd": 0.0008567999999999999,
+      "completed": true,
+      "investigation_id": "35511598-90a3-47e5-98b7-34829c3a3a2c",
+      "llm_usage": {
+        "input_tokens": 1790,
+        "output_tokens": 88,
+        "latency_ms": 2137.8,
+        "estimated_cost_usd": 0.0008567999999999999
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout single signal new payee normal value",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006"
+      ],
+      "original_llm_recommendation": "REQUEST_MORE_INFO",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ],
+      "signal_included_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006"
+      ],
+      "confidence": 0.85,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "automatic_completion_criteria_met",
+      "policy_references": [
+        "DEMO-AML-001",
+        "DEMO-AML-006"
+      ],
+      "policies_considered": [
+        "DEMO-AML-004"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "New payee risk signal present",
+        "No other risk signals detected",
+        "Deterministic risk level is LOW",
+        "No suspicious network links found"
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2359.7238999791443,
+      "estimated_cost_usd": 0.0008612,
+      "completed": true,
+      "investigation_id": "1d3ad91a-5e9c-415e-9fe3-945c9d478673",
+      "llm_usage": {
+        "input_tokens": 1797,
+        "output_tokens": 89,
+        "latency_ms": 1974.4,
+        "estimated_cost_usd": 0.0008612
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout single signal velocity on mature account",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-002"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-002"
+      ],
+      "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-005",
+        "DEMO-AML-004",
+        "DEMO-AML-002"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-005",
+        "DEMO-AML-004"
+      ],
+      "signal_included_policy_ids": [
+        "DEMO-AML-002"
+      ],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "policy_assessment_requires_human_review",
+      "policy_references": [
+        "DEMO-AML-002"
+      ],
+      "policies_considered": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-005"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "More than 10 transactions in last 24h triggers HIGH_VELOCITY risk signal.",
+        "Account is not young, no new payee, no unusual amount, but velocity alone requires escalation."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2116.0695999860764,
+      "estimated_cost_usd": 0.0009756000000000002,
+      "completed": true,
+      "investigation_id": "75de7a7e-7672-47fd-9d0b-88cfd68f639d",
+      "llm_usage": {
+        "input_tokens": 1991,
+        "output_tokens": 112,
+        "latency_ms": 1757.2,
+        "estimated_cost_usd": 0.0009756000000000002
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout single signal amount above five times average",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001"
+      ],
+      "original_llm_recommendation": "REQUEST_MORE_INFO",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-019",
+        "DEMO-AML-017"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-019",
+        "DEMO-AML-017"
+      ],
+      "signal_included_policy_ids": [
+        "DEMO-AML-001"
+      ],
+      "confidence": 0.9,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "medium_risk_assessment_not_clear",
+      "policy_references": [
+        "DEMO-AML-001"
+      ],
+      "policies_considered": [
+        "DEMO-AML-019",
+        "DEMO-AML-017"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "Transaction amount is more than 5 times average, triggering UNUSUAL_AMOUNT signal.",
+        "Only one risk signal present, so more info needed rather than clear or escalate."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2504.935599863529,
+      "estimated_cost_usd": 0.0008644000000000001,
+      "completed": true,
+      "investigation_id": "ca5b535b-50af-4645-812c-7df8c775728e",
+      "llm_usage": {
+        "input_tokens": 1781,
+        "output_tokens": 95,
+        "latency_ms": 2018.8,
+        "estimated_cost_usd": 0.0008644000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout single signal young account cross border",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ],
+      "original_llm_recommendation": "REQUEST_MORE_INFO",
+      "rubric_override": false,
+      "deterministic_citations": [
+        "DEMO-AML-004"
+      ],
+      "retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-005"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-005"
+      ],
+      "signal_included_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ],
+      "confidence": 0.9,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "automatic_completion_criteria_met",
+      "policy_references": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ],
+      "policies_considered": [
+        "DEMO-AML-005"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "Account age is less than 30 days, triggering a risk signal.",
+        "No other risk signals present, so cautious review is advised."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2262.917699990794,
+      "estimated_cost_usd": 0.0008612,
+      "completed": true,
+      "investigation_id": "707bce15-fbc5-408e-b288-d789f282abb4",
+      "llm_usage": {
+        "input_tokens": 1801,
+        "output_tokens": 88,
+        "latency_ms": 1920.1,
+        "estimated_cost_usd": 0.0008612
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout single signal velocity cross border",
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+      "rubric_override": false,
+      "deterministic_citations": [
+        "DEMO-AML-004"
+      ],
+      "retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-019",
+        "DEMO-AML-002"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-019"
+      ],
+      "signal_included_policy_ids": [
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "policy_assessment_requires_human_review",
+      "policy_references": [
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "policies_considered": [
+        "DEMO-AML-001",
+        "DEMO-AML-019"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "High velocity: 12 transactions in last 24h exceeds threshold of 10."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2178.9187998510897,
+      "estimated_cost_usd": 0.000936,
+      "completed": true,
+      "investigation_id": "7d97e7b8-9fd4-48e4-997e-aed8d0c78730",
+      "llm_usage": {
+        "input_tokens": 1980,
+        "output_tokens": 90,
+        "latency_ms": 1671.0,
+        "estimated_cost_usd": 0.000936
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout multi APP pattern new payee and unusual amount",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006",
+        "DEMO-AML-004"
+      ],
+      "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-016",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-016",
+        "DEMO-AML-004"
+      ],
+      "signal_included_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "medium_risk_assessment_not_clear",
+      "policy_references": [
+        "DEMO-AML-001",
+        "DEMO-AML-006",
+        "DEMO-AML-004"
+      ],
+      "policies_considered": [
+        "DEMO-AML-016"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "New payee and unusual amount both present, triggering escalation.",
+        "Account is not young, velocity low, no network link, but combined signals require escalation.",
+        "Cross-border context noted but not a risk signal here."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2131.1145999934524,
+      "estimated_cost_usd": 0.00098,
+      "completed": true,
+      "investigation_id": "6e391be1-3d20-490f-9ba7-35d0b2517ac1",
+      "llm_usage": {
+        "input_tokens": 1994,
+        "output_tokens": 114,
+        "latency_ms": 1831.8,
+        "estimated_cost_usd": 0.00098
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout multi signal young account unusual amount",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001"
+      ],
+      "original_llm_recommendation": "REQUEST_MORE_INFO",
+      "rubric_override": true,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-016",
+        "DEMO-AML-005"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-016",
+        "DEMO-AML-005"
+      ],
+      "signal_included_policy_ids": [
+        "DEMO-AML-001"
+      ],
+      "confidence": 0.9,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "medium_risk_assessment_not_clear",
+      "policy_references": [
+        "DEMO-AML-001"
+      ],
+      "policies_considered": [
+        "DEMO-AML-005",
+        "DEMO-AML-016"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "Account is young (23 days) triggering review.",
+        "Transaction amount is unusually high (2865 > 5x average 550).",
+        "No new payee or network link signals present."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2233.302100095898,
+      "estimated_cost_usd": 0.0008844,
+      "completed": true,
+      "investigation_id": "cf3c73c8-757f-405a-9547-88bed3bac892",
+      "llm_usage": {
+        "input_tokens": 1815,
+        "output_tokens": 99,
+        "latency_ms": 1627.3,
+        "estimated_cost_usd": 0.0008844
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout multi signal velocity and unusual amount",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+      "rubric_override": false,
+      "deterministic_citations": [
+        "DEMO-AML-004"
+      ],
+      "retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-019",
+        "DEMO-AML-004"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-019"
+      ],
+      "signal_included_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "medium_risk_assessment_not_clear",
+      "policy_references": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "policies_considered": [
+        "DEMO-AML-019"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "High velocity with 14 transactions in 24h triggers concern",
+        "Transaction amount is over 5x average, unusual amount signal",
+        "Two risk signals present: high velocity and unusual amount"
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2035.427400143817,
+      "estimated_cost_usd": 0.000976,
+      "completed": true,
+      "investigation_id": "71996c21-a34e-4257-acb7-f906c446836c",
+      "llm_usage": {
+        "input_tokens": 2000,
+        "output_tokens": 110,
+        "latency_ms": 1704.5,
+        "estimated_cost_usd": 0.000976
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout multi signal young new payee velocity",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-006"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006",
+        "DEMO-AML-002"
+      ],
+      "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-016",
+        "DEMO-AML-006",
+        "DEMO-AML-002"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-016",
+        "DEMO-AML-006"
+      ],
+      "signal_included_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-006"
+      ],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "medium_risk_assessment_not_clear",
+      "policy_references": [
+        "DEMO-AML-001",
+        "DEMO-AML-006",
+        "DEMO-AML-002"
+      ],
+      "policies_considered": [
+        "DEMO-AML-016"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "Account is young (15 days) - risk signal YOUNG_ACCOUNT",
+        "New payee involved - risk signal NEW_PAYEE",
+        "High transaction velocity (13 in 24h) - risk signal HIGH_VELOCITY",
+        "Multiple risk signals present (3) triggers escalation"
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2209.846300072968,
+      "estimated_cost_usd": 0.0010072,
+      "completed": true,
+      "investigation_id": "48b306df-1ce1-4c69-a642-977878f8455f",
+      "llm_usage": {
+        "input_tokens": 2006,
+        "output_tokens": 128,
+        "latency_ms": 1871.9,
+        "estimated_cost_usd": 0.0010072
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout multi all signals high risk cross border",
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "actual_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006",
+        "DEMO-AML-005",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+      "rubric_override": false,
+      "deterministic_citations": [
+        "DEMO-AML-004"
+      ],
+      "retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006",
+        "DEMO-AML-005",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006",
+        "DEMO-AML-005"
+      ],
+      "signal_included_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "high_risk_requires_human_review",
+      "policy_references": [
+        "DEMO-AML-001",
+        "DEMO-AML-006",
+        "DEMO-AML-005",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ],
+      "policies_considered": [],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "Account is less than 30 days old (YOUNG_ACCOUNT)",
+        "Transaction is to a new payee (NEW_PAYEE)",
+        "Transaction amount is more than 5x average (UNUSUAL_AMOUNT)",
+        "More than 10 transactions in last 24h (HIGH_VELOCITY)",
+        "Cross-border transaction adds context but not risk signal"
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2180.4381001275033,
+      "estimated_cost_usd": 0.0011264,
+      "completed": true,
+      "investigation_id": "1672e7a3-b9fa-4faf-9187-98c010cc63f9",
+      "llm_usage": {
+        "input_tokens": 2208,
+        "output_tokens": 152,
+        "latency_ms": 1881.3,
+        "estimated_cost_usd": 0.0011264
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout boundary account exactly thirty days",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "original_llm_recommendation": "CLEAR",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "signal_included_policy_ids": [],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "automatic_completion_criteria_met",
+      "policy_references": [],
+      "policies_considered": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "No risk signals triggered: account age is 30 days, payee is not new, amount is not unusual, velocity low, no network link.",
+        "Cross-border policy DEMO-AML-004 present but origin and destination countries are the same, so no cross-border risk."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 2101.0519999545068,
+      "estimated_cost_usd": 0.0008984,
+      "completed": true,
+      "investigation_id": "89b2e7a3-7dd6-493e-aac4-095d887ee02b",
+      "llm_usage": {
+        "input_tokens": 1786,
+        "output_tokens": 115,
+        "latency_ms": 1811.0,
+        "estimated_cost_usd": 0.0008984
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout boundary exactly ten transactions",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "original_llm_recommendation": "CLEAR",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "signal_included_policy_ids": [],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "automatic_completion_criteria_met",
+      "policy_references": [],
+      "policies_considered": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "No risk signals triggered: account is old, payee is not new, amount is not unusual, velocity at threshold but not exceeded, no network link.",
+        "Deterministic risk is LOW with no investigation needed.",
+        "Graph analysis shows no suspicious signals or links.",
+        "Relationship anomaly is not anomalous.",
+        "Transaction is domestic, so no cross-border risk signal."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 3017.1797000803053,
+      "estimated_cost_usd": 0.0009212000000000001,
+      "completed": true,
+      "investigation_id": "a70d228f-3900-4307-bdc7-ceffe246877b",
+      "llm_usage": {
+        "input_tokens": 1787,
+        "output_tokens": 129,
+        "latency_ms": 2701.5,
+        "estimated_cost_usd": 0.0009212000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout boundary amount exactly five times average",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [],
+      "actual_policy_ids": [],
+      "original_llm_recommendation": "CLEAR",
+      "rubric_override": false,
+      "deterministic_citations": [],
+      "retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "signal_included_policy_ids": [],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "automatic_completion_criteria_met",
+      "policy_references": [],
+      "policies_considered": [
+        "DEMO-AML-019",
+        "DEMO-AML-004",
+        "DEMO-AML-001"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "No risk signals triggered: account is old, payee is not new, amount is not unusually high, velocity is low, no network link.",
+        "Cross-border policy DEMO-AML-004 present but not applicable as origin and destination countries are the same."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 1964.6253001410514,
+      "estimated_cost_usd": 0.0008924000000000001,
+      "completed": true,
+      "investigation_id": "557747f2-a0c3-4408-b76f-88ef67bb0f99",
+      "llm_usage": {
+        "input_tokens": 1787,
+        "output_tokens": 111,
+        "latency_ms": 1661.8,
+        "estimated_cost_usd": 0.0008924000000000001
+      },
+      "workflow_error": null
+    },
+    {
+      "name": "holdout boundary cross border without risk signals",
+      "expected_recommendation": "CLEAR",
+      "actual_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "actual_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ],
+      "actual_policy_ids": [
+        "DEMO-AML-004"
+      ],
+      "original_llm_recommendation": "CLEAR",
+      "rubric_override": false,
+      "deterministic_citations": [
+        "DEMO-AML-004"
+      ],
+      "retrieved_policy_ids": [
+        "DEMO-AML-004",
+        "DEMO-AML-019",
+        "DEMO-AML-001"
+      ],
+      "semantic_retrieved_policy_ids": [
+        "DEMO-AML-004",
+        "DEMO-AML-019",
+        "DEMO-AML-001"
+      ],
+      "signal_included_policy_ids": [
+        "DEMO-AML-004"
+      ],
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "automatic_completion_criteria_met",
+      "policy_references": [
+        "DEMO-AML-004"
+      ],
+      "policies_considered": [
+        "DEMO-AML-019",
+        "DEMO-AML-001"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "No risk signals triggered: account is old, payee is not new, amount is not unusual, low transaction velocity, no network link."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 1906.8819000385702,
+      "estimated_cost_usd": 0.0008556000000000001,
+      "completed": true,
+      "investigation_id": "43611c66-66ae-48b0-803a-e765d2f8493f",
+      "llm_usage": {
+        "input_tokens": 1787,
+        "output_tokens": 88,
+        "latency_ms": 1594.0,
+        "estimated_cost_usd": 0.0008556000000000001
+      },
+      "workflow_error": null
+    }
+  ],
+  "metric_summary": {
+    "case_count": {
+      "mean": 20.0,
+      "min": 20.0,
+      "max": 20.0
+    },
+    "cost_usd.average_per_case": {
+      "mean": 0.0009105733333333333,
+      "min": 0.0009071600000000001,
+      "max": 0.000915
+    },
+    "cost_usd.total": {
+      "mean": 0.018211466666666665,
+      "min": 0.0181432,
+      "max": 0.0183
+    },
+    "deterministic_citation_case_count": {
+      "mean": 4.333333333333333,
+      "min": 4.0,
+      "max": 5.0
+    },
+    "deterministic_citation_count": {
+      "mean": 4.333333333333333,
+      "min": 4.0,
+      "max": 5.0
+    },
+    "exact_citation_match_rate.accuracy": {
+      "mean": 1.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "exact_citation_match_rate.correct": {
+      "mean": 20.0,
+      "min": 20.0,
+      "max": 20.0
+    },
+    "exact_citation_match_rate.total": {
+      "mean": 20.0,
+      "min": 20.0,
+      "max": 20.0
+    },
+    "human_review_routing_accuracy.accuracy": {
+      "mean": 0.9,
+      "min": 0.9,
+      "max": 0.9
+    },
+    "human_review_routing_accuracy.correct": {
+      "mean": 18.0,
+      "min": 18.0,
+      "max": 18.0
+    },
+    "human_review_routing_accuracy.total": {
+      "mean": 20.0,
+      "min": 20.0,
+      "max": 20.0
+    },
+    "human_review_routing_accuracy_excluding_fallbacks.accuracy": {
+      "mean": 0.9,
+      "min": 0.9,
+      "max": 0.9
+    },
+    "human_review_routing_accuracy_excluding_fallbacks.correct": {
+      "mean": 18.0,
+      "min": 18.0,
+      "max": 18.0
+    },
+    "human_review_routing_accuracy_excluding_fallbacks.total": {
+      "mean": 20.0,
+      "min": 20.0,
+      "max": 20.0
+    },
+    "latency_ms.p50": {
+      "mean": 2114.1017333138734,
+      "min": 2044.0133499214426,
+      "max": 2217.2448000637814
+    },
+    "latency_ms.p95": {
+      "mean": 2787.2827784158294,
+      "min": 2343.3729451149707,
+      "max": 3293.5069600818697
+    },
+    "llm_fallback_count": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
+    "llm_recommendation_accuracy.accuracy": {
+      "mean": 0.85,
+      "min": 0.85,
+      "max": 0.85
+    },
+    "llm_recommendation_accuracy.correct": {
+      "mean": 17.0,
+      "min": 17.0,
+      "max": 17.0
+    },
+    "llm_recommendation_accuracy.total": {
+      "mean": 20.0,
+      "min": 20.0,
+      "max": 20.0
+    },
+    "missed_escalations.count": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
+    "recommendation_accuracy.accuracy": {
+      "mean": 0.9,
+      "min": 0.9,
+      "max": 0.9
+    },
+    "recommendation_accuracy.correct": {
+      "mean": 18.0,
+      "min": 18.0,
+      "max": 18.0
+    },
+    "recommendation_accuracy.total": {
+      "mean": 20.0,
+      "min": 20.0,
+      "max": 20.0
+    },
+    "recommendation_accuracy_excluding_fallbacks.accuracy": {
+      "mean": 0.9,
+      "min": 0.9,
+      "max": 0.9
+    },
+    "recommendation_accuracy_excluding_fallbacks.correct": {
+      "mean": 18.0,
+      "min": 18.0,
+      "max": 18.0
+    },
+    "recommendation_accuracy_excluding_fallbacks.total": {
+      "mean": 20.0,
+      "min": 20.0,
+      "max": 20.0
+    },
+    "retrieval_recall.case_count": {
+      "mean": 20.0,
+      "min": 20.0,
+      "max": 20.0
+    },
+    "retrieval_recall.cases_with_complete_retrieval": {
+      "mean": 20.0,
+      "min": 20.0,
+      "max": 20.0
+    },
+    "retrieval_recall.expected_policy_count": {
+      "mean": 25.0,
+      "min": 25.0,
+      "max": 25.0
+    },
+    "retrieval_recall.missing_expected_policy_count": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
+    "retrieval_recall.recall": {
+      "mean": 1.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "retrieval_recall.retrieved_expected_policy_count": {
+      "mean": 25.0,
+      "min": 25.0,
+      "max": 25.0
+    },
+    "rubric_override_count": {
+      "mean": 1.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "unnecessary_escalations.count": {
+      "mean": 2.0,
+      "min": 2.0,
+      "max": 2.0
+    },
+    "workflow_failure_count": {
+      "mean": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    }
+  },
+  "run_results": [
+    {
+      "run": 1,
+      "metrics": {
+        "case_count": 20,
+        "recommendation_accuracy": {
+          "correct": 18,
+          "total": 20,
+          "accuracy": 0.9
+        },
+        "llm_recommendation_accuracy": {
+          "correct": 17,
+          "total": 20,
+          "accuracy": 0.85
+        },
+        "recommendation_accuracy_excluding_fallbacks": {
+          "correct": 18,
+          "total": 20,
+          "accuracy": 0.9
+        },
+        "human_review_routing_accuracy": {
+          "correct": 18,
+          "total": 20,
+          "accuracy": 0.9
+        },
+        "human_review_routing_accuracy_excluding_fallbacks": {
+          "correct": 18,
+          "total": 20,
+          "accuracy": 0.9
+        },
+        "missed_escalations": {
+          "count": 0,
+          "case_names": []
+        },
+        "unnecessary_escalations": {
+          "count": 2,
+          "case_names": [
+            "holdout single signal velocity on mature account",
+            "holdout single signal velocity cross border"
+          ]
+        },
+        "exact_citation_match_rate": {
+          "correct": 20,
+          "total": 20,
+          "accuracy": 1.0
+        },
+        "llm_fallback_count": 0,
+        "llm_fallback_count_by_reason": {},
+        "rubric_override_count": 1,
+        "rubric_override_case_names": [
+          "holdout multi signal young account unusual amount"
+        ],
+        "deterministic_citation_case_count": 5,
+        "deterministic_citation_count": 5,
+        "deterministic_citation_case_names": [
+          "holdout single signal young account cross border",
+          "holdout single signal velocity cross border",
+          "holdout multi signal velocity and unusual amount",
+          "holdout multi all signals high risk cross border",
+          "holdout boundary cross border without risk signals"
+        ],
+        "retrieval_recall": {
+          "retrieved_expected_policy_count": 25,
+          "expected_policy_count": 25,
+          "missing_expected_policy_count": 0,
+          "recall": 1.0,
+          "cases_with_complete_retrieval": 20,
+          "case_count": 20,
+          "missing_policy_ids": {}
+        },
+        "workflow_failure_count": 0,
+        "latency_ms": {
+          "p50": 2217.2448000637814,
+          "p95": 3293.5069600818697
+        },
+        "cost_usd": {
+          "total": 0.0183,
+          "average_per_case": 0.000915
+        }
+      },
+      "cases": [
+        {
+          "name": "holdout clean domestic subscription payment",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals present: account age >30 days, not a new payee, amount not unusually high, low transaction velocity, no network link."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 5780.030499910936,
+          "estimated_cost_usd": 0.0008568000000000001,
+          "completed": true,
+          "investigation_id": "478bd331-a375-4081-8170-fae86d645147",
+          "llm_usage": {
+            "input_tokens": 1782,
+            "output_tokens": 90,
+            "latency_ms": 3204.6,
+            "estimated_cost_usd": 0.0008568000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout clean established household payment",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusual, velocity is low, no network link.",
+            "Cross-border context not applicable as origin and destination countries are the same."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2224.643300054595,
+          "estimated_cost_usd": 0.0008760000000000002,
+          "completed": true,
+          "investigation_id": "176a99a9-36f2-42ee-a7a8-0ed12d6d0f33",
+          "llm_usage": {
+            "input_tokens": 1782,
+            "output_tokens": 102,
+            "latency_ms": 1854.1,
+            "estimated_cost_usd": 0.0008760000000000002
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout clean routine insurance debit",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-004",
+            "DEMO-AML-019",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals present: account is old, payee is not new, amount is not unusual, low transaction velocity, no network link.",
+            "Cross-border policy DEMO-AML-004 reviewed but not applicable as transaction is domestic."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1897.354699904099,
+          "estimated_cost_usd": 0.0008820000000000001,
+          "completed": true,
+          "investigation_id": "fb99cf7c-b002-464f-8c20-b2a9ac36a345",
+          "llm_usage": {
+            "input_tokens": 1781,
+            "output_tokens": 106,
+            "latency_ms": 1548.8,
+            "estimated_cost_usd": 0.0008820000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout clean known contractor invoice",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals present: account is old, payee is not new, amount is not unusual, velocity is low, no network link.",
+            "Cross-border activity absent, so no additional risk from geography."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 3162.6373000908643,
+          "estimated_cost_usd": 0.0008728000000000001,
+          "completed": true,
+          "investigation_id": "d63530db-bda5-4d95-a895-cef7ebce5d0d",
+          "llm_usage": {
+            "input_tokens": 1782,
+            "output_tokens": 100,
+            "latency_ms": 1753.1,
+            "estimated_cost_usd": 0.0008728000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout clean mature low value transfer",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account age >30 days, not a new payee, amount not unusually high, velocity moderate, no network link.",
+            "Cross-border activity absent, so no additional risk signal.",
+            "Deterministic risk assessment is LOW risk level.",
+            "Graph analysis shows no suspicious signals or network links.",
+            "Relationship anomaly is not anomalous."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2731.7480000201613,
+          "estimated_cost_usd": 0.0009156000000000001,
+          "completed": true,
+          "investigation_id": "a1feb9e2-58a7-42ee-9ec8-51a6ff68a3f6",
+          "llm_usage": {
+            "input_tokens": 1781,
+            "output_tokens": 127,
+            "latency_ms": 2342.4,
+            "estimated_cost_usd": 0.0009156000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal young account only",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "REQUEST_MORE_INFO",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [
+            "DEMO-AML-001"
+          ],
+          "policies_considered": [
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account is less than 30 days old, triggering a risk signal.",
+            "No other risk signals present, so further info is needed."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2466.7811000254005,
+          "estimated_cost_usd": 0.0008567999999999999,
+          "completed": true,
+          "investigation_id": "35511598-90a3-47e5-98b7-34829c3a3a2c",
+          "llm_usage": {
+            "input_tokens": 1790,
+            "output_tokens": 88,
+            "latency_ms": 2137.8,
+            "estimated_cost_usd": 0.0008567999999999999
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal new payee normal value",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "REQUEST_MORE_INFO",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006"
+          ],
+          "confidence": 0.85,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-006"
+          ],
+          "policies_considered": [
+            "DEMO-AML-004"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "New payee risk signal present",
+            "No other risk signals detected",
+            "Deterministic risk level is LOW",
+            "No suspicious network links found"
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2359.7238999791443,
+          "estimated_cost_usd": 0.0008612,
+          "completed": true,
+          "investigation_id": "1d3ad91a-5e9c-415e-9fe3-945c9d478673",
+          "llm_usage": {
+            "input_tokens": 1797,
+            "output_tokens": 89,
+            "latency_ms": 1974.4,
+            "estimated_cost_usd": 0.0008612
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal velocity on mature account",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-002"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-002"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-005",
+            "DEMO-AML-004",
+            "DEMO-AML-002"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-005",
+            "DEMO-AML-004"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-002"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "policy_assessment_requires_human_review",
+          "policy_references": [
+            "DEMO-AML-002"
+          ],
+          "policies_considered": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-005"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "More than 10 transactions in last 24h triggers HIGH_VELOCITY risk signal.",
+            "Account is not young, no new payee, no unusual amount, but velocity alone requires escalation."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2116.0695999860764,
+          "estimated_cost_usd": 0.0009756000000000002,
+          "completed": true,
+          "investigation_id": "75de7a7e-7672-47fd-9d0b-88cfd68f639d",
+          "llm_usage": {
+            "input_tokens": 1991,
+            "output_tokens": 112,
+            "latency_ms": 1757.2,
+            "estimated_cost_usd": 0.0009756000000000002
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal amount above five times average",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "REQUEST_MORE_INFO",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-019",
+            "DEMO-AML-017"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-019",
+            "DEMO-AML-017"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001"
+          ],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-017"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Transaction amount is more than 5 times average, triggering UNUSUAL_AMOUNT signal.",
+            "Only one risk signal present, so more info needed rather than clear or escalate."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2504.935599863529,
+          "estimated_cost_usd": 0.0008644000000000001,
+          "completed": true,
+          "investigation_id": "ca5b535b-50af-4645-812c-7df8c775728e",
+          "llm_usage": {
+            "input_tokens": 1781,
+            "output_tokens": 95,
+            "latency_ms": 2018.8,
+            "estimated_cost_usd": 0.0008644000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal young account cross border",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "REQUEST_MORE_INFO",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": false,
+          "deterministic_citations": [
+            "DEMO-AML-004"
+          ],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-005"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-005"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-005"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account age is less than 30 days, triggering a risk signal.",
+            "No other risk signals present, so cautious review is advised."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2262.917699990794,
+          "estimated_cost_usd": 0.0008612,
+          "completed": true,
+          "investigation_id": "707bce15-fbc5-408e-b288-d789f282abb4",
+          "llm_usage": {
+            "input_tokens": 1801,
+            "output_tokens": 88,
+            "latency_ms": 1920.1,
+            "estimated_cost_usd": 0.0008612
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal velocity cross border",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [
+            "DEMO-AML-004"
+          ],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019",
+            "DEMO-AML-002"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "policy_assessment_requires_human_review",
+          "policy_references": [
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-001",
+            "DEMO-AML-019"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "High velocity: 12 transactions in last 24h exceeds threshold of 10."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2178.9187998510897,
+          "estimated_cost_usd": 0.000936,
+          "completed": true,
+          "investigation_id": "7d97e7b8-9fd4-48e4-997e-aed8d0c78730",
+          "llm_usage": {
+            "input_tokens": 1980,
+            "output_tokens": 90,
+            "latency_ms": 1671.0,
+            "estimated_cost_usd": 0.000936
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi APP pattern new payee and unusual amount",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-004"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-016"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "New payee and unusual amount both present, triggering escalation.",
+            "Account is not young, velocity low, no network link, but combined signals require escalation.",
+            "Cross-border context noted but not a risk signal here."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2131.1145999934524,
+          "estimated_cost_usd": 0.00098,
+          "completed": true,
+          "investigation_id": "6e391be1-3d20-490f-9ba7-35d0b2517ac1",
+          "llm_usage": {
+            "input_tokens": 1994,
+            "output_tokens": 114,
+            "latency_ms": 1831.8,
+            "estimated_cost_usd": 0.00098
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi signal young account unusual amount",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": true,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-005"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-005"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001"
+          ],
+          "policies_considered": [
+            "DEMO-AML-005",
+            "DEMO-AML-016"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account is young (23 days) triggering review.",
+            "Transaction amount is unusually high (2865 > 5x average 550).",
+            "No new payee or network link signals present."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2233.302100095898,
+          "estimated_cost_usd": 0.0008844,
+          "completed": true,
+          "investigation_id": "cf3c73c8-757f-405a-9547-88bed3bac892",
+          "llm_usage": {
+            "input_tokens": 1815,
+            "output_tokens": 99,
+            "latency_ms": 1627.3,
+            "estimated_cost_usd": 0.0008844
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi signal velocity and unusual amount",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [
+            "DEMO-AML-004"
+          ],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-019",
+            "DEMO-AML-004"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-019"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-019"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "High velocity with 14 transactions in 24h triggers concern",
+            "Transaction amount is over 5x average, unusual amount signal",
+            "Two risk signals present: high velocity and unusual amount"
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2035.427400143817,
+          "estimated_cost_usd": 0.000976,
+          "completed": true,
+          "investigation_id": "71996c21-a34e-4257-acb7-f906c446836c",
+          "llm_usage": {
+            "input_tokens": 2000,
+            "output_tokens": 110,
+            "latency_ms": 1704.5,
+            "estimated_cost_usd": 0.000976
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi signal young new payee velocity",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-006"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-002"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-006",
+            "DEMO-AML-002"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-006"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-006"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-002"
+          ],
+          "policies_considered": [
+            "DEMO-AML-016"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account is young (15 days) - risk signal YOUNG_ACCOUNT",
+            "New payee involved - risk signal NEW_PAYEE",
+            "High transaction velocity (13 in 24h) - risk signal HIGH_VELOCITY",
+            "Multiple risk signals present (3) triggers escalation"
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2209.846300072968,
+          "estimated_cost_usd": 0.0010072,
+          "completed": true,
+          "investigation_id": "48b306df-1ce1-4c69-a642-977878f8455f",
+          "llm_usage": {
+            "input_tokens": 2006,
+            "output_tokens": 128,
+            "latency_ms": 1871.9,
+            "estimated_cost_usd": 0.0010072
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi all signals high risk cross border",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004",
+            "DEMO-AML-005",
+            "DEMO-AML-006"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-005",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [
+            "DEMO-AML-004"
+          ],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-005",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-005"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004",
+            "DEMO-AML-005",
+            "DEMO-AML-006"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "high_risk_requires_human_review",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-005",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account is less than 30 days old (YOUNG_ACCOUNT)",
+            "Transaction is to a new payee (NEW_PAYEE)",
+            "Transaction amount is more than 5x average (UNUSUAL_AMOUNT)",
+            "More than 10 transactions in last 24h (HIGH_VELOCITY)",
+            "Cross-border transaction adds context but not risk signal"
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2180.4381001275033,
+          "estimated_cost_usd": 0.0011264,
+          "completed": true,
+          "investigation_id": "1672e7a3-b9fa-4faf-9187-98c010cc63f9",
+          "llm_usage": {
+            "input_tokens": 2208,
+            "output_tokens": 152,
+            "latency_ms": 1881.3,
+            "estimated_cost_usd": 0.0011264
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout boundary account exactly thirty days",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account age is 30 days, payee is not new, amount is not unusual, velocity low, no network link.",
+            "Cross-border policy DEMO-AML-004 present but origin and destination countries are the same, so no cross-border risk."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2101.0519999545068,
+          "estimated_cost_usd": 0.0008984,
+          "completed": true,
+          "investigation_id": "89b2e7a3-7dd6-493e-aac4-095d887ee02b",
+          "llm_usage": {
+            "input_tokens": 1786,
+            "output_tokens": 115,
+            "latency_ms": 1811.0,
+            "estimated_cost_usd": 0.0008984
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout boundary exactly ten transactions",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusual, velocity at threshold but not exceeded, no network link.",
+            "Deterministic risk is LOW with no investigation needed.",
+            "Graph analysis shows no suspicious signals or links.",
+            "Relationship anomaly is not anomalous.",
+            "Transaction is domestic, so no cross-border risk signal."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 3017.1797000803053,
+          "estimated_cost_usd": 0.0009212000000000001,
+          "completed": true,
+          "investigation_id": "a70d228f-3900-4307-bdc7-ceffe246877b",
+          "llm_usage": {
+            "input_tokens": 1787,
+            "output_tokens": 129,
+            "latency_ms": 2701.5,
+            "estimated_cost_usd": 0.0009212000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout boundary amount exactly five times average",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusually high, velocity is low, no network link.",
+            "Cross-border policy DEMO-AML-004 present but not applicable as origin and destination countries are the same."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1964.6253001410514,
+          "estimated_cost_usd": 0.0008924000000000001,
+          "completed": true,
+          "investigation_id": "557747f2-a0c3-4408-b76f-88ef67bb0f99",
+          "llm_usage": {
+            "input_tokens": 1787,
+            "output_tokens": 111,
+            "latency_ms": 1661.8,
+            "estimated_cost_usd": 0.0008924000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout boundary cross border without risk signals",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [
+            "DEMO-AML-004"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [
+            "DEMO-AML-004"
+          ],
+          "retrieved_policy_ids": [
+            "DEMO-AML-004",
+            "DEMO-AML-019",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-004",
+            "DEMO-AML-019",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-004"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusual, low transaction velocity, no network link."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1906.8819000385702,
+          "estimated_cost_usd": 0.0008556000000000001,
+          "completed": true,
+          "investigation_id": "43611c66-66ae-48b0-803a-e765d2f8493f",
+          "llm_usage": {
+            "input_tokens": 1787,
+            "output_tokens": 88,
+            "latency_ms": 1594.0,
+            "estimated_cost_usd": 0.0008556000000000001
+          },
+          "workflow_error": null
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "metrics": {
+        "case_count": 20,
+        "recommendation_accuracy": {
+          "correct": 18,
+          "total": 20,
+          "accuracy": 0.9
+        },
+        "llm_recommendation_accuracy": {
+          "correct": 17,
+          "total": 20,
+          "accuracy": 0.85
+        },
+        "recommendation_accuracy_excluding_fallbacks": {
+          "correct": 18,
+          "total": 20,
+          "accuracy": 0.9
+        },
+        "human_review_routing_accuracy": {
+          "correct": 18,
+          "total": 20,
+          "accuracy": 0.9
+        },
+        "human_review_routing_accuracy_excluding_fallbacks": {
+          "correct": 18,
+          "total": 20,
+          "accuracy": 0.9
+        },
+        "missed_escalations": {
+          "count": 0,
+          "case_names": []
+        },
+        "unnecessary_escalations": {
+          "count": 2,
+          "case_names": [
+            "holdout single signal velocity on mature account",
+            "holdout single signal velocity cross border"
+          ]
+        },
+        "exact_citation_match_rate": {
+          "correct": 20,
+          "total": 20,
+          "accuracy": 1.0
+        },
+        "llm_fallback_count": 0,
+        "llm_fallback_count_by_reason": {},
+        "rubric_override_count": 1,
+        "rubric_override_case_names": [
+          "holdout multi signal young account unusual amount"
+        ],
+        "deterministic_citation_case_count": 4,
+        "deterministic_citation_count": 4,
+        "deterministic_citation_case_names": [
+          "holdout single signal young account cross border",
+          "holdout single signal velocity cross border",
+          "holdout multi signal velocity and unusual amount",
+          "holdout boundary cross border without risk signals"
+        ],
+        "retrieval_recall": {
+          "retrieved_expected_policy_count": 25,
+          "expected_policy_count": 25,
+          "missing_expected_policy_count": 0,
+          "recall": 1.0,
+          "cases_with_complete_retrieval": 20,
+          "case_count": 20,
+          "missing_policy_ids": {}
+        },
+        "workflow_failure_count": 0,
+        "latency_ms": {
+          "p50": 2044.0133499214426,
+          "p95": 2343.3729451149707
+        },
+        "cost_usd": {
+          "total": 0.0181912,
+          "average_per_case": 0.00090956
+        }
+      },
+      "cases": [
+        {
+          "name": "holdout clean domestic subscription payment",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusual, low transaction velocity, no network link."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2009.1047000605613,
+          "estimated_cost_usd": 0.0008536000000000001,
+          "completed": true,
+          "investigation_id": "cc23f0c3-4558-4e73-b4a0-135f8c5136b1",
+          "llm_usage": {
+            "input_tokens": 1782,
+            "output_tokens": 88,
+            "latency_ms": 1651.3,
+            "estimated_cost_usd": 0.0008536000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout clean established household payment",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusual, velocity is low, no network link."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1909.0173000004143,
+          "estimated_cost_usd": 0.0008536000000000001,
+          "completed": true,
+          "investigation_id": "f510dec8-2770-492e-afb8-bb996590e092",
+          "llm_usage": {
+            "input_tokens": 1782,
+            "output_tokens": 88,
+            "latency_ms": 1610.2,
+            "estimated_cost_usd": 0.0008536000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout clean routine insurance debit",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals present: account is old, payee is not new, amount is not unusual, low transaction velocity, no network link.",
+            "Cross-border context not a risk signal; origin and destination countries are the same."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1825.0871999189258,
+          "estimated_cost_usd": 0.0008788000000000001,
+          "completed": true,
+          "investigation_id": "23430e71-bf18-4b63-a58e-415c7bc3d790",
+          "llm_usage": {
+            "input_tokens": 1781,
+            "output_tokens": 104,
+            "latency_ms": 1472.4,
+            "estimated_cost_usd": 0.0008788000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout clean known contractor invoice",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals present: account is old, payee is not new, amount is not unusual, velocity is low, no network link.",
+            "Cross-border activity absent, origin and destination countries are the same."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2667.0558999758214,
+          "estimated_cost_usd": 0.0008744000000000001,
+          "completed": true,
+          "investigation_id": "696c7dc8-b068-4d4b-9068-ffe23c6d09fd",
+          "llm_usage": {
+            "input_tokens": 1782,
+            "output_tokens": 101,
+            "latency_ms": 1804.8,
+            "estimated_cost_usd": 0.0008744000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout clean mature low value transfer",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals present: account is old, payee is not new, amount is not unusual, velocity is moderate, no network link.",
+            "Cross-border context is same country, so no additional risk signal."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2326.337000122294,
+          "estimated_cost_usd": 0.0008740000000000001,
+          "completed": true,
+          "investigation_id": "dc2e5cfd-ed96-401a-adf9-74699056e089",
+          "llm_usage": {
+            "input_tokens": 1781,
+            "output_tokens": 101,
+            "latency_ms": 1919.0,
+            "estimated_cost_usd": 0.0008740000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal young account only",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "REQUEST_MORE_INFO",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [
+            "DEMO-AML-001"
+          ],
+          "policies_considered": [
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account is less than 30 days old, triggering a risk signal.",
+            "No other risk signals present, so cautious review is advised."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2156.0649999883026,
+          "estimated_cost_usd": 0.0008567999999999999,
+          "completed": true,
+          "investigation_id": "33ea0a5e-face-4550-944e-9fbe85183d61",
+          "llm_usage": {
+            "input_tokens": 1790,
+            "output_tokens": 88,
+            "latency_ms": 1680.5,
+            "estimated_cost_usd": 0.0008567999999999999
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal new payee normal value",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "REQUEST_MORE_INFO",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-006"
+          ],
+          "policies_considered": [
+            "DEMO-AML-004"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "New payee detected, triggering review per policy.",
+            "No unusual amount or velocity signals present.",
+            "No network link or cross-border activity detected."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1748.3399999327958,
+          "estimated_cost_usd": 0.0008612,
+          "completed": true,
+          "investigation_id": "68947eac-d423-40eb-a3f0-8eb5711b07ef",
+          "llm_usage": {
+            "input_tokens": 1797,
+            "output_tokens": 89,
+            "latency_ms": 1445.8,
+            "estimated_cost_usd": 0.0008612
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal velocity on mature account",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-002"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-002"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-005",
+            "DEMO-AML-004",
+            "DEMO-AML-002"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-005",
+            "DEMO-AML-004"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-002"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "policy_assessment_requires_human_review",
+          "policy_references": [
+            "DEMO-AML-002"
+          ],
+          "policies_considered": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-005"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "More than 10 transactions in last 24h triggers HIGH_VELOCITY risk signal.",
+            "Account is not young, no new payee, no unusual amount, but velocity alone requires escalation."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2088.8821999542415,
+          "estimated_cost_usd": 0.0009756000000000002,
+          "completed": true,
+          "investigation_id": "ed713213-c9cf-4666-9234-86f1a22cc597",
+          "llm_usage": {
+            "input_tokens": 1991,
+            "output_tokens": 112,
+            "latency_ms": 1774.4,
+            "estimated_cost_usd": 0.0009756000000000002
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal amount above five times average",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "REQUEST_MORE_INFO",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-019",
+            "DEMO-AML-017"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-019",
+            "DEMO-AML-017"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001"
+          ],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-017"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Transaction amount is more than 5 times average, triggering UNUSUAL_AMOUNT signal.",
+            "Only one risk signal present, so more info is needed for assessment."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1924.0079000592232,
+          "estimated_cost_usd": 0.0008612,
+          "completed": true,
+          "investigation_id": "c15c9ea1-eefe-4382-bf07-2ab8058b889d",
+          "llm_usage": {
+            "input_tokens": 1781,
+            "output_tokens": 93,
+            "latency_ms": 1625.5,
+            "estimated_cost_usd": 0.0008612
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal young account cross border",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "REQUEST_MORE_INFO",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": false,
+          "deterministic_citations": [
+            "DEMO-AML-004"
+          ],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-005"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-005"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-005"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account is less than 30 days old, triggering a risk signal.",
+            "No other risk signals present, but young account alone requires review."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1724.5790001470596,
+          "estimated_cost_usd": 0.0008628,
+          "completed": true,
+          "investigation_id": "7ce4f859-195d-49d9-802d-42939f1ebd83",
+          "llm_usage": {
+            "input_tokens": 1801,
+            "output_tokens": 89,
+            "latency_ms": 1427.5,
+            "estimated_cost_usd": 0.0008628
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal velocity cross border",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [
+            "DEMO-AML-004"
+          ],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019",
+            "DEMO-AML-002"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "policy_assessment_requires_human_review",
+          "policy_references": [
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-001",
+            "DEMO-AML-019"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "High velocity: 12 transactions in last 24h triggers concern.",
+            "Account is not young, no new payee, no unusual amount, but velocity alone triggers escalation."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1921.1667999625206,
+          "estimated_cost_usd": 0.0009632,
+          "completed": true,
+          "investigation_id": "e58ff3e8-f918-45f7-b079-628bc4e52113",
+          "llm_usage": {
+            "input_tokens": 1980,
+            "output_tokens": 107,
+            "latency_ms": 1599.3,
+            "estimated_cost_usd": 0.0009632
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi APP pattern new payee and unusual amount",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-004"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-016"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "New payee and unusual amount both present, triggering escalation.",
+            "Account is not young, velocity low, no network link, but combined signals require escalation.",
+            "Cross-border context noted but not a risk signal here."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2027.2806999273598,
+          "estimated_cost_usd": 0.00098,
+          "completed": true,
+          "investigation_id": "3f9ff7b2-8d06-4aa1-941c-f979fcee29f9",
+          "llm_usage": {
+            "input_tokens": 1994,
+            "output_tokens": 114,
+            "latency_ms": 1708.9,
+            "estimated_cost_usd": 0.00098
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi signal young account unusual amount",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": true,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-005"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-005"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001"
+          ],
+          "policies_considered": [
+            "DEMO-AML-005",
+            "DEMO-AML-016"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account is less than 30 days old (YOUNG_ACCOUNT)",
+            "Transaction amount is more than 5 times average (UNUSUAL_AMOUNT)",
+            "No new payee, so no escalation override"
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2166.0519000142813,
+          "estimated_cost_usd": 0.0008908,
+          "completed": true,
+          "investigation_id": "34aca401-7c22-4a8d-986f-3debfab91cf6",
+          "llm_usage": {
+            "input_tokens": 1815,
+            "output_tokens": 103,
+            "latency_ms": 1784.7,
+            "estimated_cost_usd": 0.0008908
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi signal velocity and unusual amount",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [
+            "DEMO-AML-004"
+          ],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-019",
+            "DEMO-AML-004"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-019"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-019"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Two risk signals present: UNUSUAL_AMOUNT and HIGH_VELOCITY",
+            "Cross-border activity noted but not a risk signal",
+            "Account is not young and payee is not new",
+            "No network link detected"
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2060.7459999155253,
+          "estimated_cost_usd": 0.000984,
+          "completed": true,
+          "investigation_id": "66539cb4-6539-4819-afc4-fc1f8b8cd56a",
+          "llm_usage": {
+            "input_tokens": 2000,
+            "output_tokens": 115,
+            "latency_ms": 1731.2,
+            "estimated_cost_usd": 0.000984
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi signal young new payee velocity",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-006"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-002"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-006",
+            "DEMO-AML-002"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-006"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-006"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-002"
+          ],
+          "policies_considered": [
+            "DEMO-AML-016"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account is young (15 days)",
+            "New payee involved",
+            "High transaction velocity (13 in 24h)",
+            "Multiple risk signals present",
+            "No network link but multiple other signals"
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1989.419899880886,
+          "estimated_cost_usd": 0.0009784000000000001,
+          "completed": true,
+          "investigation_id": "d09cdd6d-93a8-42bf-991d-1d469223b1bd",
+          "llm_usage": {
+            "input_tokens": 2006,
+            "output_tokens": 110,
+            "latency_ms": 1669.2,
+            "estimated_cost_usd": 0.0009784000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi all signals high risk cross border",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004",
+            "DEMO-AML-005",
+            "DEMO-AML-006"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-005",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-005",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-005"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004",
+            "DEMO-AML-005",
+            "DEMO-AML-006"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "high_risk_requires_human_review",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-005",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [],
+          "rejected_citations": [],
+          "rejected_policies_considered": [
+            "DEMO-AML-003"
+          ],
+          "llm_reasons": [
+            "Account is less than 30 days old (YOUNG_ACCOUNT)",
+            "Transaction is to a new payee (NEW_PAYEE)",
+            "Transaction amount is more than 5x average (UNUSUAL_AMOUNT)",
+            "More than 10 transactions in last 24h (HIGH_VELOCITY)",
+            "Cross-border activity present but not a risk signal"
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2275.099200196564,
+          "estimated_cost_usd": 0.0011376000000000001,
+          "completed": true,
+          "investigation_id": "5fe6c9ae-4835-4601-98af-4f3a5fefaf78",
+          "llm_usage": {
+            "input_tokens": 2208,
+            "output_tokens": 159,
+            "latency_ms": 1920.4,
+            "estimated_cost_usd": 0.0011376000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout boundary account exactly thirty days",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account age is 30 days, payee is not new, amount is not unusual, velocity low, no network link."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2062.9638000391424,
+          "estimated_cost_usd": 0.0008584,
+          "completed": true,
+          "investigation_id": "fdc2fda1-b920-4ca4-ab56-ec3edaa99ed3",
+          "llm_usage": {
+            "input_tokens": 1786,
+            "output_tokens": 90,
+            "latency_ms": 1757.5,
+            "estimated_cost_usd": 0.0008584
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout boundary exactly ten transactions",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusual, velocity is at threshold but not exceeded, no network link.",
+            "Cross-border policy DEMO-AML-004 retrieved but not applicable as origin and destination countries are the same."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2147.811400005594,
+          "estimated_cost_usd": 0.0008972,
+          "completed": true,
+          "investigation_id": "646b5e5c-b814-4380-ae3d-0148635010b9",
+          "llm_usage": {
+            "input_tokens": 1787,
+            "output_tokens": 114,
+            "latency_ms": 1872.9,
+            "estimated_cost_usd": 0.0008972
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout boundary amount exactly five times average",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusually high, velocity is low, no network link.",
+            "Cross-border policy DEMO-AML-004 present but not applicable as origin and destination countries are the same."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2062.3576999641955,
+          "estimated_cost_usd": 0.0008924000000000001,
+          "completed": true,
+          "investigation_id": "9d3132b7-fbf5-470b-bc4d-2273f1704afb",
+          "llm_usage": {
+            "input_tokens": 1787,
+            "output_tokens": 111,
+            "latency_ms": 1768.7,
+            "estimated_cost_usd": 0.0008924000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout boundary cross border without risk signals",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [
+            "DEMO-AML-004"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [
+            "DEMO-AML-004"
+          ],
+          "retrieved_policy_ids": [
+            "DEMO-AML-004",
+            "DEMO-AML-019",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-004",
+            "DEMO-AML-019",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-004"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusual, low transaction velocity, no suspicious network link."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1973.3393001370132,
+          "estimated_cost_usd": 0.0008572,
+          "completed": true,
+          "investigation_id": "2246e136-ae81-4873-9661-4f6d7c475cca",
+          "llm_usage": {
+            "input_tokens": 1787,
+            "output_tokens": 89,
+            "latency_ms": 1604.3,
+            "estimated_cost_usd": 0.0008572
+          },
+          "workflow_error": null
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "metrics": {
+        "case_count": 20,
+        "recommendation_accuracy": {
+          "correct": 18,
+          "total": 20,
+          "accuracy": 0.9
+        },
+        "llm_recommendation_accuracy": {
+          "correct": 17,
+          "total": 20,
+          "accuracy": 0.85
+        },
+        "recommendation_accuracy_excluding_fallbacks": {
+          "correct": 18,
+          "total": 20,
+          "accuracy": 0.9
+        },
+        "human_review_routing_accuracy": {
+          "correct": 18,
+          "total": 20,
+          "accuracy": 0.9
+        },
+        "human_review_routing_accuracy_excluding_fallbacks": {
+          "correct": 18,
+          "total": 20,
+          "accuracy": 0.9
+        },
+        "missed_escalations": {
+          "count": 0,
+          "case_names": []
+        },
+        "unnecessary_escalations": {
+          "count": 2,
+          "case_names": [
+            "holdout single signal velocity on mature account",
+            "holdout single signal velocity cross border"
+          ]
+        },
+        "exact_citation_match_rate": {
+          "correct": 20,
+          "total": 20,
+          "accuracy": 1.0
+        },
+        "llm_fallback_count": 0,
+        "llm_fallback_count_by_reason": {},
+        "rubric_override_count": 1,
+        "rubric_override_case_names": [
+          "holdout multi signal young account unusual amount"
+        ],
+        "deterministic_citation_case_count": 4,
+        "deterministic_citation_count": 4,
+        "deterministic_citation_case_names": [
+          "holdout single signal young account cross border",
+          "holdout single signal velocity cross border",
+          "holdout multi signal velocity and unusual amount",
+          "holdout boundary cross border without risk signals"
+        ],
+        "retrieval_recall": {
+          "retrieved_expected_policy_count": 25,
+          "expected_policy_count": 25,
+          "missing_expected_policy_count": 0,
+          "recall": 1.0,
+          "cases_with_complete_retrieval": 20,
+          "case_count": 20,
+          "missing_policy_ids": {}
+        },
+        "workflow_failure_count": 0,
+        "latency_ms": {
+          "p50": 2081.047049956396,
+          "p95": 2724.9684300506487
+        },
+        "cost_usd": {
+          "total": 0.0181432,
+          "average_per_case": 0.0009071600000000001
+        }
+      },
+      "cases": [
+        {
+          "name": "holdout clean domestic subscription payment",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusual, velocity is low, no network link."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1920.295399846509,
+          "estimated_cost_usd": 0.0008536000000000001,
+          "completed": true,
+          "investigation_id": "aa53bf4c-6e5f-4987-8a57-f0df39af1e3c",
+          "llm_usage": {
+            "input_tokens": 1782,
+            "output_tokens": 88,
+            "latency_ms": 1553.6,
+            "estimated_cost_usd": 0.0008536000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout clean established household payment",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount not unusually high, velocity low, no network link.",
+            "Deterministic risk level is LOW with no investigation needed.",
+            "Graph analysis shows no suspicious signals or network links.",
+            "Relationship anomaly score is negative and not anomalous.",
+            "Transaction is domestic, so no cross-border risk signal."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2377.7065000031143,
+          "estimated_cost_usd": 0.0009208,
+          "completed": true,
+          "investigation_id": "eb1ad709-beda-46e5-84b4-ada7f776097a",
+          "llm_usage": {
+            "input_tokens": 1782,
+            "output_tokens": 130,
+            "latency_ms": 1933.1,
+            "estimated_cost_usd": 0.0009208
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout clean routine insurance debit",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusual, low transaction velocity, no network link.",
+            "Cross-border context not applicable as origin and destination countries are the same."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2085.7623000629246,
+          "estimated_cost_usd": 0.0008756000000000001,
+          "completed": true,
+          "investigation_id": "5b7e8ade-2ae7-44ab-9cfe-273e9bdb054d",
+          "llm_usage": {
+            "input_tokens": 1781,
+            "output_tokens": 102,
+            "latency_ms": 1798.5,
+            "estimated_cost_usd": 0.0008756000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout clean known contractor invoice",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals present: account is old, payee is not new, amount is not unusual, velocity is low, no network link."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1950.8126999717206,
+          "estimated_cost_usd": 0.0008536000000000001,
+          "completed": true,
+          "investigation_id": "02715a72-dd96-4aca-981e-c8459c554e51",
+          "llm_usage": {
+            "input_tokens": 1782,
+            "output_tokens": 88,
+            "latency_ms": 1649.4,
+            "estimated_cost_usd": 0.0008536000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout clean mature low value transfer",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals present: account is old, payee is not new, amount is not unusual, velocity is moderate, no network link.",
+            "Cross-border context not a risk signal; origin and destination countries are the same."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1962.5480000395328,
+          "estimated_cost_usd": 0.0008788000000000001,
+          "completed": true,
+          "investigation_id": "0863dd72-2592-4eea-90ba-777920816e56",
+          "llm_usage": {
+            "input_tokens": 1781,
+            "output_tokens": 104,
+            "latency_ms": 1491.0,
+            "estimated_cost_usd": 0.0008788000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal young account only",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "REQUEST_MORE_INFO",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [
+            "DEMO-AML-001"
+          ],
+          "policies_considered": [
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account is less than 30 days old, triggering a risk signal.",
+            "No other risk signals present, so further info is needed."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2389.7957000881433,
+          "estimated_cost_usd": 0.0008567999999999999,
+          "completed": true,
+          "investigation_id": "d644b40c-0619-4608-811d-3bdd0bfaf155",
+          "llm_usage": {
+            "input_tokens": 1790,
+            "output_tokens": 88,
+            "latency_ms": 1826.2,
+            "estimated_cost_usd": 0.0008567999999999999
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal new payee normal value",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "REQUEST_MORE_INFO",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-006"
+          ],
+          "policies_considered": [
+            "DEMO-AML-004"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "One risk signal: new payee present, triggering review per policy.",
+            "Account is not young, amount is not unusual, velocity low, no network link."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1842.0601000543684,
+          "estimated_cost_usd": 0.0008676000000000002,
+          "completed": true,
+          "investigation_id": "68eb91d5-51f8-41a9-a49f-ae6cfd668fd4",
+          "llm_usage": {
+            "input_tokens": 1797,
+            "output_tokens": 93,
+            "latency_ms": 1542.9,
+            "estimated_cost_usd": 0.0008676000000000002
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal velocity on mature account",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-002"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-002"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-005",
+            "DEMO-AML-004",
+            "DEMO-AML-002"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-005",
+            "DEMO-AML-004"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-002"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "policy_assessment_requires_human_review",
+          "policy_references": [
+            "DEMO-AML-002"
+          ],
+          "policies_considered": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-005"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "More than 10 transactions in last 24h triggers HIGH_VELOCITY risk signal.",
+            "Account is not young, no new payee, no unusual amount, but velocity alone requires escalation."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1984.4586001709104,
+          "estimated_cost_usd": 0.0009756000000000002,
+          "completed": true,
+          "investigation_id": "3870ea54-2022-4892-966b-e008eddbe341",
+          "llm_usage": {
+            "input_tokens": 1991,
+            "output_tokens": 112,
+            "latency_ms": 1605.5,
+            "estimated_cost_usd": 0.0009756000000000002
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal amount above five times average",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "REQUEST_MORE_INFO",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-019",
+            "DEMO-AML-017"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-019",
+            "DEMO-AML-017"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001"
+          ],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-017"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Transaction amount is more than 5 times average, triggering UNUSUAL_AMOUNT signal."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1887.8359000664204,
+          "estimated_cost_usd": 0.0008388000000000001,
+          "completed": true,
+          "investigation_id": "544ab429-514b-4743-8754-2ecfbaa14142",
+          "llm_usage": {
+            "input_tokens": 1781,
+            "output_tokens": 79,
+            "latency_ms": 1570.2,
+            "estimated_cost_usd": 0.0008388000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal young account cross border",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "REQUEST_MORE_INFO",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": false,
+          "deterministic_citations": [
+            "DEMO-AML-004"
+          ],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-005"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-005"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-005"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account is less than 30 days old, triggering a risk signal.",
+            "No other risk signals present, but young account alone requires review."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2285.5157000012696,
+          "estimated_cost_usd": 0.0008628,
+          "completed": true,
+          "investigation_id": "370c94eb-65e9-4e1e-8e10-81d5e4c670d2",
+          "llm_usage": {
+            "input_tokens": 1801,
+            "output_tokens": 89,
+            "latency_ms": 1982.5,
+            "estimated_cost_usd": 0.0008628
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout single signal velocity cross border",
+          "expected_recommendation": "REQUEST_MORE_INFO",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [
+            "DEMO-AML-004"
+          ],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019",
+            "DEMO-AML-002"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-019"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "policy_assessment_requires_human_review",
+          "policy_references": [
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-001",
+            "DEMO-AML-019"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "High velocity: 12 transactions in last 24h triggers concern.",
+            "Account is not young, no new payee, amount not unusual.",
+            "Cross-border transaction present but not a risk signal.",
+            "Graph analysis shows no suspicious network link."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2076.331799849868,
+          "estimated_cost_usd": 0.0009824,
+          "completed": true,
+          "investigation_id": "ee0a3713-60a6-4843-a8e8-e45e3d32d79d",
+          "llm_usage": {
+            "input_tokens": 1980,
+            "output_tokens": 119,
+            "latency_ms": 1743.8,
+            "estimated_cost_usd": 0.0009824
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi APP pattern new payee and unusual amount",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-004"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-004",
+            "DEMO-AML-006"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-016"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "New payee and unusual amount present, triggering escalation.",
+            "Account is not young, velocity low, no network link.",
+            "Cross-border context noted but not a risk signal."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2373.5169998835772,
+          "estimated_cost_usd": 0.0009672000000000001,
+          "completed": true,
+          "investigation_id": "ba6fa2a2-d148-4ef8-8062-0ba037478323",
+          "llm_usage": {
+            "input_tokens": 1994,
+            "output_tokens": 106,
+            "latency_ms": 1859.1,
+            "estimated_cost_usd": 0.0009672000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi signal young account unusual amount",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "original_llm_recommendation": "REQUEST_MORE_INFO",
+          "rubric_override": true,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-005"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-005"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001"
+          ],
+          "confidence": 0.9,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001"
+          ],
+          "policies_considered": [
+            "DEMO-AML-005",
+            "DEMO-AML-016"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account is young (23 days) triggering review.",
+            "Transaction amount is unusually high (2865 > 5x average 550).",
+            "No new payee or network link signals present."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2101.88930016011,
+          "estimated_cost_usd": 0.0008844,
+          "completed": true,
+          "investigation_id": "4b27a754-53a3-4fb7-9fc4-9599a05e3177",
+          "llm_usage": {
+            "input_tokens": 1815,
+            "output_tokens": 99,
+            "latency_ms": 1798.0,
+            "estimated_cost_usd": 0.0008844
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi signal velocity and unusual amount",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [
+            "DEMO-AML-004"
+          ],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-019",
+            "DEMO-AML-004"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-019"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-019"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "High velocity with 14 transactions in 24h triggers concern",
+            "Transaction amount is over 5x average, indicating unusual amount",
+            "Two risk signals present: HIGH_VELOCITY and UNUSUAL_AMOUNT"
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1984.93260005489,
+          "estimated_cost_usd": 0.000984,
+          "completed": true,
+          "investigation_id": "ad2b4b05-dece-4633-9429-253733744c00",
+          "llm_usage": {
+            "input_tokens": 2000,
+            "output_tokens": 115,
+            "latency_ms": 1660.9,
+            "estimated_cost_usd": 0.000984
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi signal young new payee velocity",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-006"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-002"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-006",
+            "DEMO-AML-002"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-016",
+            "DEMO-AML-006"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-006"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "medium_risk_assessment_not_clear",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-002"
+          ],
+          "policies_considered": [
+            "DEMO-AML-016"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account is young (15 days)",
+            "New payee involved",
+            "High transaction velocity (13 in 24h)",
+            "Multiple risk signals present"
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2262.190100038424,
+          "estimated_cost_usd": 0.0009656000000000002,
+          "completed": true,
+          "investigation_id": "102209c3-734c-4a2b-bd3c-c9136c7ebcee",
+          "llm_usage": {
+            "input_tokens": 2006,
+            "output_tokens": 102,
+            "latency_ms": 1961.5,
+            "estimated_cost_usd": 0.0009656000000000002
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout multi all signals high risk cross border",
+          "expected_recommendation": "ESCALATE_TO_HUMAN",
+          "actual_recommendation": "ESCALATE_TO_HUMAN",
+          "expected_requires_human_review": true,
+          "actual_requires_human_review": true,
+          "expected_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004",
+            "DEMO-AML-005",
+            "DEMO-AML-006"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-005",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "ESCALATE_TO_HUMAN",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-005",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-005"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-001",
+            "DEMO-AML-002",
+            "DEMO-AML-004",
+            "DEMO-AML-005",
+            "DEMO-AML-006"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "high_risk_requires_human_review",
+          "policy_references": [
+            "DEMO-AML-001",
+            "DEMO-AML-006",
+            "DEMO-AML-005",
+            "DEMO-AML-002",
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "Account is young (10 days)",
+            "New payee involved",
+            "Transaction amount unusually high (7.2x average)",
+            "High velocity: 16 transactions in last 24h",
+            "Cross-border transaction adds context"
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2722.976200049743,
+          "estimated_cost_usd": 0.00108,
+          "completed": true,
+          "investigation_id": "a9d213aa-19f6-4235-9156-0b3726d59350",
+          "llm_usage": {
+            "input_tokens": 2208,
+            "output_tokens": 123,
+            "latency_ms": 1923.5,
+            "estimated_cost_usd": 0.00108
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout boundary account exactly thirty days",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account age is 30 days, payee is not new, amount is not unusual, velocity low, no network link."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1882.6935000251979,
+          "estimated_cost_usd": 0.0008584,
+          "completed": true,
+          "investigation_id": "fa90dda1-ac04-40fd-a838-48df0ac4bbc0",
+          "llm_usage": {
+            "input_tokens": 1786,
+            "output_tokens": 90,
+            "latency_ms": 1544.9,
+            "estimated_cost_usd": 0.0008584
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout boundary exactly ten transactions",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusual, velocity is at threshold but not exceeded, no network link.",
+            "Cross-border policy DEMO-AML-004 noted but no cross-border activity present."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2762.820800067857,
+          "estimated_cost_usd": 0.0008892,
+          "completed": true,
+          "investigation_id": "0c69fbe4-09cb-4cc4-9a68-02de39b86808",
+          "llm_usage": {
+            "input_tokens": 1787,
+            "output_tokens": 109,
+            "latency_ms": 2466.1,
+            "estimated_cost_usd": 0.0008892
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout boundary amount exactly five times average",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [],
+          "actual_policy_ids": [],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [],
+          "retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-004",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusually high, velocity is low, no network link.",
+            "Cross-border policy DEMO-AML-004 present but not applicable as origin and destination countries are the same."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 2463.066400028765,
+          "estimated_cost_usd": 0.0008924000000000001,
+          "completed": true,
+          "investigation_id": "0ff5cc62-e53c-43c3-942e-e0aaea8804b9",
+          "llm_usage": {
+            "input_tokens": 1787,
+            "output_tokens": 111,
+            "latency_ms": 2169.9,
+            "estimated_cost_usd": 0.0008924000000000001
+          },
+          "workflow_error": null
+        },
+        {
+          "name": "holdout boundary cross border without risk signals",
+          "expected_recommendation": "CLEAR",
+          "actual_recommendation": "CLEAR",
+          "expected_requires_human_review": false,
+          "actual_requires_human_review": false,
+          "expected_policy_ids": [
+            "DEMO-AML-004"
+          ],
+          "actual_policy_ids": [
+            "DEMO-AML-004"
+          ],
+          "original_llm_recommendation": "CLEAR",
+          "rubric_override": false,
+          "deterministic_citations": [
+            "DEMO-AML-004"
+          ],
+          "retrieved_policy_ids": [
+            "DEMO-AML-004",
+            "DEMO-AML-019",
+            "DEMO-AML-001"
+          ],
+          "semantic_retrieved_policy_ids": [
+            "DEMO-AML-004",
+            "DEMO-AML-019",
+            "DEMO-AML-001"
+          ],
+          "signal_included_policy_ids": [
+            "DEMO-AML-004"
+          ],
+          "confidence": 0.95,
+          "evidence_sufficient": true,
+          "routing_rule_fired": "automatic_completion_criteria_met",
+          "policy_references": [
+            "DEMO-AML-004"
+          ],
+          "policies_considered": [
+            "DEMO-AML-019",
+            "DEMO-AML-001"
+          ],
+          "rejected_citations": [],
+          "rejected_policies_considered": [],
+          "llm_reasons": [
+            "No risk signals triggered: account is old, payee is not new, amount is not unusual, low transaction velocity, no network link."
+          ],
+          "llm_fallback_used": false,
+          "fallback_reason": null,
+          "latency_ms": 1938.308299984783,
+          "estimated_cost_usd": 0.0008556000000000001,
+          "completed": true,
+          "investigation_id": "72a03e25-d996-46ae-a455-9f3286e1bb77",
+          "llm_usage": {
+            "input_tokens": 1787,
+            "output_tokens": 88,
+            "latency_ms": 1606.9,
+            "estimated_cost_usd": 0.0008556000000000001
+          },
+          "workflow_error": null
+        }
+      ]
+    }
+  ]
+}
