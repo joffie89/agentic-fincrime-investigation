@@ -8,6 +8,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+from app.config import EmbeddingSettings
+from app.rag.embedding_provider import (
+    build_embedding_service,
+    resolve_policy_index_path,
+)
 from app.rag.embeddings import EmbeddingService, LocalHashEmbeddingService
 
 
@@ -85,15 +90,20 @@ class PolicyIngestor:
                     }
                 )
 
+        embedding_metadata: dict[str, Any] = {
+            "implementation": type(self.embedding_service).__name__,
+            "implementation_version": getattr(
+                self.embedding_service, "VERSION", "provider-managed"
+            ),
+            "dimension": self.embedding_service.dimension,
+        }
+        model = getattr(self.embedding_service, "model", None)
+        if isinstance(model, str) and model:
+            embedding_metadata["model"] = model
+
         index = {
             "version": self.INDEX_VERSION,
-            "embedding": {
-                "implementation": type(self.embedding_service).__name__,
-                "implementation_version": getattr(
-                    self.embedding_service, "VERSION", "provider-managed"
-                ),
-                "dimension": self.embedding_service.dimension,
-            },
+            "embedding": embedding_metadata,
             "source": {
                 "sha256": hashlib.sha256(source_text.encode("utf-8")).hexdigest(),
             },
@@ -127,7 +137,7 @@ class PolicyIngestor:
 
 
 def main() -> None:
-    """Build the deterministic local index as an explicit offline step."""
+    """Build an index for the embedding provider selected by the environment."""
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -139,15 +149,26 @@ def main() -> None:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("data/policy_index.json"),
-        help="Destination for the JSON vector index",
+        default=None,
+        help="Destination for the JSON vector index (defaults by provider)",
     )
     arguments = parser.parse_args()
-    count = PolicyIngestor(LocalHashEmbeddingService()).ingest_file(
+    settings = EmbeddingSettings()
+    embedding_service = build_embedding_service(settings)
+    output_path = resolve_policy_index_path(settings, arguments.output)
+    count = PolicyIngestor(embedding_service).ingest_file(
         arguments.source,
-        arguments.output,
+        output_path,
     )
-    print(json.dumps({"indexed_chunks": count, "index_path": str(arguments.output)}))
+    print(
+        json.dumps(
+            {
+                "indexed_chunks": count,
+                "index_path": str(output_path),
+                "embedding_mode": settings.embedding_mode.value,
+            }
+        )
+    )
 
 
 if __name__ == "__main__":

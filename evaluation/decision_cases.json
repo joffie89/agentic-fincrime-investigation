@@ -1,0 +1,954 @@
+{
+  "cases": [
+    {
+      "name": "routine grocery payment to established beneficiary",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-001",
+        "amount": 84.75,
+        "account_age_days": 1420,
+        "new_payee": false,
+        "average_transaction_amount": 110.0,
+        "transactions_last_24h": 2,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-001",
+        "destination_account_id": "clean-destination-001"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "normal monthly rent transfer",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-002",
+        "amount": 1250.0,
+        "account_age_days": 2100,
+        "new_payee": false,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 1,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-002",
+        "destination_account_id": "clean-destination-002"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "larger but proportionate household purchase",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-003",
+        "amount": 450.0,
+        "account_age_days": 780,
+        "new_payee": false,
+        "average_transaction_amount": 100.0,
+        "transactions_last_24h": 3,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-003",
+        "destination_account_id": "clean-destination-003"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "payment exactly at unusual amount boundary",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-004",
+        "amount": 500.0,
+        "account_age_days": 640,
+        "new_payee": false,
+        "average_transaction_amount": 100.0,
+        "transactions_last_24h": 4,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-004",
+        "destination_account_id": "clean-destination-004"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "thirty-day account with ordinary transfer",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-005",
+        "amount": 70.0,
+        "account_age_days": 30,
+        "new_payee": false,
+        "average_transaction_amount": 75.0,
+        "transactions_last_24h": 2,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-005",
+        "destination_account_id": "clean-destination-005"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "ten routine payments in one day",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-006",
+        "amount": 42.0,
+        "account_age_days": 980,
+        "new_payee": false,
+        "average_transaction_amount": 60.0,
+        "transactions_last_24h": 10,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-006",
+        "destination_account_id": "clean-destination-006"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "established customer utility payment",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-007",
+        "amount": 136.4,
+        "account_age_days": 1750,
+        "new_payee": false,
+        "average_transaction_amount": 145.0,
+        "transactions_last_24h": 1,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-007",
+        "destination_account_id": "clean-destination-007"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "known supplier invoice within normal range",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-008",
+        "amount": 2350.0,
+        "account_age_days": 1130,
+        "new_payee": false,
+        "average_transaction_amount": 1900.0,
+        "transactions_last_24h": 5,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-008",
+        "destination_account_id": "clean-destination-008"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "routine transfer between domestic accounts",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-009",
+        "amount": 300.0,
+        "account_age_days": 3650,
+        "new_payee": false,
+        "average_transaction_amount": 275.0,
+        "transactions_last_24h": 2,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-009",
+        "destination_account_id": "clean-destination-009"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "modest scheduled savings payment",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-010",
+        "amount": 200.0,
+        "account_age_days": 825,
+        "new_payee": false,
+        "average_transaction_amount": 180.0,
+        "transactions_last_24h": 1,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-010",
+        "destination_account_id": "clean-destination-010"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "ordinary payroll-related domestic payment",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-011",
+        "amount": 1850.0,
+        "account_age_days": 2460,
+        "new_payee": false,
+        "average_transaction_amount": 1600.0,
+        "transactions_last_24h": 3,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-011",
+        "destination_account_id": "clean-destination-011"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "regular council tax payment",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-012",
+        "amount": 172.0,
+        "account_age_days": 1320,
+        "new_payee": false,
+        "average_transaction_amount": 165.0,
+        "transactions_last_24h": 2,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-012",
+        "destination_account_id": "clean-destination-012"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "low-value payment from mature account",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-013",
+        "amount": 18.5,
+        "account_age_days": 2900,
+        "new_payee": false,
+        "average_transaction_amount": 55.0,
+        "transactions_last_24h": 6,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-013",
+        "destination_account_id": "clean-destination-013"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "known tradesperson payment matching history",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-014",
+        "amount": 760.0,
+        "account_age_days": 510,
+        "new_payee": false,
+        "average_transaction_amount": 650.0,
+        "transactions_last_24h": 2,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-014",
+        "destination_account_id": "clean-destination-014"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "routine card settlement to known party",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "decision-clean-015",
+        "amount": 925.0,
+        "account_age_days": 1880,
+        "new_payee": false,
+        "average_transaction_amount": 840.0,
+        "transactions_last_24h": 8,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "clean-origin-015",
+        "destination_account_id": "clean-destination-015"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "new account sends outsized amount to new beneficiary",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-001",
+        "amount": 7200.0,
+        "account_age_days": 12,
+        "new_payee": true,
+        "average_transaction_amount": 800.0,
+        "transactions_last_24h": 3,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "high-origin-001",
+        "destination_account_id": "high-destination-001"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-005", "DEMO-AML-006"]
+    },
+    {
+      "name": "young account makes unusual first overseas transfer",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-002",
+        "amount": 4800.0,
+        "account_age_days": 8,
+        "new_payee": true,
+        "average_transaction_amount": 600.0,
+        "transactions_last_24h": 2,
+        "origin_country": "GB",
+        "destination_country": "IE",
+        "origin_account_id": "high-origin-002",
+        "destination_account_id": "high-destination-002"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-005", "DEMO-AML-006"]
+    },
+    {
+      "name": "young account combines extreme value and payment burst",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-003",
+        "amount": 9000.0,
+        "account_age_days": 14,
+        "new_payee": false,
+        "average_transaction_amount": 1000.0,
+        "transactions_last_24h": 13,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "high-origin-003",
+        "destination_account_id": "high-destination-003"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005"]
+    },
+    {
+      "name": "established account pays new beneficiary after velocity spike",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-004",
+        "amount": 6300.0,
+        "account_age_days": 420,
+        "new_payee": true,
+        "average_transaction_amount": 800.0,
+        "transactions_last_24h": 18,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "high-origin-004",
+        "destination_account_id": "high-destination-004"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005", "DEMO-AML-006"]
+    },
+    {
+      "name": "all deterministic risk indicators fire together",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-005",
+        "amount": 12500.0,
+        "account_age_days": 7,
+        "new_payee": true,
+        "average_transaction_amount": 1200.0,
+        "transactions_last_24h": 16,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "high-origin-005",
+        "destination_account_id": "high-destination-005"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005", "DEMO-AML-006"]
+    },
+    {
+      "name": "newly opened account sends oversized European payment",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-006",
+        "amount": 5600.0,
+        "account_age_days": 19,
+        "new_payee": true,
+        "average_transaction_amount": 700.0,
+        "transactions_last_24h": 4,
+        "origin_country": "GB",
+        "destination_country": "DE",
+        "origin_account_id": "high-origin-006",
+        "destination_account_id": "high-destination-006"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-005", "DEMO-AML-006"]
+    },
+    {
+      "name": "young account rapidly sends amount far above baseline",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-007",
+        "amount": 4100.0,
+        "account_age_days": 5,
+        "new_payee": false,
+        "average_transaction_amount": 500.0,
+        "transactions_last_24h": 21,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "high-origin-007",
+        "destination_account_id": "high-destination-007"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005"]
+    },
+    {
+      "name": "new payee receives oversized transfer amid rapid activity",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-008",
+        "amount": 8800.0,
+        "account_age_days": 900,
+        "new_payee": true,
+        "average_transaction_amount": 1000.0,
+        "transactions_last_24h": 14,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "high-origin-008",
+        "destination_account_id": "high-destination-008"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005", "DEMO-AML-006"]
+    },
+    {
+      "name": "very new account shows every high-risk payment signal",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-009",
+        "amount": 15000.0,
+        "account_age_days": 2,
+        "new_payee": true,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 25,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "high-origin-009",
+        "destination_account_id": "high-destination-009"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005", "DEMO-AML-006"]
+    },
+    {
+      "name": "unusual cross-border payment from young account to new party",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-010",
+        "amount": 3500.0,
+        "account_age_days": 21,
+        "new_payee": true,
+        "average_transaction_amount": 450.0,
+        "transactions_last_24h": 5,
+        "origin_country": "GB",
+        "destination_country": "FR",
+        "origin_account_id": "high-origin-010",
+        "destination_account_id": "high-destination-010"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-005", "DEMO-AML-006"]
+    },
+    {
+      "name": "high-value burst from recently opened account",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-011",
+        "amount": 6800.0,
+        "account_age_days": 27,
+        "new_payee": false,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 12,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "high-origin-011",
+        "destination_account_id": "high-destination-011"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005"]
+    },
+    {
+      "name": "mature account suddenly pays large amount to new payee repeatedly",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-012",
+        "amount": 9600.0,
+        "account_age_days": 1600,
+        "new_payee": true,
+        "average_transaction_amount": 1100.0,
+        "transactions_last_24h": 19,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "high-origin-012",
+        "destination_account_id": "high-destination-012"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005", "DEMO-AML-006"]
+    },
+    {
+      "name": "new account makes oversized transfer after many payments",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-013",
+        "amount": 2900.0,
+        "account_age_days": 11,
+        "new_payee": false,
+        "average_transaction_amount": 400.0,
+        "transactions_last_24h": 17,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "high-origin-013",
+        "destination_account_id": "high-destination-013"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005"]
+    },
+    {
+      "name": "young account sends disproportionate payment abroad",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-014",
+        "amount": 7700.0,
+        "account_age_days": 16,
+        "new_payee": true,
+        "average_transaction_amount": 950.0,
+        "transactions_last_24h": 6,
+        "origin_country": "GB",
+        "destination_country": "ES",
+        "origin_account_id": "high-origin-014",
+        "destination_account_id": "high-destination-014"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-005", "DEMO-AML-006"]
+    },
+    {
+      "name": "all risk rules fire on a large domestic transfer",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "decision-high-015",
+        "amount": 22000.0,
+        "account_age_days": 4,
+        "new_payee": true,
+        "average_transaction_amount": 2000.0,
+        "transactions_last_24h": 22,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "high-origin-015",
+        "destination_account_id": "high-destination-015"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-005", "DEMO-AML-006"]
+    },
+    {
+      "name": "single unusual domestic payment",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-001",
+        "amount": 3100.0,
+        "account_age_days": 720,
+        "new_payee": false,
+        "average_transaction_amount": 600.0,
+        "transactions_last_24h": 3,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "medium-origin-001",
+        "destination_account_id": "medium-destination-001"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001"]
+    },
+    {
+      "name": "young account pays a new beneficiary within normal value",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-002",
+        "amount": 240.0,
+        "account_age_days": 18,
+        "new_payee": true,
+        "average_transaction_amount": 200.0,
+        "transactions_last_24h": 2,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "medium-origin-002",
+        "destination_account_id": "medium-destination-002"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-006"]
+    },
+    {
+      "name": "young account shows a payment velocity spike",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-003",
+        "amount": 90.0,
+        "account_age_days": 9,
+        "new_payee": false,
+        "average_transaction_amount": 100.0,
+        "transactions_last_24h": 14,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "medium-origin-003",
+        "destination_account_id": "medium-destination-003"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002"]
+    },
+    {
+      "name": "established account adds payee during transaction burst",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-004",
+        "amount": 180.0,
+        "account_age_days": 850,
+        "new_payee": true,
+        "average_transaction_amount": 160.0,
+        "transactions_last_24h": 16,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "medium-origin-004",
+        "destination_account_id": "medium-destination-004"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-006"]
+    },
+    {
+      "name": "unusual amount sent to a first-time recipient",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-005",
+        "amount": 5200.0,
+        "account_age_days": 600,
+        "new_payee": true,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 4,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "medium-origin-005",
+        "destination_account_id": "medium-destination-005"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-006"]
+    },
+    {
+      "name": "young account sends amount well above its average",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-006",
+        "amount": 2700.0,
+        "account_age_days": 22,
+        "new_payee": false,
+        "average_transaction_amount": 500.0,
+        "transactions_last_24h": 5,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "medium-origin-006",
+        "destination_account_id": "medium-destination-006"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001"]
+    },
+    {
+      "name": "large payment follows unusually busy day",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-007",
+        "amount": 6100.0,
+        "account_age_days": 980,
+        "new_payee": false,
+        "average_transaction_amount": 1000.0,
+        "transactions_last_24h": 12,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "medium-origin-007",
+        "destination_account_id": "medium-destination-007"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002"]
+    },
+    {
+      "name": "atypically large transfer to an overseas known payee",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-008",
+        "amount": 4200.0,
+        "account_age_days": 1200,
+        "new_payee": false,
+        "average_transaction_amount": 750.0,
+        "transactions_last_24h": 3,
+        "origin_country": "GB",
+        "destination_country": "IE",
+        "origin_account_id": "medium-origin-008",
+        "destination_account_id": "medium-destination-008"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004"]
+    },
+    {
+      "name": "new young customer makes first cross-border payment",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-009",
+        "amount": 350.0,
+        "account_age_days": 25,
+        "new_payee": true,
+        "average_transaction_amount": 300.0,
+        "transactions_last_24h": 2,
+        "origin_country": "GB",
+        "destination_country": "NL",
+        "origin_account_id": "medium-origin-009",
+        "destination_account_id": "medium-destination-009"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-006"]
+    },
+    {
+      "name": "new overseas beneficiary added during busy payment day",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-010",
+        "amount": 420.0,
+        "account_age_days": 740,
+        "new_payee": true,
+        "average_transaction_amount": 350.0,
+        "transactions_last_24h": 15,
+        "origin_country": "GB",
+        "destination_country": "FR",
+        "origin_account_id": "medium-origin-010",
+        "destination_account_id": "medium-destination-010"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-004", "DEMO-AML-006"]
+    },
+    {
+      "name": "young customer makes many small overseas payments",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-011",
+        "amount": 75.0,
+        "account_age_days": 13,
+        "new_payee": false,
+        "average_transaction_amount": 90.0,
+        "transactions_last_24h": 13,
+        "origin_country": "GB",
+        "destination_country": "BE",
+        "origin_account_id": "medium-origin-011",
+        "destination_account_id": "medium-destination-011"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-004"]
+    },
+    {
+      "name": "large first payment to overseas recipient",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-012",
+        "amount": 8200.0,
+        "account_age_days": 1500,
+        "new_payee": true,
+        "average_transaction_amount": 1400.0,
+        "transactions_last_24h": 4,
+        "origin_country": "GB",
+        "destination_country": "DE",
+        "origin_account_id": "medium-origin-012",
+        "destination_account_id": "medium-destination-012"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-006"]
+    },
+    {
+      "name": "young account makes oversized cross-border transfer",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-013",
+        "amount": 2400.0,
+        "account_age_days": 6,
+        "new_payee": false,
+        "average_transaction_amount": 400.0,
+        "transactions_last_24h": 3,
+        "origin_country": "GB",
+        "destination_country": "PT",
+        "origin_account_id": "medium-origin-013",
+        "destination_account_id": "medium-destination-013"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004"]
+    },
+    {
+      "name": "unusual overseas payment during velocity spike",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-014",
+        "amount": 5900.0,
+        "account_age_days": 1050,
+        "new_payee": false,
+        "average_transaction_amount": 950.0,
+        "transactions_last_24h": 17,
+        "origin_country": "GB",
+        "destination_country": "DK",
+        "origin_account_id": "medium-origin-014",
+        "destination_account_id": "medium-destination-014"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-004"]
+    },
+    {
+      "name": "young account and new payee intersect with known network",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-015",
+        "amount": 350.0,
+        "account_age_days": 17,
+        "new_payee": true,
+        "average_transaction_amount": 200.0,
+        "transactions_last_24h": 4,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "acct-demo-origin",
+        "destination_account_id": "acct-demo-dest"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-003", "DEMO-AML-006"]
+    },
+    {
+      "name": "unusual value flows across established connected accounts",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-016",
+        "amount": 5100.0,
+        "account_age_days": 870,
+        "new_payee": false,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 3,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "acct-demo-origin",
+        "destination_account_id": "acct-demo-dest"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-003"]
+    },
+    {
+      "name": "new payee and payment burst occur on connected account pair",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-017",
+        "amount": 190.0,
+        "account_age_days": 1100,
+        "new_payee": true,
+        "average_transaction_amount": 175.0,
+        "transactions_last_24h": 18,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "acct-demo-origin",
+        "destination_account_id": "acct-demo-dest"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-003", "DEMO-AML-006"]
+    },
+    {
+      "name": "connected accounts make unusual cross-border transfer",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-018",
+        "amount": 7300.0,
+        "account_age_days": 950,
+        "new_payee": false,
+        "average_transaction_amount": 1200.0,
+        "transactions_last_24h": 5,
+        "origin_country": "GB",
+        "destination_country": "IE",
+        "origin_account_id": "acct-demo-origin",
+        "destination_account_id": "acct-demo-dest"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-003", "DEMO-AML-004"]
+    },
+    {
+      "name": "young connected account exhibits rapid transaction activity",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-019",
+        "amount": 105.0,
+        "account_age_days": 24,
+        "new_payee": false,
+        "average_transaction_amount": 95.0,
+        "transactions_last_24h": 20,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "acct-demo-origin",
+        "destination_account_id": "acct-demo-dest"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-003"]
+    },
+    {
+      "name": "oversized new-payee transfer across known connected accounts",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "decision-medium-020",
+        "amount": 6800.0,
+        "account_age_days": 1300,
+        "new_payee": true,
+        "average_transaction_amount": 1000.0,
+        "transactions_last_24h": 4,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "acct-demo-origin",
+        "destination_account_id": "acct-demo-dest"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-003", "DEMO-AML-006"]
+    }
+  ]
+}

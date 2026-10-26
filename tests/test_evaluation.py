@@ -4,7 +4,49 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from app.evaluation.evaluate import DEFAULT_DATASET_PATH, run_evaluation
+import pytest
+
+from app.evaluation.evaluate import (
+    DEFAULT_DATASET_PATH,
+    policy_ids_match_expected,
+    run_evaluation,
+)
+from app.models.domain import PolicyAssessment, Recommendation
+
+
+@pytest.mark.parametrize(
+    ("cited_policy_ids", "expected_policy_ids", "expected_match"),
+    [
+        ([], [], True),
+        (["POL-001", "POL-002"], ["POL-002", "POL-001"], True),
+        (["POL-001"], ["POL-001", "POL-002"], False),
+        (["POL-001", "POL-002"], ["POL-001"], False),
+    ],
+)
+def test_policy_ids_must_exactly_match_expected_ids(
+    cited_policy_ids: list[str],
+    expected_policy_ids: list[str],
+    expected_match: bool,
+) -> None:
+    assert (
+        policy_ids_match_expected(cited_policy_ids, expected_policy_ids)
+        is expected_match
+    )
+
+
+def test_policies_considered_do_not_count_as_grounding_references() -> None:
+    assessment = PolicyAssessment(
+        recommendation=Recommendation.CLEAR,
+        reasons=["No supplied risk signal makes the reviewed policy applicable."],
+        confidence=0.95,
+        policy_references=[],
+        policies_considered=["POL-CONSIDERED"],
+        missing_information=[],
+        requires_human_review=False,
+        evidence_sufficient=True,
+    )
+
+    assert policy_ids_match_expected(assessment.policy_references, []) is True
 
 
 def test_evaluation_runs_against_synthetic_data(tmp_path: Path):
@@ -30,4 +72,13 @@ def test_evaluation_runs_against_synthetic_data(tmp_path: Path):
     assert len(results["risk_rule_correctness"]["cases"]) == 4
     assert len(results["retrieval_quality"]["cases"]) == 4
     assert len(results["investigation_cases"]) == 4
+
+    grounding = results["grounding_checks"]
+    assert grounding["correct"] == grounding["total"] == 4
+    assert grounding["accuracy"] == 1.0
+    assert all(case["grounding_passed"] for case in results["investigation_cases"])
+
+    clean_case = results["investigation_cases"][0]
+    assert clean_case["expected_policy_ids"] == []
+    assert clean_case["referenced_policy_ids"] == []
 

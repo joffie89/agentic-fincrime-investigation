@@ -345,6 +345,7 @@ def make_policy_assessment() -> PolicyAssessment:
         reasons=["Signals are below the deterministic escalation threshold."],
         confidence=0.9,
         policy_references=["policy-1"],
+        policies_considered=[],
         missing_information=[],
         requires_human_review=False,
         evidence_sufficient=True,

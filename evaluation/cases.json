@@ -105,7 +105,8 @@
         "destination_account_id": "eval-clean-destination"
       },
       "expected_recommendation": "CLEAR",
-      "expect_human_review": false
+      "expect_human_review": false,
+      "expected_policy_ids": []
     },
     {
       "name": "medium risk requests information",
@@ -122,7 +123,11 @@
         "destination_account_id": "eval-medium-destination"
       },
       "expected_recommendation": "REQUEST_MORE_INFO",
-      "expect_human_review": false
+      "expect_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ]
     },
     {
       "name": "high risk requires human review",
@@ -139,7 +144,14 @@
         "destination_account_id": "eval-high-destination"
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
-      "expect_human_review": true
+      "expect_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ]
     },
     {
       "name": "conflicting graph signal requires review",
@@ -156,7 +168,10 @@
         "destination_account_id": "acct-demo-dest"
       },
       "expected_recommendation": "ESCALATE_TO_HUMAN",
-      "expect_human_review": true
+      "expect_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-003"
+      ]
     }
   ]
 }

@@ -3,27 +3,182 @@
     {
       "policy_id": "DEMO-AML-001",
       "title": "Unusual transaction amount and new beneficiary review",
-      "text": "This synthetic demo policy requires investigators to consider a payment unusual when its amount is materially higher than the account's established transaction pattern. A payment to a new payee is an additional risk indicator, especially for a young account. Investigators should request contextual information where the purpose, beneficiary relationship, or source of funds is not supported. A rule signal begins an investigation; it does not by itself authorize blocking, rejecting, or reporting a transaction."
+      "text": "Investigators should review a payment when the account is less than 30 days old, the recipient is a new payee, or the amount is more than five times the customer's average activity. These signals identify an unusual value or beneficiary change that needs context rather than an automatic outcome. The review should compare prior spending, establish how the funds were obtained, check whether contact or device details changed, and confirm instructions through a trusted channel when scam risk is suspected. Record the customer's explanation and any inconsistency. A risk signal starts an enquiry; it does not alone authorise blocking, rejecting, external reporting, or a claim that wrongdoing occurred.",
+      "source": "synthetic - written for this demo"
     },
     {
       "policy_id": "DEMO-AML-002",
       "title": "Transaction velocity and rapid movement",
-      "text": "This synthetic demo policy treats a rapid burst of transactions within twenty-four hours as a velocity indicator. Review should consider whether multiple transfers show rapid movement through the account, whether amounts are split across payments, and whether the activity differs from the known historical pattern. Velocity evidence should be combined with validated transaction facts and recorded in the investigation rationale."
+      "text": "The high velocity signal applies when more than 10 transactions occur in the last 24 hours or payment frequency rises suddenly against the customer's normal pattern. Each transfer may appear ordinary in isolation, so analysts should compare value, direction, and timing across the sequence. Consider whether money arrives and leaves quickly, whether a larger obligation appears divided into smaller transfers, and whether several recipients were added within a short period. Legitimate explanations may include payroll, seasonal trading, or a house purchase, so context must be obtained before drawing conclusions. Preserve a timeline of the activity, identify linked counterparties, and explain which facts created concern. Combine velocity evidence with verified customer and account information rather than treating volume alone as proof.",
+      "source": "synthetic - written for this demo"
     },
     {
       "policy_id": "DEMO-AML-003",
       "title": "Account network and shared counterparty indicators",
-      "text": "This synthetic demo policy directs investigators to review network relationships when accounts have many counterparties, repeated direct transactions, counterparties shared by both sides of a payment, or a high concentration of value sent to one counterparty. These graph indicators are explainable leads rather than proof of wrongdoing. The reviewer should preserve the relevant account identifiers, counts, and concentration measure as evidence."
+      "text": "Relationship analysis should be used for high connectivity, shared counterparties, repeated direct transactions, or counterparty concentration around one connection. Analysts should preserve the relevant account identifiers, direction and count of transfers, total values, and the period examined. They should distinguish ordinary household or business relationships from unexplained clusters and consider whether apparently separate customers are controlled together. Network features are investigative leads, not findings of misconduct. Any conclusion must state the supporting links, acknowledge missing ownership or relationship information, and avoid assuming that a shared recipient or dense cluster is suspicious without transaction and customer context.",
+      "source": "synthetic - written for this demo"
     },
     {
       "policy_id": "DEMO-AML-004",
       "title": "Cross-border and geographic context",
-      "text": "This synthetic demo policy requires geographic context to be assessed for cross-border payments. Country names alone do not establish risk. Investigators should use current approved screening sources, validate the parties and payment purpose, and avoid inventing sanctions or jurisdiction claims that are not present in supplied evidence. Any possible sanctions match must be escalated to an authorized human reviewer."
+      "text": "International payments require a proportionate review of the countries, parties, route, purpose, and available screening results. A country name by itself must not be treated as evidence of criminal activity. Analysts should confirm where the sender and recipient are located, why an overseas route is needed, whether intermediaries are expected, and whether the activity fits the customer's profile. Current approved screening sources should be used for any country, sanctions, or party concern, with possible matches referred to an authorised reviewer. Record the source and date of geographic information, distinguish a confirmed fact from an assumption, and do not invent restrictions that are absent from the supplied evidence. Legitimate family, travel, and commercial payments remain possible.",
+      "source": "synthetic - written for this demo"
     },
     {
       "policy_id": "DEMO-AML-005",
       "title": "Evidence sufficiency and human review",
-      "text": "This synthetic demo policy requires human review when deterministic risk is high, retrieved evidence is insufficient, model confidence is low, or transaction and network signals conflict. Automated output is a recommendation only and must not claim that a person reviewed the case. Policy references must identify evidence actually retrieved for the investigation. Missing information and persistence failures must be reported rather than silently ignored."
+      "text": "Cases at risk level HIGH require human review. In this demo, combined signals can include an account less than 30 days old, a new payee, an amount more than five times average, or more than 10 transactions in the last 24 hours. Missing policy evidence, low assessment confidence, or material conflict between transaction and relationship indicators also require review. Automated output is a recommendation and must never be described as approval by a person. Show the reviewer transaction facts, graph features, policy passages actually retrieved, unresolved questions, and system failures. References must identify only evidence used. State missing information and uncertainty plainly, distinguish machine analysis from later human actions, and preserve the reason for escalation.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-006",
+      "title": "Authorised push payment scams and newly added recipients",
+      "text": "This synthetic demo policy guides reviews of authorised push payment scam risk when a customer sends money to a recently added recipient. Investigators should look for urgency, coached payment explanations, last-minute beneficiary changes, remote contact from an alleged bank or supplier, and reluctance to pause. The customer's apparent approval does not remove the possibility of deception. Staff should contact the customer through trusted channels, explore how the relationship began, verify the intended recipient independently, and consider vulnerability indicators before recommending an outcome. A warning response or unfamiliar device can strengthen concern, but no single feature proves a scam. Record the customer's explanation, verification steps, and any protective action proposed for human approval.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-007",
+      "title": "Elderly and vulnerable customer scam safeguards",
+      "text": "This synthetic demo policy applies when personal circumstances may make a customer more susceptible to fraud or coercion. Relevant factors can include advanced age, bereavement, cognitive difficulty, social isolation, financial distress, limited digital confidence, or dependence on another person. Investigators should consider abrupt changes in payment behaviour, repeated transfers made under pressure, scripted answers, a companion directing the conversation, and resistance to a cooling-off period. Staff must communicate respectfully and must not infer incapacity from age or disability alone. Use a safe contact method, ask open questions about the payment purpose, and follow approved safeguarding escalation routes where concern remains. Document observed indicators, the customer's own account, reasonable adjustments offered, and the basis for any referral.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-008",
+      "title": "Account takeover and digital access anomalies",
+      "text": "This synthetic demo policy covers signs that an unauthorized person may have gained control of a customer's account. Indicators include a password or contact-detail reset followed by a new device login, sudden payee creation, unusual session location, failed authentication attempts, disabled alerts, or payments inconsistent with prior behaviour. Investigators should establish an event timeline and compare access data with the customer's known devices and normal locations. Contact the customer using a previously verified route rather than recently amended details, and avoid revealing sensitive security information. Device evidence or a geographic anomaly is an investigative lead, not proof of compromise. Record authentication events, profile changes, disputed transactions, customer confirmation, and any containment step submitted for authorized review.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-009",
+      "title": "Trade-based laundering and commercial document inconsistencies",
+      "text": "This synthetic demo policy addresses business payments that may disguise value transfer through apparently legitimate trade. Warning signs include invoices inconsistent with shipping records, implausible pricing, vague or mismatched goods descriptions, repeated amendments, circular payments, unusual routing, or counterparties with no clear role in the transaction. Investigators should compare the payment with the customer's expected business, available contracts, transport documents, quantities, and payment terms. Overpricing or underpricing alone does not establish laundering because commercial explanations, currency movements, and data errors may exist. Seek appropriate trade expertise where necessary and do not make unsupported claims about goods or jurisdictions. Preserve the document versions, discrepancy details, ownership links, fund flow, and customer explanation for human assessment.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-010",
+      "title": "Invoice redirection and business email compromise",
+      "text": "This synthetic demo policy covers payments diverted after fraudsters impersonate a supplier, executive, solicitor, or other trusted business contact. Indicators include an unexpected bank-detail change, urgent secrecy, altered email domains, unusual writing style, skipped approval steps, or instructions arriving shortly before an invoice is due. Investigators should verify changed payment instructions through a known telephone number or established contact channel, not by replying to the suspicious message. Review whether the beneficiary has appeared before and whether the request fits normal company controls. A genuine invoice does not confirm that the destination account is genuine. Record the communication sequence, verification attempt, beneficiary history, internal approvals, and any timely recovery or escalation action.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-011",
+      "title": "Investment scam and fraudulent trading platform payments",
+      "text": "This synthetic demo policy applies where customers may be induced to fund a false investment, trading service, or wealth opportunity. Concern may arise from guaranteed returns, pressure to act quickly, contact through social media, remote-access software, repeated deposits demanded before withdrawal, or transfers to personal accounts and digital-asset services. Investigators should ask how the opportunity was introduced, what independent checks were made, whether any funds have been withdrawn, and who is directing the customer. Professional-looking websites, account dashboards, or small early payouts do not establish legitimacy. Staff should avoid giving investment advice while clearly testing for deception and coercion. Record the promotional claims, payment trail, recipient details, customer understanding, and appropriate fraud escalation.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-012",
+      "title": "Romance and companionship scam payments",
+      "text": "This synthetic demo policy concerns payments influenced by an online romantic or companionship relationship that may be fabricated for financial gain. Indicators include a person never met face to face, rapidly declared affection, repeated emergencies, requests involving travel or medical costs, secrecy from family, and escalating transfers to the contact or their associates. Investigators should ask sensitively how the relationship developed, whether identity was independently verified, why different recipients are involved, and whether promised meetings repeatedly failed. Emotional commitment can make intervention difficult and should not be treated as customer wrongdoing. Preserve dignity, avoid dismissive language, and follow vulnerability procedures where appropriate. Document the relationship timeline, stated reasons, destination accounts, customer responses, and proposed safeguarding escalation.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-013",
+      "title": "Cash-intensive business activity and declared takings",
+      "text": "This synthetic demo policy guides assessment of businesses that legitimately handle substantial physical currency but show activity inconsistent with their stated operations. Investigators should compare deposits with expected turnover, trading hours, seasonality, branch locations, card receipts, tax information where available, and the nature of the business. Concern may increase when cash volume rises without an apparent commercial reason, deposits occur far from the premises, round amounts recur, or money is quickly transferred to unrelated parties. Cash use alone must not be treated as suspicious, particularly for sectors where it remains customary. Seek supporting sales records and a clear explanation for changes. Record the comparison period, observed variance, deposit pattern, onward movement, and customer evidence.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-014",
+      "title": "Beneficial ownership opacity and corporate control",
+      "text": "This synthetic demo policy requires investigation when the people who ultimately own or control a company are unclear, inconsistent, or obscured through layered entities. Warning signs include unexplained nominee arrangements, frequent director changes, ownership records that conflict across documents, complex chains lacking commercial purpose, and payments benefiting people unrelated to the stated business. Investigators should identify natural persons exercising effective control, understand the reason for the structure, and compare declarations with reliable internal or approved external information. Complexity alone is not wrongdoing, and lawful privacy arrangements may have genuine explanations. Unresolved contradictions or reluctance to provide ownership information should be escalated. Document the entity chain, sources checked, controlling relationships, discrepancies, customer explanation, and remaining information gaps.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-015",
+      "title": "Charity and community fundraising account misuse",
+      "text": "This synthetic demo policy covers possible misuse of charity, community group, or fundraising accounts for purposes inconsistent with their stated mission. Indicators include donations rapidly paid to private individuals, unexplained overseas transfers, personal spending by officials, sudden activity unrelated to prior campaigns, or funds routed through connected organizations without a clear purpose. Investigators should understand the campaign, intended beneficiaries, governance arrangements, authorized signatories, and evidence showing how money was applied. International aid and urgent relief work can create unusual payment patterns and must not be presumed improper. Where records are incomplete, seek proportionate explanations and supporting documents. Preserve donor inflows, recipient links, approval records, expenditure evidence, conflicts of interest, and the rationale for any specialist or human escalation.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-016",
+      "title": "Money mule recruitment and account use",
+      "text": "This synthetic internal policy asks investigators to assess whether an account may be receiving or moving funds for other people. Indicators include credits from unrelated senders followed by transfers to a controller, abrupt use of a student or low-income account for commercial-scale flows, implausible explanations, and customers coached during contact. Review the customer's circumstances, device and access changes, relationships with senders, destination ownership, and any retained benefit. Consider coercion, deception, and vulnerability as well as knowing participation. Do not label a customer a money mule from one indicator. Restricting activity or escalating a suspicion requires documented evidence, proportionate controls, and review by an authorised investigator.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-017",
+      "title": "Structuring below monitoring thresholds",
+      "text": "This synthetic internal policy requires review when deposits, withdrawals, or transfers appear deliberately divided into amounts just below an internal monitoring threshold. Investigators should examine the aggregate value, timing, channel, locations, counterparties, and whether the pattern crosses several accounts or days. Repeated round amounts or a customer asking how limits operate may strengthen concern, but no single amount proves intent. Compare the activity with the customer's expected profile and consider ordinary explanations such as invoice schedules or daily cash handling. Record why the sequence appears planned or coincidental, preserve the relevant transaction series, and escalate only when the combined evidence supports possible avoidance of scrutiny.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-018",
+      "title": "Rapid in-and-out movement of funds",
+      "text": "This synthetic internal policy covers accounts that receive funds and quickly send most of the value onward, leaving little balance or economic purpose. Investigators should compare credit and debit times, amounts retained, beneficiary links, payment narratives, and the customer's stated reason for acting as an intermediary. Particular attention is warranted where money from several unrelated sources is consolidated and dispersed soon afterwards, or where the route becomes longer without a clear business need. Review whether the pattern is new, recurring, or consistent with the known account purpose. Document the complete flow and any legitimate explanation before deciding whether rapid pass-through activity requires enhanced review or escalation.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-019",
+      "title": "Higher-risk jurisdiction exposure",
+      "text": "This synthetic internal policy requires a contextual review when a customer, counterparty, bank, or transaction has a material connection to a jurisdiction rated higher risk by the organisation's current approved sources. Investigators should establish the actual location links, purpose, goods or services, ownership, source of funds, destination of value, and expected customer activity. A country label alone is not evidence of wrongdoing, and historic or assumed classifications must not be used. Consider whether routing through additional territories obscures the parties or commercial reason. Record the source and date of the risk information used, obtain supporting documents where proportionate, and refer unresolved material concerns for enhanced due diligence.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-020",
+      "title": "Sanctions screening alerts and jurisdiction controls",
+      "text": "This synthetic internal policy governs potential sanctions exposure involving customers, beneficial owners, counterparties, financial institutions, vessels, addresses, or geographic routes. A screening alert must be assessed against reliable identifiers such as full name, date of birth, registration details, location, ownership, and payment information. Investigators must not dismiss or confirm a match solely because of a similar name or a country association. Preserve the alert data and explain any mismatch or unresolved similarity. Where a credible match or prohibited territorial connection remains possible, pause automated conclusions and escalate promptly to the authorised sanctions team. Only current approved screening information may support the decision, and the case record must avoid unsupported claims.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-021",
+      "title": "Politically exposed persons and enhanced due diligence",
+      "text": "This synthetic internal policy requires enhanced due diligence when a customer, beneficial owner, close associate, or relevant family member is identified as a politically exposed person. Investigators should verify the identity and public role, understand ownership and control, establish expected activity, and obtain proportionate evidence for source of wealth and source of funds. The status does not imply criminal conduct and must not produce an automatic adverse decision. Consider the seniority and nature of the role, relevant geography, product risk, transaction behaviour, and any credible adverse information. Approval and ongoing monitoring should follow the organisation's authorised review process, with decisions, evidence gaps, and changes in circumstances clearly documented.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-022",
+      "title": "Dormant account reactivation",
+      "text": "This synthetic internal policy applies when an account with little or no recent activity becomes active again in a way that differs from its previous use. Review the length of inactivity, customer contact, identity or address changes, new devices, credential resets, incoming funding, newly added beneficiaries, and the speed and value of subsequent payments. Investigators should determine whether the customer expected the renewed activity and whether the account purpose has legitimately changed. An old account returning to use is not suspicious by itself. Where control cannot be confirmed, explanations are inconsistent, or funds are rapidly removed, apply proportionate safeguards and refer the matter for account-takeover or financial-crime review.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-023",
+      "title": "Unusual cash deposit activity",
+      "text": "This synthetic internal policy requires scrutiny of cash deposits that are inconsistent with the customer's occupation, business model, prior behaviour, or stated source of income. Investigators should assess frequency, total value, denomination mix, branch or machine locations, use of multiple depositors, and how quickly the funds are withdrawn or transferred. For businesses, compare cash volumes with expected trading patterns and available records; for individuals, seek a plausible and proportionate explanation for the cash source. Seasonal or one-off legitimate activity should be considered. Preserve supporting evidence and avoid treating cash use alone as wrongdoing. Escalate when material inconsistencies remain or the wider movement suggests concealment.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-024",
+      "title": "Crypto off-ramp proceeds",
+      "text": "This synthetic internal policy covers fiat receipts associated with the sale or withdrawal of cryptoassets through exchanges, brokers, peer-to-peer traders, or other conversion services. Investigators should identify the platform and account holder, understand how the cryptoassets were acquired, compare proceeds with the customer's profile, and review supporting transaction history where proportionate. Warning signs include frequent receipts from unrelated individuals, unexplained use of several platforms, immediate onward transfers, or claims that cannot be reconciled with available records. Cryptoasset involvement alone does not establish illicit activity. Document the route from digital asset to bank funds, any ownership gaps, and the rationale for accepting the explanation or escalating the case.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-025",
+      "title": "Unexplained third-party payments",
+      "text": "This synthetic internal policy requires review when payments are made by or for someone who is not the expected customer, beneficiary, supplier, or contracting party. Investigators should establish the relationship between all parties, the commercial or personal reason for the arrangement, who ultimately provided and received the value, and whether supporting records are consistent. Attention is warranted where unrelated people settle invoices, refunds go to a different person, or funds repeatedly transit an account without a credible role. Legitimate family support, payroll agents, marketplaces, or group treasury arrangements may explain the activity. Record the explanation and evidence, and escalate unresolved ownership, control, or value-transfer concerns.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-026",
+      "title": "Gambling-linked credits and withdrawals",
+      "text": "This synthetic demo policy covers accounts used to disguise criminal proceeds through betting activity. Investigators should compare deposits to the customer's known income, wager history, game participation, and normal affordability. Concern increases when funds enter from unrelated people, are staked only briefly or at very low risk, and are then withdrawn to a different bank account. Repeated cashouts, matched betting between connected parties, or gambling spend inconsistent with the customer profile should be documented. Legitimate winnings remain possible, so reviewers must obtain operator statements and payment records before concluding that laundering occurred.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-027",
+      "title": "Circular transfers and loan-back arrangements",
+      "text": "This synthetic demo policy addresses arrangements in which value leaves a customer or connected business and later returns through companies, trusts, associates, or purported lending. Analysts should trace ownership, control, payment sequence, timing, and economic purpose across every leg. Warning signs include reciprocal transfers, interest-free advances without agreements, capital routed offshore and returned as a loan, and repeated balances that end near their starting position. Reviewers should seek contracts, financial statements, tax context, and evidence that each intermediary performs a genuine role. A circular path is not conclusive by itself; the case record should explain why the arrangement appears commercially reasonable or why escalation is needed.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-028",
+      "title": "Identity and document inconsistencies",
+      "text": "This synthetic demo policy requires closer review when identity information conflicts across onboarding records, payment instructions, or later customer contact. Indicators include names spelled in materially different ways, dates of birth that change, photographs inconsistent with live checks, addresses shared without explanation, and documents whose format, issuer, metadata, or expiry details do not agree. Investigators should verify the discrepancy through approved independent sources, preserve copies and audit trails, and distinguish a clerical mistake from possible impersonation or fabricated evidence. A single formatting error should not determine the outcome. Escalation is appropriate when several inconsistencies remain unresolved, the customer avoids verification, or account activity begins immediately after disputed profile changes.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-029",
+      "title": "Correspondent and nested payment transparency",
+      "text": "This synthetic demo policy covers payments passing through correspondent institutions where the underlying sender, recipient, or downstream bank may be obscured. Investigators should identify each financial institution in the chain, establish the ultimate parties and purpose, and determine whether another bank is indirectly accessing services through the named respondent. Risk indicators include incomplete originator data, unexplained intermediary changes, payment messages that omit downstream institutions, and repeated transfers for customers outside the respondent's expected markets. Review should consider the respondent's controls and the transparency of the full route. If essential party or bank information cannot be obtained, the analyst should escalate rather than infer that screening was completed.",
+      "source": "synthetic - written for this demo"
+    },
+    {
+      "policy_id": "DEMO-AML-030",
+      "title": "Merchant refund and reversal abuse",
+      "text": "This synthetic demo policy addresses misuse of card purchases, reversals, and merchant refunds to move value or extract funds fraudulently. Analysts should compare the original purchase, refund amount, destination instrument, merchant relationship, delivery evidence, and elapsed time. Concern rises when refunds exceed sales, are issued without a matching transaction, go to a different card or account, or follow clusters of purchases made with unrelated payment methods. Repeated credits from newly created merchants or refund activity inconsistent with the customer's normal retail behaviour also require review. Investigators should separate genuine returns and operational errors from coordinated abuse, retain transaction links, and escalate unexplained patterns involving merchants, customers, or payment instruments under common control.",
+      "source": "synthetic - written for this demo"
     }
   ]
 }

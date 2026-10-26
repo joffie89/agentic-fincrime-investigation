@@ -1,22 +1,42 @@
-# Agentic Financial Crime Investigation Platform
+# AI Fraud Investigation Assistant
 
-An interview-sized, enterprise-style Python prototype showing how deterministic
-risk rules, explainable relationship analysis, policy retrieval, structured model
-reasoning, human-review controls, and audit persistence can fit into one coherent
-financial-crime investigation workflow.
+An AI assistant for UK bank fraud and AML teams that investigates a payment alert, recommends an action with cited policies, and is built so that high-risk and uncertain cases always go to a human reviewer.
 
-This is a portfolio demonstration—not a production AML decision system. It uses
-only synthetic data, produces recommendations rather than consequential actions,
-and never claims that a human reviewed a case when they did not.
+**Tech stack:** Python, FastAPI, Pydantic, LangGraph, OpenAI (gpt-4.1-mini, text-embedding-3-small), RAG (vector, BM25, hybrid), scikit-learn, NetworkX, PostgreSQL, Docker, GitHub Actions.
 
-## What problem it demonstrates
+**Scope:** a portfolio project on synthetic data. It recommends actions; it never blocks accounts, rejects payments, or claims a human reviewed a case.
 
-Financial-crime investigations often need several kinds of evidence at once:
-transparent transaction rules, relationship patterns, relevant policy text, and a
-reasoned recommendation. This project keeps each concern independent and makes
-LangGraph responsible for the actual execution and escalation path. The result is
-small enough to explain component by component while still demonstrating service
-boundaries, validation, testing, failure handling, and auditability.
+## Key results
+
+All evaluation data is synthetic. On the 60-query retrieval set, moving from the local lexical-hashing vector baseline to OpenAI `text-embedding-3-small` vector search improved hit@1 from **1.67% to 75.00%** and MRR from **0.1705 to 0.8469**.
+
+| Metric | In-sample (50 cases x 3 runs) | Held-out (20 cases x 3 runs) |
+|---|---:|---:|
+| Missed escalations | 0 | 0 |
+| Unnecessary escalations | 0 | 2 |
+| System recommendation accuracy | 100% | 90% |
+| LLM-alone accuracy | 94% | 85% |
+| Routing accuracy | 100% | 90% |
+| Citation match | 100% | 100% |
+| Latency p50 | ~2.1 s | ~2.1 s |
+| Cost per case | ~$0.0009 | ~$0.0009 |
+
+Outcome metrics were identical across all 3 runs.
+
+The rubric was written against the in-sample cases, so the held-out set is the fairer test. In 3 of 50 in-sample cases the LLM recommended a softer action than policy allows and the rubric floor raised it; in 7-8 of 50 it omitted a required citation and deterministic citations added it.
+
+The exact committed outputs are in [`evaluation/decision_results_openai.json`](evaluation/decision_results_openai.json) and [`evaluation/decision_results_openai_holdout.json`](evaluation/decision_results_openai_holdout.json).
+
+### Held-out errors
+
+Both held-out errors were single-signal velocity cases where the model escalated instead of requesting more information. This is stricter than the written policy rather than a missed escalation; whether velocity alone should escalate is a policy decision for the fraud team.
+
+## How it decides
+
+- **Rules enforce policy:** deterministic signals set the minimum permitted recommendation, `HIGH` risk always reaches human review, and required citations are added in code.
+- **ML detects patterns:** an IsolationForest supplies a reproducible relationship-anomaly signal alongside explainable NetworkX graph features.
+- **The LLM explains:** structured assessment turns the supplied facts and policy evidence into reasons, confidence, missing information, and grounded citations.
+- **Humans decide:** the workflow only recommends an action; it never blocks an account, rejects a payment, files a report, or claims that review happened.
 
 ## Architecture
 
@@ -26,19 +46,31 @@ flowchart LR
     API --> LG[Compiled LangGraph]
     LG --> Risk[Deterministic risk rules]
     Risk --> Graph[NetworkX analysis]
-    Graph --> Retrieve[Policy vector retrieval]
-    Retrieve --> Assess[Structured policy assessment]
-    Assess --> Route{Review required?}
+    Graph --> Anomaly[IsolationForest relationship signal]
+    Anomaly --> Semantic[Semantic or lexical policy retrieval]
+    Risk --> Signals[Signal-to-policy mapping]
+    Graph --> Signals
+    Semantic --> Evidence[De-duplicated policy evidence]
+    Signals --> Evidence
+    Evidence --> Assess[Structured policy assessment<br/>local rules / OpenAI / Azure]
+    Assess --> Enforce[OpenAI guardrails<br/>rubric floor + deterministic citations]
+    Enforce --> Route{Review required?}
     Route -->|No| Complete[Complete recommendation]
     Route -->|Yes| Human[Pending human review]
-    Complete --> Audit[Audit repository]
+    Complete --> Audit[Complete audit record]
     Human --> Audit
     Audit --> Memory[(In-memory demo store)]
     Audit --> Postgres[(PostgreSQL)]
-    Policies[Synthetic policy JSON] --> Ingest[Offline chunk + embed]
-    Ingest --> Index[(JSON vector index)]
-    Index --> Retrieve
-    Azure[Azure OpenAI-compatible API] -. optional .-> Assess
+    API --> Get["GET /investigations/{id}"]
+    Get --> Memory
+    Get --> Postgres
+    Policies[30 synthetic policy passages] --> Ingest[Offline chunk + embed]
+    Ingest --> Index[(Provider-specific JSON index)]
+    Index --> Semantic
+    OpenAI[OpenAI APIs] -. optional embeddings .-> Ingest
+    OpenAI -. optional assessment .-> Assess
+    Azure[Azure OpenAI-compatible API] -. optional embeddings .-> Ingest
+    Azure -. optional assessment .-> Assess
 ```
 
 Request flow:
@@ -46,13 +78,28 @@ Request flow:
 ```text
 FastAPI request -> Pydantic validation -> compiled LangGraph
   -> deterministic risk assessment
-  -> NetworkX graph analysis
-  -> Top-K policy retrieval
-  -> validated policy assessment
+  -> NetworkX graph analysis + IsolationForest anomaly signal
+  -> semantic retrieval + signal-required policy inclusion
+  -> structured policy assessment
+  -> rubric floor + deterministic citation enforcement
   -> conditional complete/human-review route
   -> memory or PostgreSQL audit persistence
-  -> validated API response
+  -> validated API response and retrievable audit record
 ```
+
+## What's implemented now
+
+- Strict transaction validation returns HTTP 422; a reused transaction ID with different historical details returns HTTP 409.
+- Required API-key authentication protects every investigation endpoint, while `/health` remains public.
+- Request IDs are generated or propagated in `X-Request-ID`, with one structured status, timing, and optional LLM-usage log for each HTTP request.
+- The full workflow persists a complete or partial audit trail and exposes it through the protected `GET /investigations/{investigation_id}` endpoint.
+- OpenAI structured assessment has an application-enforced decision floor, deterministic citations, safe fallbacks, and recorded rejected model identifiers.
+- A network-free suite of 208 unit, workflow, persistence, evaluation, and API tests runs locally and in CI.
+- Docker/Compose packaging and GitHub Actions CI are included.
+
+## What problem it demonstrates
+
+Financial-crime investigations often need several kinds of evidence at once: transparent transaction rules, relationship patterns, relevant policy text, and a policy-grounded assessment. This project keeps each concern independent and makes LangGraph responsible for the execution and escalation path. The result demonstrates clear service boundaries, validation, testing, failure handling, evaluation, and auditability without presenting model output as an autonomous decision.
 
 ## Project structure
 
@@ -61,22 +108,31 @@ FastAPI request -> Pydantic validation -> compiled LangGraph
 ├── app/
 │   ├── main.py                         # FastAPI factory and routes
 │   ├── config.py                       # environment-backed settings
+│   ├── auth.py                         # X-API-Key dependency
+│   ├── middleware.py                   # request IDs and HTTP timing logs
 │   ├── logging_config.py               # JSON structured logging
 │   ├── models/                         # strict Pydantic domain contracts
 │   ├── services/
-│   │   ├── risk_scorer.py              # preserved deterministic rules
-│   │   ├── policy_assessment.py        # local + Azure adapters
+│   │   ├── risk_scorer.py              # deterministic risk rules
+│   │   ├── policy_assessment.py        # local + OpenAI + Azure adapters
 │   │   └── investigation_service.py    # dependency composition
 │   ├── graph/analyzer.py               # explainable NetworkX metrics
 │   ├── rag/                             # embeddings, ingestion, retrieval
 │   ├── repositories/                    # memory + PostgreSQL persistence
 │   ├── workflow/                        # typed state and LangGraph
-│   └── evaluation/evaluate.py           # executable evaluation harness
+│   └── evaluation/
+│       ├── evaluate.py                  # workflow regression evaluation
+│       ├── retrieval_eval.py            # vector/BM25/hybrid comparison
+│       └── decision_eval.py             # repeatable live decision evaluation
 ├── data/
-│   ├── policies.json                    # original synthetic policy text
+│   ├── policies.json                    # 30 synthetic demo policy passages
 │   └── policy_index.json                # generated local vector index
-├── evaluation/cases.json                # synthetic expected outcomes
-├── tests/                               # unit and API/workflow tests
+├── evaluation/
+│   ├── cases.json                       # small workflow regression cases
+│   ├── retrieval_cases.json             # 60 labelled retrieval queries
+│   ├── decision_cases.json              # 50 in-sample decision cases
+│   └── decision_cases_holdout.json      # 20 held-out decision cases
+├── tests/                               # 208 network-free tests
 ├── docs/azure-deployment-design.md      # design only; not deployed
 ├── Dockerfile
 ├── docker-compose.yml
@@ -87,7 +143,7 @@ FastAPI request -> Pydantic validation -> compiled LangGraph
 
 ### Deterministic risk assessment
 
-The original four additive rules and exact boundaries are preserved:
+The four additive rules and exact boundaries are:
 
 | Signal | Points | Strict condition |
 |---|---:|---|
@@ -96,14 +152,11 @@ The original four additive rules and exact boundaries are preserved:
 | Unusual amount | 30 | `amount > 5 * average_transaction_amount` |
 | High velocity | 20 | `transactions_last_24h > 10` |
 
-Scores below 30 are `LOW`, 30–59 are `MEDIUM`, and 60 or above are
-`HIGH`. Only `HIGH` sets the legacy `investigate` flag. The LLM is never used to
-calculate or alter this score.
+Scores below 30 are `LOW`, 30–59 are `MEDIUM`, and 60 or above are `HIGH`. Only `HIGH` sets the legacy `investigate` flag. The LLM is never used to calculate or alter this score.
 
 ### Graph analysis
 
-`GraphAnalyzer` builds a `networkx.MultiDiGraph` from synthetic account
-relationships and temporarily adds the request transaction to a copy. It returns:
+`GraphAnalyzer` builds a `networkx.MultiDiGraph` from synthetic account relationships and temporarily adds the request transaction to a copy. It returns:
 
 - unique counterparties and origin degree;
 - counterparties shared by both transaction parties;
@@ -111,90 +164,79 @@ relationships and temporarily adds the request transaction to a copy. It returns
 - direct-counterparty value concentration; and
 - named, explainable signals plus a `suspicious` flag.
 
-No graph ML, external graph database, or real customer data is used. Optional
-account IDs preserve compatibility with the original transaction shape; stable
-role-prefixed demo IDs are derived when they are absent.
+`GraphAnalyzer` itself uses no ML, external graph database, or real customer data. Optional account IDs preserve compatibility with the original transaction shape; stable role-prefixed demo IDs are derived when they are absent.
 
 ### Relationship anomaly scoring
 
-`RelationshipAnomalyScorer` fits an unsupervised scikit-learn `IsolationForest`
-over the graph metrics using a fixed-seed synthetic training set. It provides a
-reproducible second opinion on relationship structure; it does not replace or
-alter the deterministic risk rules and has not been validated against real fraud
-data.
+`RelationshipAnomalyScorer` fits an unsupervised scikit-learn `IsolationForest` over the graph metrics using a fixed-seed synthetic training set. It provides a reproducible second opinion on relationship structure; it does not replace or alter the deterministic risk rules and has not been validated against real fraud data.
 
-When deterministic risk is `LOW` or `MEDIUM`, graph analysis is not already
-`suspicious`, and the model flags the structure as anomalous, the workflow routes
-the investigation to human review.
+When deterministic risk is `LOW` or `MEDIUM`, graph analysis is not already `suspicious`, and the model flags the structure as anomalous, the workflow routes the investigation to human review.
 
 ### Policy RAG
 
+All 30 bundled policy passages are synthetic internal policies written for this demo. They do not quote or cite real regulations by section and must not be treated as authoritative regulatory text.
+
 Ingestion and query are separate operations:
 
-1. `PolicyIngestor` reads the synthetic policy documents, chunks them with word
-   overlap, obtains embeddings through an `EmbeddingService`, and writes a
-   validated JSON vector index.
-2. `PolicyRetriever` loads that stored index at query time, embeds the investigation
-   query, calculates cosine similarity, and returns deterministic Top-K chunks with
-   `policy_id`, `chunk_id`, text, and relevance score.
+1. `PolicyIngestor` reads the synthetic policy documents, chunks them with word overlap, obtains embeddings through an `EmbeddingService`, and writes a validated JSON vector index.
+2. `PolicyRetriever` loads that stored index at query time and ranks policy chunks with vector similarity, BM25 keyword matching, or hybrid search. Hybrid mode combines both rankings with Reciprocal Rank Fusion and returns deterministic Top-K chunks with `policy_id`, `chunk_id`, text, and relevance score.
+3. The workflow adds policies required by active deterministic or graph signals to the semantic result, de-duplicates them, and records which IDs came from `semantic_search` and which came from `signal_mapping`.
 
-The default `LocalHashEmbeddingService` is a deterministic lexical hashing
-baseline, not a semantic ML model. It keeps the complete demo offline and
-repeatable. An injected `AzureOpenAIEmbeddingService` adapter is implemented and
-mock-tested for separately generated Azure-compatible indexes; the bundled index
-and default application composition remain local.
+The default `LocalHashEmbeddingService` is a deterministic lexical hashing baseline, not a semantic ML model. Its cosine similarity measures overlap in hashed lexical features rather than meaning. `EMBEDDING_MODE` can instead select the official OpenAI embeddings API or the Azure OpenAI adapter. Provider indexes are generated separately and record their embedding implementation and dimensions; OpenAI indexes also record the exact model. Load-time checks prevent an index from another provider or model being mixed with the selected service. The OpenAI adapter is covered by mocked unit tests and was also evaluated live on 50 in-sample and 20 held-out synthetic cases (3 runs each); the Azure adapter is covered by mocked unit tests only and has not been live-evaluated.
 
-Rebuild the bundled index explicitly:
+### Policy assessment, grounding, and enforcement
 
-```powershell
-python -m app.rag.ingestion --source data/policies.json --output data/policy_index.json
-```
+`PolicyAssessmentService` is the provider boundary. Local mode uses an explicitly rules-based `DemoPolicyAssessmentService`; it does not pretend to be an LLM. OpenAI mode uses the Responses API with a strict-compatible Pydantic structured-output schema, then converts the result to the domain `PolicyAssessment`. Azure mode uses a strict JSON-schema response and the same domain validation.
 
-### Policy assessment and grounding
+The OpenAI prompt supplies transaction facts, deterministic risk, graph and anomaly signals, and retrieved policy passages inside a clearly delimited untrusted-data section. It tells the model to ignore instructions inside those fields, use only supplied policy evidence, keep each reason concise, distinguish applicable `policy_references` from inapplicable `policies_considered`, and report missing information and evidence sufficiency.
 
-`PolicyAssessmentService` is the provider boundary. Local mode uses an explicitly
-rules-based `DemoPolicyAssessmentService`; it does not pretend to be an LLM.
-Azure mode creates an Azure OpenAI client from environment settings and requests a
-strict JSON-schema response that is validated again as `PolicyAssessment`.
+OpenAI mode applies the explicit decision rubric again in code after parsing:
 
-The hosted prompt instructs the model to:
+- zero policy risk signals permits `CLEAR`;
+- exactly one signal requires at least `REQUEST_MORE_INFO`;
+- two or more signals, a new-payee/unusual-amount pattern, or a suspicious-network link requires `ESCALATE_TO_HUMAN`;
+- a softer model recommendation is raised to the rubric level and recorded with `rubric_override` and `original_llm_recommendation`; a stricter recommendation is never lowered; and
+- cross-border activity is context and a citation trigger, not a counted risk signal.
 
-- use only supplied policy evidence for policy claims;
-- report insufficient evidence;
-- never fabricate policy identifiers;
-- avoid autonomous consequential actions; and
-- return structured output.
+In OpenAI mode, application code also ensures that `DEMO-AML-004` is cited for cross-border activity, `DEMO-AML-005` for `HIGH` deterministic risk, and `DEMO-AML-006` for a new payee. Any additions are returned as `deterministic_citations`. Model-supplied policy IDs outside the provided evidence are dropped without failing the whole assessment, logged as warnings, and retained in `rejected_citations` or `rejected_policies_considered` for audit.
 
-The adapter rejects references that were not among the retrieved chunks. Provider
-or validation failures become a low-confidence, insufficient-evidence result that
-requires human review; they are logged and are not silently swallowed.
+Overlong reasons and missing-information entries are safely shortened at a word boundary before domain validation. OpenAI timeouts, malformed output, and other assessment failures return a no-citation `ESCALATE_TO_HUMAN` fallback. The safe exception type and message are logged and recorded as `fallback_reason`, without logging the prompt or API key.
 
 ### Human-in-the-loop routing
 
-The compiled LangGraph condition routes to `human_review_required` when any of the
-following is true:
+The compiled LangGraph condition routes to `human_review_required` when any of the following is true:
 
 - deterministic risk is `HIGH`;
+- a `MEDIUM` case is not `CLEAR` with confidence of at least 0.9 and sufficient evidence;
 - assessment confidence is below the configured threshold;
 - policy evidence is insufficient;
-- the assessment itself requests human review; or
-- suspicious graph signals conflict with a `LOW` deterministic score.
+- the assessment requires human review;
+- suspicious graph signals conflict with a `LOW` deterministic score; or
+- the relationship-anomaly model flags an otherwise non-suspicious `LOW` or `MEDIUM` case.
 
-The response status is `PENDING_HUMAN_REVIEW`. This means review is required—not
-that a person has reviewed the case. There is deliberately no fake review UI or
-automated account action.
+The response status is `PENDING_HUMAN_REVIEW`. This means review is required, not that a person has reviewed the case. There is deliberately no fake review UI or automated account action.
 
-### Persistence and failure semantics
+### LLM usage
 
-Local mode uses a thread-safe, process-local repository and labels the result
-`backend: memory`. Docker Compose selects the PostgreSQL repository, which creates
-and upserts an `investigations` table containing the useful summary fields plus a
-complete JSON audit record.
+Hosted assessment responses record input tokens, output tokens, LLM latency in milliseconds, and estimated USD cost using `OPENAI_INPUT_PRICE_PER_1M` and `OPENAI_OUTPUT_PRICE_PER_1M`. The optional `llm_usage` object is returned by `/investigate`, included in the structured HTTP log, and persisted in the audit trail; it is `null` in local mode. Estimates cover the policy-assessment call only and depend on keeping the configured prices current.
 
-Every save returns a validated `PersistenceResult`. A database connection/write
-failure produces `succeeded: false`, sets the investigation status to `FAILED`, and
-makes `/investigate` return HTTP 503 with that truthful response body. The service
-does not silently switch from PostgreSQL to memory.
+### Persistence and audit trail
+
+Local mode uses a thread-safe, process-local repository and labels the result `backend: memory`. Docker Compose selects the PostgreSQL repository, which creates and upserts an `investigations` table containing indexed summary fields plus the complete JSON audit record.
+
+Each audit record includes:
+
+- the input transaction, risk assessment, graph analysis, and anomaly result;
+- retrieved policy IDs, chunk IDs, scores, and semantic-versus-signal retrieval sources;
+- the full policy assessment, including recommendation, confidence, reasons, `policy_references`, `policies_considered`, missing information, and evidence sufficiency;
+- `original_llm_recommendation`, `rubric_override`, `deterministic_citations`, rejected IDs, and `fallback_reason`;
+- the routing decision, first rule fired, and all triggered rules;
+- `llm_usage`, per-step timestamps and durations, audit events, errors, and fallbacks; and
+- created and updated timestamps plus persistence outcome.
+
+If a workflow step fails before the normal persistence node, the workflow makes a best-effort save of the partial state with the failed step and exception summary. The protected `GET /investigations/{investigation_id}` endpoint returns the stored record, returns HTTP 404 when it does not exist, and returns a fixed HTTP 503 detail if retrieval fails.
+
+Every save returns a validated `PersistenceResult`. A database connection or write failure produces `succeeded: false`, sets the investigation status to `FAILED`, and makes `/investigate` return HTTP 503 with the fixed, non-sensitive error `Investigation could not be saved`. The full database exception is logged with `logger.exception`; it is not returned to the caller, and the service does not silently switch to memory.
 
 ## Local setup
 
@@ -206,14 +248,14 @@ python -m venv .venv
 python -m pip install --upgrade pip
 python -m pip install --requirement requirements.txt
 Copy-Item .env.example .env
+# Set API_KEY in .env to a non-placeholder local value.
 python -m app.rag.ingestion
 python -m uvicorn app.main:app --reload
 ```
 
-On macOS/Linux, activate with `source .venv/bin/activate` and copy the environment
-file with `cp .env.example .env`.
+On macOS/Linux, activate with `source .venv/bin/activate` and copy the environment file with `cp .env.example .env`.
 
-Open `http://127.0.0.1:8000/docs` for the generated OpenAPI UI.
+Open `http://127.0.0.1:8000/docs` for the generated OpenAPI UI. Protected endpoints document their HTTP 401 response, and FastAPI's `APIKeyHeader` security scheme supplies the Swagger **Authorize** button.
 
 ## Environment variables
 
@@ -221,34 +263,47 @@ Open `http://127.0.0.1:8000/docs` for the generated OpenAPI UI.
 |---|---|---|
 | `APP_ENV` | `development` | Environment label |
 | `LOG_LEVEL` | `INFO` | Root JSON log level |
-| `SERVICE_MODE` | `local` | `local` deterministic assessor or `azure` LLM adapter |
+| `API_KEY` | none; required | Key accepted in `X-API-Key` on protected endpoints |
+| `SERVICE_MODE` | `local` | `local` rule-based, `openai` OpenAI, or `azure` Azure OpenAI assessment |
+| `EMBEDDING_MODE` | `local` | `local` lexical baseline, `openai` OpenAI embeddings, or `azure` Azure OpenAI embeddings |
 | `PERSISTENCE_BACKEND` | `memory` | `memory` or `postgres` |
 | `DATABASE_URL` | unset | Required for PostgreSQL mode |
-| `POLICY_INDEX_PATH` | `data/policy_index.json` | Stored vector index |
-| `RETRIEVAL_TOP_K` | `3` | Returned policy chunk count |
-| `HUMAN_REVIEW_CONFIDENCE_THRESHOLD` | `0.70` | Conditional-route threshold |
-| `AZURE_OPENAI_ENDPOINT` | unset | Required in Azure mode |
-| `AZURE_OPENAI_API_KEY` | unset | Required in Azure mode; never committed |
-| `AZURE_OPENAI_CHAT_DEPLOYMENT` | unset | Azure chat deployment name |
-| `AZURE_OPENAI_EMBEDDING_DEPLOYMENT` | unset | Reserved for the Azure embedding adapter |
+| `POLICY_INDEX_PATH` | provider-specific | Stored vector index; local uses `data/policy_index.json` and OpenAI uses `data/policy_index_openai.json` unless overridden |
+| `RETRIEVAL_MODE` | provider-specific | `vector` with OpenAI embeddings and `hybrid` otherwise; explicit `vector`, `bm25`, or `hybrid` overrides the default |
+| `RETRIEVAL_TOP_K` | `3` | Returned semantic policy chunk count before signal-required additions |
+| `RETRIEVAL_MIN_RELEVANCE_SCORE` | `0.05` | Minimum cosine score for vector results and hybrid vector candidates |
+| `HUMAN_REVIEW_CONFIDENCE_THRESHOLD` | `0.70` | General conditional-route threshold |
+| `OPENAI_API_KEY` | unset | Required when `SERVICE_MODE=openai` or `EMBEDDING_MODE=openai`; never committed |
+| `OPENAI_CHAT_MODEL` | `gpt-4.1-mini` | OpenAI model used for structured policy assessment |
+| `OPENAI_ASSESSMENT_TEMPERATURE` | `0` | OpenAI assessment sampling temperature |
+| `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | OpenAI embedding model recorded in the generated index |
+| `OPENAI_INPUT_PRICE_PER_1M` | `0.40` | Input-token USD rate used only for cost estimates; check current model pricing |
+| `OPENAI_OUTPUT_PRICE_PER_1M` | `1.60` | Output-token USD rate used only for cost estimates; check current model pricing |
+| `AZURE_OPENAI_ENDPOINT` | unset | Required when an Azure service or embedding mode is selected |
+| `AZURE_OPENAI_API_KEY` | unset | Required when an Azure service or embedding mode is selected; never committed |
+| `AZURE_OPENAI_CHAT_DEPLOYMENT` | unset | Required when `SERVICE_MODE=azure` |
+| `AZURE_OPENAI_EMBEDDING_DEPLOYMENT` | unset | Required when `EMBEDDING_MODE=azure` |
+| `AZURE_OPENAI_EMBEDDING_DIMENSIONS` | `1536` | Expected Azure embedding vector size |
 | `AZURE_OPENAI_API_VERSION` | `2024-10-21` | Azure API version |
 
-`Settings` validates selected backends at startup. No credentials are hard-coded,
-and `.env` is ignored by Git and Docker.
+`Settings` always requires `API_KEY` and conditionally validates credentials for the selected hosted assessment or embedding mode at startup. No credentials are hard-coded, and `.env` is ignored by Git and Docker. Local embedding and assessment remain the defaults for development, tests, and CI.
 
 ## API examples
 
-Health/liveness:
+Health/liveness requires no API key:
 
 ```bash
 curl http://127.0.0.1:8000/health
 ```
+
+Use the value configured as `API_KEY` in the `X-API-Key` header for every other endpoint.
 
 Legacy deterministic endpoint:
 
 ```bash
 curl -X POST http://127.0.0.1:8000/assess-risk \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: replace-with-your-api-key" \
   -d '{"transaction_id":"demo-high-001","amount":6000.0,"account_age_days":10,"new_payee":true,"average_transaction_amount":1000.0,"transactions_last_24h":11,"origin_country":"GB","destination_country":"ES"}'
 ```
 
@@ -257,40 +312,18 @@ Full investigation:
 ```bash
 curl -X POST http://127.0.0.1:8000/investigate \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: replace-with-your-api-key" \
   -d '{"transaction_id":"demo-high-001","amount":6000.0,"account_age_days":10,"new_payee":true,"average_transaction_amount":1000.0,"transactions_last_24h":11,"origin_country":"GB","destination_country":"ES","origin_account_id":"demo-origin","destination_account_id":"demo-destination"}'
 ```
 
-Abridged local-mode response (IDs/timestamps vary):
+Retrieve the persisted audit record:
 
-```json
-{
-  "investigation_id": "10258beb-5603-44fa-b234-ba3c5f2d817b",
-  "transaction_id": "demo-high-001",
-  "risk_assessment": {
-    "risk_score": 85,
-    "risk_level": "HIGH",
-    "risk_reasons": [
-      "Account is less than 30 days old",
-      "Transaction is to a new payee",
-      "Transaction amount is more than 5 times the average",
-      "More than 10 transactions in the last 24 hours"
-    ],
-    "investigate": true
-  },
-  "retrieved_policies": [
-    {"policy_id": "DEMO-AML-001", "chunk_id": "DEMO-AML-001#001", "text": "...", "relevance_score": 0.419903}
-  ],
-  "recommendation": "ESCALATE_TO_HUMAN",
-  "reasons": ["Deterministic risk is HIGH; a person must review the evidence before any action."],
-  "requires_human_review": true,
-  "status": "PENDING_HUMAN_REVIEW",
-  "persistence": {"succeeded": true, "backend": "memory", "error": null},
-  "created_at": "2026-09-06T06:12:51.136288Z"
-}
+```bash
+curl http://127.0.0.1:8000/investigations/replace-with-investigation-id \
+  -H "X-API-Key: replace-with-your-api-key"
 ```
 
-The real response also contains the full graph result and structured policy
-assessment; the OpenAPI schema is authoritative.
+The `/investigate` response contains the deterministic risk result, graph and anomaly results, retrieved passages, the structured policy assessment, optional `llm_usage`, final recommendation and routing status, and persistence outcome. The OpenAPI schema is authoritative.
 
 ## Tests and evaluation
 
@@ -300,86 +333,128 @@ Run the complete network-free suite:
 python -m pytest -q
 ```
 
-Tests cover rule boundaries, model validation, graph metrics, policy ingestion and
-Top-K retrieval, mocked Azure embedding/LLM output, LangGraph routes, escalation,
-persistence success/failure, API behavior, and evaluation execution. They require
-neither Azure credentials nor paid API calls.
+The suite contains 208 tests covering rule boundaries, validation, graph metrics, vector/BM25/hybrid retrieval, mocked OpenAI and Azure embeddings, mocked structured LLM output, rubric enforcement, LangGraph routes, complete and partial audit persistence, API-key authentication, request correlation/logging, and evaluation execution. It requires no hosted-provider credentials or paid API calls.
 
-Run the evaluation:
+Run the small workflow regression evaluation:
 
 ```powershell
 python -m app.evaluation.evaluate
 ```
 
-The script calculates and prints observed counts and accuracies for deterministic
-rule correctness, expected-policy-in-Top-K retrieval, recommendation agreement,
-reference grounding, and escalation behavior. The dataset is intentionally small;
-results are a regression signal for this demo, not evidence of real-world model
-performance.
+It calculates deterministic-rule correctness, expected-policy-in-Top-K retrieval, recommendation agreement, exact reference grounding, and escalation behavior. The dataset is synthetic and intended as a regression signal, not evidence of real-world performance.
+
+### Live decision evaluation
+
+For the decision evaluations below, counts and accuracy rates show the mean with the minimum and maximum across three runs in parentheses; latency and cost are rounded headline figures. The runs used OpenAI assessment, OpenAI vector retrieval, `gpt-4.1-mini`, and temperature 0; LLM cost excludes embedding API calls.
+
+`decision_eval` runs labelled cases through the full configured workflow. It reports system and LLM-alone recommendation accuracy, routing accuracy, missed and unnecessary escalations, exact citation match, expected-policy retrieval recall, fallback counts by safe reason, rubric overrides, deterministic citation additions, p50/p95 latency, and total/per-case LLM cost. Each case result records confidence, evidence sufficiency, routing rules, retrieved IDs and sources, citations, considered policies, reasons, rejected IDs, fallback details, and enforcement diagnostics.
+
+With a previously built OpenAI policy index and credentials set in the current PowerShell session, reproduce the committed three-run evaluations with:
+
+```powershell
+$env:API_KEY = "replace-with-local-api-key"
+$env:SERVICE_MODE = "openai"
+$env:EMBEDDING_MODE = "openai"
+$env:OPENAI_API_KEY = "replace-with-your-openai-api-key"
+$env:POLICY_INDEX_PATH = "data/policy_index_openai.json"
+$env:OPENAI_ASSESSMENT_TEMPERATURE = "0"
+python -m app.evaluation.decision_eval --cases evaluation/decision_cases.json --runs 3
+python -m app.evaluation.decision_eval --cases evaluation/decision_cases_holdout.json --runs 3
+```
+
+The output filename includes the service mode and non-default case-set stem, producing `evaluation/decision_results_openai.json` and `evaluation/decision_results_openai_holdout.json` for these commands. They make paid network calls. The reported cost covers policy-assessment tokens only and excludes embedding API cost.
+
+### Retrieval evaluation
+
+The labelled retrieval evaluation contains 60 queries for 30 synthetic policies. The measured results below use the bundled lexical-hashing index and OpenAI `text-embedding-3-small`:
+
+| Embeddings | Retrieval mode | hit@1 | hit@3 | MRR |
+|---|---|---:|---:|---:|
+| Local hashing | vector | 0.0167 | 0.2167 | 0.1705 |
+| Local hashing | BM25 | 0.3000 | 0.5333 | 0.4734 |
+| Local hashing | hybrid | 0.1333 | 0.4167 | 0.3247 |
+| OpenAI `text-embedding-3-small` | vector | 0.7500 | 0.9667 | 0.8469 |
+| OpenAI `text-embedding-3-small` | BM25 | 0.3000 | 0.5333 | 0.4734 |
+| OpenAI `text-embedding-3-small` | hybrid | 0.5833 | 0.8333 | 0.7227 |
+
+Rebuild the local index and evaluate vector, BM25, and hybrid retrieval:
+
+```powershell
+$env:EMBEDDING_MODE = "local"
+python -m app.rag.ingestion --source data/policies.json --output data/policy_index.json
+python -m app.evaluation.retrieval_eval --index data/policy_index.json
+```
+
+Build and evaluate the separate OpenAI index with the same cases:
+
+```powershell
+$env:EMBEDDING_MODE = "openai"
+$env:OPENAI_API_KEY = "replace-with-your-openai-api-key"
+$env:OPENAI_EMBEDDING_MODEL = "text-embedding-3-small"
+python -m app.rag.ingestion --source data/policies.json --output data/policy_index_openai.json
+python -m app.evaluation.retrieval_eval --index data/policy_index_openai.json
+```
+
+The OpenAI commands make paid network calls. Keep the local and OpenAI index files separate; recorded provider and model metadata prevents accidental mixing.
+
+OpenAI embeddings fixed the lexical baseline's weak paraphrase matching. Hybrid retrieval underperformed vector retrieval because the evaluation deliberately uses paraphrased queries with little wording overlap, so BM25's lexical ranking diluted the stronger vector ranking during fusion. For that reason, `vector` is the default when `EMBEDDING_MODE=openai`; explicitly setting `RETRIEVAL_MODE` still overrides it.
+
+MRR, or mean reciprocal rank, rewards placing the first correct policy near the top: a first-place answer scores 1, second place scores 1/2, third place scores 1/3, and a miss scores 0 before averaging across queries.
 
 ## Docker and PostgreSQL
 
-Create `.env`, replace the demo password, then start the API and PostgreSQL:
+Create `.env`, replace the placeholder password and API key, then start the API and PostgreSQL:
 
 ```powershell
 Copy-Item .env.example .env
 # Set POSTGRES_PASSWORD in .env to a local, non-placeholder value.
+# Set API_KEY in .env to a local, non-placeholder value.
 docker compose config
 docker compose up --build
 ```
 
-Compose waits for the PostgreSQL health check and configures the API to use the
-PostgreSQL repository. Stop it with `docker compose down`; add `--volumes` only if
-you intentionally want to remove the local database volume.
+Compose waits for the PostgreSQL health check and configures the API to use the PostgreSQL repository. Stop it with `docker compose down`; add `--volumes` only if you intentionally want to remove the local database volume.
 
 ## CI/CD
 
-`.github/workflows/ci.yml` defines CI for pushes and pull requests. It installs
-dependencies, checks the environment, compiles the application, runs pytest,
-validates Compose, and builds the Docker image. It does not deploy anywhere.
+`.github/workflows/ci.yml` defines CI for pushes and pull requests. It installs dependencies, checks the environment, compiles the application, runs pytest, validates Compose, and builds the Docker image. It does not deploy anywhere.
 
-An intended Azure topology is documented separately in
-[`docs/azure-deployment-design.md`](docs/azure-deployment-design.md). That document
-is a design, not evidence of a completed deployment.
+An intended Azure topology is documented separately in [`docs/azure-deployment-design.md`](docs/azure-deployment-design.md). That document is a design, not evidence of a completed deployment.
 
 ## Responsible AI
 
 - Risk scoring stays deterministic, separately testable, and explainable.
-- Retrieved evidence and policy identifiers are returned for inspection.
-- Model output is schema-validated and cannot silently add policy references.
-- High risk, uncertainty, missing evidence, or conflicting signals fail toward
-  human review.
+- Retrieved evidence, policy sources, applicable references, and considered policies are returned for inspection.
+- OpenAI model output is schema-validated; softer-than-policy recommendations are raised, and unsupported policy IDs are dropped, logged, and recorded.
+- High risk, uncertainty, missing evidence, provider failure, or conflicting signals fail toward human review.
 - No node blocks an account, rejects a payment, files a report, or asserts guilt.
-- Logs avoid transaction amounts and full model prompts by default.
-- All bundled transactions, relationships, policies, and evaluation cases are
-  synthetic and written for this demo.
+- Logs avoid transaction amounts, full prompts, and credentials by default.
+- All bundled transactions, relationships, policies, and evaluation cases are synthetic and written for this demo.
 
 ## Implemented versus designed
 
 | Area | Implemented here | Designed/future only |
 |---|---|---|
-| API | FastAPI health, legacy risk, and full investigation endpoints | Authentication, authorization, quotas |
-| Orchestration | Compiled typed LangGraph with a real conditional branch | Distributed workers, durable graph checkpoints |
-| Risk | Four preserved deterministic rules and boundary tests | Calibrated production rules/model governance |
+| API | FastAPI health, legacy risk, full investigation, and audit-retrieval endpoints; validation responses; API-key authentication | Role-based authorization, quotas |
+| Orchestration | Compiled typed LangGraph with conditional routing, rule-floor enforcement, and partial-failure persistence | Distributed workers, durable graph checkpoints |
+| Risk | Four deterministic score rules plus an explicit recommendation rubric and boundary tests | Institution-approved controls and model governance |
 | Graph | In-process NetworkX over synthetic relationships | Live graph store, entity resolution, temporal analytics |
-| ML anomaly signal | IsolationForest over graph features, fixed-seed synthetic training set, routes to human review on disagreement | Trained on real historical data, periodic retraining, drift monitoring |
-| RAG | Synthetic corpus, chunking, local vectors, JSON index, Top-K | Managed vector database, policy lifecycle/approval workflow |
-| AI | Deterministic local assessor; Azure chat and embedding adapters; mocked tests | Live Azure validation, monitoring, prompt/version registry |
-| Human review | Explicit pending status and fail-safe routing | Reviewer UI, assignment, approval/override audit events |
-| Persistence | Memory demo repository and PostgreSQL implementation | Migrations, pooling, retention, encryption policy, HA |
-| Operations | JSON logs, Docker/Compose, GitHub Actions CI | Actual Azure resources/deployment, observability backend |
+| ML anomaly signal | IsolationForest over graph features, fixed-seed synthetic training set, routes disagreements to human review | Training on real historical data, retraining, drift monitoring |
+| RAG | Synthetic corpus, local lexical-hash/OpenAI/Azure embeddings, BM25, RRF hybrid search, signal-based inclusion, provider-specific indexes, Top-K | Managed vector database, policy lifecycle and approval workflow |
+| AI | Rule-based local assessor; OpenAI and Azure structured adapters; safe fallbacks; OpenAI live evaluation on synthetic cases; mocked provider tests | Evaluation on real institution-labelled cases, production monitoring, prompt/version registry |
+| Human review | Explicit pending status and fail-safe routing | Reviewer UI, assignment, approval and override audit events |
+| Persistence | Memory and PostgreSQL repositories; complete/partial JSON audit records; protected retrieval endpoint | Versioned migrations, pooling, retention, encryption policy, HA |
+| Operations | JSON logs with request IDs, timing and LLM usage; Docker/Compose; GitHub Actions CI | Actual Azure resources/deployment, observability backend |
 
 ## Limitations
 
-- The rules, graph thresholds, policy text, and evaluation expectations are demo
-  choices, not regulator- or institution-approved controls.
-- The local hash embedding is lexical and much weaker than a production semantic
-  retrieval model.
+- The rules, graph thresholds, policy text, and evaluation expectations are demo choices, not regulator- or institution-approved controls.
+- The decision labels were written by the project author using an explicit rubric, not by fraud analysts; the OpenAI path was evaluated live only on synthetic in-sample and held-out cases.
+- The held-out set has 20 cases, and its two errors expose an unresolved policy choice about velocity-only alerts rather than proving production accuracy.
+- The local hash embedding is lexical and much weaker than a production semantic retrieval model.
 - The NetworkX graph is static, small, in-process, and has no entity resolution.
 - Local memory persistence is lost when the process exits.
-- PostgreSQL schema creation is convenient for the prototype; production would use
-  versioned migrations and a connection pool.
-- Azure adapters are mock-tested but require the user's compatible Azure
-  deployments and were not called by the test suite.
-- No authentication, authorization, PII controls, sanctions data, case-management
-  UI, human-review completion endpoint, or actual cloud deployment is included.
+- PostgreSQL schema creation is convenient for the demo; production would use versioned migrations and a connection pool.
+- Azure adapters are mock-tested but have not been live-evaluated here; hosted modes require the user's credentials and compatible deployments.
+- Reported LLM cost uses configurable example prices, excludes embedding calls, and will drift unless those settings are kept current.
+- No role-based authorization, PII controls, sanctions data, case-management UI, human-review completion endpoint, or actual cloud deployment is included.

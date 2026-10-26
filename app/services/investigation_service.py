@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Any
 
-from app.config import EmbeddingMode, ServiceMode, Settings
+from app.config import ServiceMode, Settings
 from app.graph.analyzer import GraphAnalyzer
 from app.models.domain import InvestigationResponse, RiskLevel
 from app.models.transaction import Transaction
-from app.rag.embeddings import (
-    AzureOpenAIEmbeddingService,
-    EmbeddingService,
-    LocalHashEmbeddingService,
+from app.rag.embedding_provider import (
+    build_embedding_service,
+    resolve_policy_index_path,
 )
 from app.rag.ingestion import PolicyIngestor
 from app.rag.retriever import PolicyRetriever
@@ -20,6 +20,7 @@ from app.repositories import build_repository
 from app.services.policy_assessment import (
     AzureOpenAIPolicyAssessmentService,
     DemoPolicyAssessmentService,
+    OpenAIPolicyAssessmentService,
     PolicyAssessmentService,
 )
 from app.services.risk_scorer import assess_transaction
@@ -70,14 +71,34 @@ class InvestigationService:
                 "status": result.status.value,
                 "requires_human_review": result.requires_human_review,
                 "persistence_succeeded": result.persistence.succeeded,
+                "llm_usage": (
+                    result.llm_usage.model_dump(mode="json")
+                    if result.llm_usage is not None
+                    else None
+                ),
             },
         )
         return result
+
+    def get_investigation(self, investigation_id: str) -> dict[str, Any] | None:
+        """Return a persisted investigation audit trail by its identifier."""
+
+        return self.workflow.get_investigation(investigation_id)
 
 
 def _build_policy_assessor(settings: Settings) -> PolicyAssessmentService:
     if settings.service_mode is ServiceMode.LOCAL:
         return DemoPolicyAssessmentService()
+    if settings.service_mode is ServiceMode.OPENAI:
+        if settings.openai_api_key is None:  # Defensive; config validation covers this.
+            raise ValueError("OPENAI_API_KEY is required when SERVICE_MODE=openai")
+        return OpenAIPolicyAssessmentService(
+            api_key=settings.openai_api_key.get_secret_value(),
+            model=settings.openai_chat_model,
+            temperature=settings.openai_assessment_temperature,
+            input_price_per_1m=settings.openai_input_price_per_1m,
+            output_price_per_1m=settings.openai_output_price_per_1m,
+        )
 
     # Import only for the configured hosted path so local/demo mode remains
     # independent of credentials and provider availability.
@@ -85,20 +106,14 @@ def _build_policy_assessor(settings: Settings) -> PolicyAssessmentService:
     return AzureOpenAIPolicyAssessmentService(
         client=client,
         deployment=settings.azure_openai_chat_deployment or "",
+        input_price_per_1m=settings.openai_input_price_per_1m,
+        output_price_per_1m=settings.openai_output_price_per_1m,
     )
 
 
 def _build_policy_retriever(settings: Settings) -> PolicyRetriever:
-    embedding_service: EmbeddingService
-    if settings.embedding_mode is EmbeddingMode.LOCAL:
-        embedding_service = LocalHashEmbeddingService()
-    else:
-        embedding_service = AzureOpenAIEmbeddingService(
-            client=_build_azure_client(settings),
-            deployment=settings.azure_openai_embedding_deployment or "",
-            dimension=settings.azure_openai_embedding_dimensions,
-        )
-    index_path = settings.policy_index_path
+    embedding_service = build_embedding_service(settings)
+    index_path = resolve_policy_index_path(settings)
     if not index_path.is_absolute():
         index_path = Path.cwd() / index_path
     if not index_path.exists():
@@ -112,6 +127,7 @@ def _build_policy_retriever(settings: Settings) -> PolicyRetriever:
         embedding_service,
         minimum_relevance_score=settings.retrieval_min_relevance_score,
         policy_source_path=_POLICY_SOURCE_PATH,
+        retrieval_mode=settings.retrieval_mode,
     )
 
 

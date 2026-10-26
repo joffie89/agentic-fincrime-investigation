@@ -1,6 +1,6 @@
 """Transaction input model."""
 
-from pydantic import StrictBool
+from pydantic import StrictBool, model_validator
 
 from app.models.base import (
     DomainModel,
@@ -24,3 +24,15 @@ class Transaction(DomainModel):
     destination_country: ShortText
     origin_account_id: Identifier | None = None
     destination_account_id: Identifier | None = None
+
+    @model_validator(mode="after")
+    def validate_distinct_accounts(self) -> "Transaction":
+        if (
+            self.origin_account_id is not None
+            and self.destination_account_id is not None
+            and self.origin_account_id == self.destination_account_id
+        ):
+            raise ValueError(
+                "origin_account_id and destination_account_id must differ"
+            )
+        return self

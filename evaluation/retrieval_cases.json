@@ -1,0 +1,424 @@
+{
+  "cases": [
+    {
+      "name": "atypical value or first-time recipient guidance",
+      "query": "Which guidance should I use when a customer's spending jumps well beyond their usual level or goes to someone they have never sent money to before?",
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ]
+    },
+    {
+      "name": "new account sends outsized first payment",
+      "query": "A ten-day-old personal account sent £8,400 to a newly added recipient, while earlier payments were below £300 and the customer gave no clear reason. What review applies?",
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ]
+    },
+    {
+      "name": "abrupt increase in payment tempo",
+      "query": "What guidance covers an account that starts sending far more payments than usual over a brief window, including possible splitting and quick onward transfers?",
+      "expected_policy_ids": [
+        "DEMO-AML-002"
+      ]
+    },
+    {
+      "name": "dozens of transfers after one credit",
+      "query": "A customer received £24,000 at 09:00 and made eighteen outgoing bank transfers to nine people before lunch, despite normally paying twice a week. How should this be reviewed?",
+      "expected_policy_ids": [
+        "DEMO-AML-002"
+      ]
+    },
+    {
+      "name": "connected-account pattern guidance",
+      "query": "Which guidance helps assess an account with many links, recurring exchanges with one party, and recipients that also appear around other cases?",
+      "expected_policy_ids": [
+        "DEMO-AML-003"
+      ]
+    },
+    {
+      "name": "shared recipients across unrelated customers",
+      "query": "Three customers with different addresses all send most of their funds to the same two accounts, and one pair trades money repeatedly. What network review is appropriate?",
+      "expected_policy_ids": [
+        "DEMO-AML-003"
+      ]
+    },
+    {
+      "name": "overseas transfer context guidance",
+      "query": "How should an analyst examine a payment routed abroad without treating the destination label alone as evidence that the customer is involved in crime?",
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "unexpected intermediary on international wire",
+      "query": "A UK retailer pays a supplier in Spain, but the wire passes through an unfamiliar bank elsewhere and the invoice does not explain why. Which review should be followed?",
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "uncertain automated assessment handling",
+      "query": "What should happen when system findings are incomplete, confidence is weak, or payment facts disagree with relationship analysis, and how should machine output be described?",
+      "expected_policy_ids": [
+        "DEMO-AML-005"
+      ]
+    },
+    {
+      "name": "high score with missing saved evidence",
+      "query": "A case scored high, the supporting record did not save, and the automated summary relies on only one document. Can it be closed without a person checking it?",
+      "expected_policy_ids": [
+        "DEMO-AML-005"
+      ]
+    },
+    {
+      "name": "customer-approved transfer induced by fraudster",
+      "query": "Which guidance applies when someone willingly sends a bank transfer but may have been manipulated by a caller, especially when the payee first appeared today?",
+      "expected_policy_ids": [
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "safe account caller and first-time payee",
+      "query": "A caller claiming to be from the bank told a customer to move GBP 8,400 into a safe account set up that morning. What review is needed?",
+      "expected_policy_ids": [
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "customer circumstances increase susceptibility",
+      "query": "How should an analyst handle questionable spending where grief, illness or limited online confidence may make the account holder easier to pressure?",
+      "expected_policy_ids": [
+        "DEMO-AML-007"
+      ]
+    },
+    {
+      "name": "older customer coached during branch visit",
+      "query": "An 81-year-old widower arrives with a neighbour who answers every question and insists a large transfer must leave immediately. Which safeguards apply?",
+      "expected_policy_ids": [
+        "DEMO-AML-007"
+      ]
+    },
+    {
+      "name": "outsider controlling online banking",
+      "query": "Which policy covers evidence that somebody else may now control an individual's internet banking login?",
+      "expected_policy_ids": [
+        "DEMO-AML-008"
+      ]
+    },
+    {
+      "name": "new handset after security reset",
+      "query": "Minutes after credentials were reset, an unseen handset enrolled a recipient and sent three wires while notifications were switched off. What should be reviewed?",
+      "expected_policy_ids": [
+        "DEMO-AML-008"
+      ]
+    },
+    {
+      "name": "commercial deal lacks economic sense",
+      "query": "How should I examine company transfers when freight paperwork, prices and merchandise descriptions fail to align commercially?",
+      "expected_policy_ids": [
+        "DEMO-AML-009"
+      ]
+    },
+    {
+      "name": "importer overpays low-value shipment",
+      "query": "A clothing importer remits ten times the market value for a small consignment, while the bill of lading names different products. Which review applies?",
+      "expected_policy_ids": [
+        "DEMO-AML-009"
+      ]
+    },
+    {
+      "name": "vendor email changes settlement account",
+      "query": "Which guidance applies when a vendor's message suddenly tells a firm to settle a genuine bill into replacement banking details?",
+      "expected_policy_ids": [
+        "DEMO-AML-010"
+      ]
+    },
+    {
+      "name": "lookalike supplier domain diverts invoice",
+      "query": "Accounts payable received a last-minute note from a lookalike supplier domain and sent GBP 42,000 to a first-time beneficiary. What checks are required?",
+      "expected_policy_ids": [
+        "DEMO-AML-010"
+      ]
+    },
+    {
+      "name": "implausible profit opportunity",
+      "query": "What checks apply when a customer is being pushed to put savings into a scheme promising impossible profits?",
+      "expected_policy_ids": [
+        "DEMO-AML-011"
+      ]
+    },
+    {
+      "name": "fake dashboard demands withdrawal fee",
+      "query": "A social-media broker showed a pensioner large gains on a web portal, then demanded another crypto payment before releasing the balance. Which policy fits?",
+      "expected_policy_ids": [
+        "DEMO-AML-011"
+      ]
+    },
+    {
+      "name": "remote partner asks for money",
+      "query": "Which guidance fits repeated transfers to an internet partner whom the payer has never met in person?",
+      "expected_policy_ids": [
+        "DEMO-AML-012"
+      ]
+    },
+    {
+      "name": "online fiancé has recurring crises",
+      "query": "After two months of messaging, a supposed fiancé abroad requests a fourth payment for a new crisis and asks that relatives not be told. What review applies?",
+      "expected_policy_ids": [
+        "DEMO-AML-012"
+      ]
+    },
+    {
+      "name": "physical money exceeds business profile",
+      "query": "How do I assess a retailer receiving far more notes and coins than its sales history would reasonably support?",
+      "expected_policy_ids": [
+        "DEMO-AML-013"
+      ]
+    },
+    {
+      "name": "cafe deposits distant from premises",
+      "query": "A small cafe's weekly branch lodgements tripled during its quiet season, occur in another city, and are immediately wired away. Which guidance applies?",
+      "expected_policy_ids": [
+        "DEMO-AML-013"
+      ]
+    },
+    {
+      "name": "company owners hidden behind layers",
+      "query": "What policy applies when several shell companies prevent the analyst from determining which people really direct and profit from a business?",
+      "expected_policy_ids": [
+        "DEMO-AML-014"
+      ]
+    },
+    {
+      "name": "conflicting shareholder documents",
+      "query": "A corporate customer has changed directors three times, uses nominees in two countries, and provides shareholder papers that disagree. What must be established?",
+      "expected_policy_ids": [
+        "DEMO-AML-014"
+      ]
+    },
+    {
+      "name": "fundraising money used outside mission",
+      "query": "Which guidance covers donations being spent in ways that do not serve the community organization's advertised purpose?",
+      "expected_policy_ids": [
+        "DEMO-AML-015"
+      ]
+    },
+    {
+      "name": "appeal proceeds sent to trustee family",
+      "query": "A relief appeal collects GBP 70,000, then most of it goes to a trustee's relatives with no aid receipts or meeting approval. Which review is appropriate?",
+      "expected_policy_ids": [
+        "DEMO-AML-015"
+      ]
+    },
+    {
+      "name": "possible mule recruited online",
+      "query": "Which guidance applies when a personal current account appears to relay strangers' money after its holder accepted a social-media job offer?",
+      "expected_policy_ids": [
+        "DEMO-AML-016"
+      ]
+    },
+    {
+      "name": "young customer forwarding incoming credits",
+      "query": "A 19-year-old received six payments from unknown people, kept a small cut, and forwarded the rest to a person directing them by chat. What should I review?",
+      "expected_policy_ids": [
+        "DEMO-AML-016"
+      ]
+    },
+    {
+      "name": "amounts clustered below alert boundary",
+      "query": "Which policy covers a sequence of deliberately smaller payments clustered a few pounds beneath an alert boundary?",
+      "expected_policy_ids": [
+        "DEMO-AML-017"
+      ]
+    },
+    {
+      "name": "split branch deposits",
+      "query": "Over four mornings, a customer paid in GBP 9,900 at different branches after asking staff what amount triggers checks. How should the sequence be assessed?",
+      "expected_policy_ids": [
+        "DEMO-AML-017"
+      ]
+    },
+    {
+      "name": "account used as a short-lived conduit",
+      "query": "What guidance covers a balance that is topped up and almost emptied soon afterwards, with no convincing reason for the account to sit between the parties?",
+      "expected_policy_ids": [
+        "DEMO-AML-018"
+      ]
+    },
+    {
+      "name": "incoming salary-sized credits rapidly dispersed",
+      "query": "Five people credited an account before 10:00, and by lunchtime 96% had been wired to two overseas recipients. Which review applies?",
+      "expected_policy_ids": [
+        "DEMO-AML-018"
+      ]
+    },
+    {
+      "name": "elevated country exposure needs context",
+      "query": "Which guidance explains how to assess meaningful links to a location the bank rates as elevated risk without assuming the place itself proves misconduct?",
+      "expected_policy_ids": [
+        "DEMO-AML-019"
+      ]
+    },
+    {
+      "name": "unexpected routing through risk-rated country",
+      "query": "A UK wholesaler's payment for domestic goods was rerouted through a bank in a risk-rated territory that has no clear connection to the sale. What checks are needed?",
+      "expected_policy_ids": [
+        "DEMO-AML-019"
+      ]
+    },
+    {
+      "name": "possible restricted-party alert",
+      "query": "What procedure applies when name-checking software finds a potential restricted party and the analyst must compare identity details before deciding the result?",
+      "expected_policy_ids": [
+        "DEMO-AML-020"
+      ]
+    },
+    {
+      "name": "close sanctions name and birth-date match",
+      "query": "A wire recipient shares a listed person's full name and birth month, while the address differs and nationality is unavailable. Who should resolve the hit?",
+      "expected_policy_ids": [
+        "DEMO-AML-020"
+      ]
+    },
+    {
+      "name": "public office holder due diligence",
+      "query": "Which guidance requires deeper checks on a prominent office holder while making clear that their position is not evidence of criminality?",
+      "expected_policy_ids": [
+        "DEMO-AML-021"
+      ]
+    },
+    {
+      "name": "minister family member wealth review",
+      "query": "The beneficial owner is the adult child of a foreign minister and plans deposits far above declared earnings. What wealth and payment-origin checks are required?",
+      "expected_policy_ids": [
+        "DEMO-AML-021"
+      ]
+    },
+    {
+      "name": "long-unused account suddenly busy",
+      "query": "What guidance covers a long-unused bank account that abruptly starts operating differently, especially after login and contact-detail changes?",
+      "expected_policy_ids": [
+        "DEMO-AML-022"
+      ]
+    },
+    {
+      "name": "reactivated pension account sends new payment",
+      "query": "An 82-year-old's account had no movement for three years, then a password reset was followed by a GBP 24,000 transfer to a first-time recipient. What review applies?",
+      "expected_policy_ids": [
+        "DEMO-AML-022"
+      ]
+    },
+    {
+      "name": "physical money inconsistent with profile",
+      "query": "Which policy addresses banknotes paid into an account at a scale that does not fit the holder's work, earnings, or normal behaviour?",
+      "expected_policy_ids": [
+        "DEMO-AML-023"
+      ]
+    },
+    {
+      "name": "cash deposits across machines",
+      "query": "A salaried office worker deposited GBP 18,000 in notes through six machines during one week and then sent it abroad. What evidence should be sought?",
+      "expected_policy_ids": [
+        "DEMO-AML-023"
+      ]
+    },
+    {
+      "name": "digital-coin sale reaches bank",
+      "query": "Which guidance covers pounds arriving in a bank after digital coins are converted, including how to check acquisition history and platform ownership?",
+      "expected_policy_ids": [
+        "DEMO-AML-024"
+      ]
+    },
+    {
+      "name": "multiple exchange withdrawals forwarded onward",
+      "query": "A customer received GBP 70,000 from three cryptocurrency services, supplied screenshots for only one, and immediately paid a newly formed company. What review applies?",
+      "expected_policy_ids": [
+        "DEMO-AML-024"
+      ]
+    },
+    {
+      "name": "unconnected person funds obligation",
+      "query": "What guidance applies when an obligation is paid by somebody outside the deal and the analyst cannot explain who really supplied the value?",
+      "expected_policy_ids": [
+        "DEMO-AML-025"
+      ]
+    },
+    {
+      "name": "invoice paid and refund diverted",
+      "query": "A company's invoice was settled from a director's neighbour's account, then the cancellation refund was requested to another individual's card. Which checks are required?",
+      "expected_policy_ids": [
+        "DEMO-AML-025"
+      ]
+    },
+    {
+      "name": "gambling channel with little play",
+      "query": "What guidance covers someone feeding money through an online bookmaker with minimal real play before taking it back out elsewhere?",
+      "expected_policy_ids": [
+        "DEMO-AML-026"
+      ]
+    },
+    {
+      "name": "stranger-funded betting wallet",
+      "query": "A customer receives transfers from four strangers, places almost certain bets for a few minutes, then sends the balance from the betting wallet to another bank. What should I review?",
+      "expected_policy_ids": [
+        "DEMO-AML-026"
+      ]
+    },
+    {
+      "name": "money leaves and returns as borrowing",
+      "query": "Where should I look when cash goes out through linked firms and comes back labelled as borrowing, with no obvious business reason?",
+      "expected_policy_ids": [
+        "DEMO-AML-027"
+      ]
+    },
+    {
+      "name": "related overseas company loan loop",
+      "query": "A director sends GBP 90,000 to an overseas company controlled by a relative; two days later a trust returns GBP 88,000 as an unsecured loan. Which review applies?",
+      "expected_policy_ids": [
+        "DEMO-AML-027"
+      ]
+    },
+    {
+      "name": "personal details do not tally",
+      "query": "Which guidance helps when the personal details supplied at signup do not tally with later records and the customer cannot clear up the differences?",
+      "expected_policy_ids": [
+        "DEMO-AML-028"
+      ]
+    },
+    {
+      "name": "conflicting passport profile and selfie",
+      "query": "The passport image shows one birth date, the profile another, the selfie appears to be a different person, and the address is used by six unrelated applicants. What checks are needed?",
+      "expected_policy_ids": [
+        "DEMO-AML-028"
+      ]
+    },
+    {
+      "name": "undisclosed bank behind respondent",
+      "query": "What policy applies when a bank seems to be using our overseas banking relationship on behalf of another institution that was never disclosed?",
+      "expected_policy_ids": [
+        "DEMO-AML-029"
+      ]
+    },
+    {
+      "name": "hidden bank and payer in wire chain",
+      "query": "A wire arrives through Bank A, but message notes point to Bank B and the real payer is missing; similar payments serve countries outside Bank A's usual footprint. How should this be investigated?",
+      "expected_policy_ids": [
+        "DEMO-AML-029"
+      ]
+    },
+    {
+      "name": "reimbursements sent elsewhere",
+      "query": "Which guidance covers shop reimbursements being used to funnel value, especially where the money is sent somewhere other than the way the item was paid for?",
+      "expected_policy_ids": [
+        "DEMO-AML-030"
+      ]
+    },
+    {
+      "name": "new retailer pays unsupported credits",
+      "query": "A new retailer processed twenty small card charges and then paid larger credits to unrelated bank accounts without evidence of returned goods. What should the analyst examine?",
+      "expected_policy_ids": [
+        "DEMO-AML-030"
+      ]
+    }
+  ]
+}

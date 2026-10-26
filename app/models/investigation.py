@@ -41,6 +41,10 @@ class InvestigationStatus(str, Enum):
 
 
 ReasonList = Annotated[list[ShortText], Field(min_length=1)]
+NonNegativeFiniteFloat = Annotated[
+    StrictFloat,
+    Field(ge=0, allow_inf_nan=False),
+]
 
 
 class RiskAssessment(DomainModel):
@@ -111,9 +115,30 @@ class PolicyAssessment(DomainModel):
     reasons: ReasonList
     confidence: UnitInterval
     policy_references: list[Identifier]
+    policies_considered: list[Identifier]
     missing_information: list[ShortText]
     requires_human_review: StrictBool
     evidence_sufficient: StrictBool
+    original_llm_recommendation: Recommendation | None = None
+    rubric_override: StrictBool = False
+    # These are the rule-required citations that application code appended
+    # because the model did not return them itself.
+    deterministic_citations: list[Identifier] = Field(default_factory=list)
+    fallback_reason: LongText | None = None
+    # Rejected values come from untrusted model output and may not satisfy the
+    # application's Identifier constraints. Keeping them as raw strings lets
+    # us audit a malformed citation without turning it into another fallback.
+    rejected_citations: list[str] = Field(default_factory=list)
+    rejected_policies_considered: list[str] = Field(default_factory=list)
+
+
+class LLMUsage(DomainModel):
+    """Token, latency, and estimated-cost metadata for one LLM call."""
+
+    input_tokens: NonNegativeInt
+    output_tokens: NonNegativeInt
+    latency_ms: NonNegativeFiniteFloat
+    estimated_cost_usd: NonNegativeFiniteFloat
 
 
 class InvestigationRecommendation(DomainModel):
@@ -145,6 +170,7 @@ class InvestigationResponse(DomainModel):
     relationship_anomaly: RelationshipAnomalyResult | None = None
     retrieved_policies: list[RetrievedPolicy]
     policy_assessment: PolicyAssessment
+    llm_usage: LLMUsage | None = None
     recommendation: Recommendation
     reasons: ReasonList
     requires_human_review: StrictBool

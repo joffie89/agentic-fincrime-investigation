@@ -1,20 +1,45 @@
-"""Query-time loading and ranking of the local JSON policy index."""
+"""Query-time loading and ranking of a JSON policy index."""
 
 from __future__ import annotations
 
 import hashlib
 import json
 import math
-from collections.abc import Mapping
+import re
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
+from rank_bm25 import BM25Okapi
+
+from app.config import RetrievalMode
 from app.models.domain import RetrievedPolicy
 from app.rag.embeddings import EmbeddingService, LocalHashEmbeddingService
 
+RRF_RANK_CONSTANT = 60
+_TOKEN_PATTERN = re.compile(r"[a-z0-9]+")
+
+
+def reciprocal_rank_fusion(
+    ranked_lists: Sequence[Sequence[str]],
+) -> list[tuple[str, float]]:
+    """Fuse result identifiers using ``1 / (60 + rank)`` per ranked list."""
+
+    scores: dict[str, float] = {}
+    for ranked_ids in ranked_lists:
+        seen: set[str] = set()
+        for rank, item_id in enumerate(ranked_ids, start=1):
+            if item_id in seen:
+                continue
+            seen.add(item_id)
+            scores[item_id] = scores.get(item_id, 0.0) + 1 / (
+                RRF_RANK_CONSTANT + rank
+            )
+    return sorted(scores.items(), key=lambda item: (-item[1], item[0]))
+
 
 class PolicyRetriever:
-    """Cosine-similarity retrieval over an index produced by PolicyIngestor."""
+    """Vector, BM25, or fused retrieval over a policy index."""
 
     def __init__(
         self,
@@ -22,12 +47,28 @@ class PolicyRetriever:
         embedding_service: EmbeddingService,
         *,
         minimum_relevance_score: float = 0.05,
+        retrieval_mode: RetrievalMode | str = RetrievalMode.HYBRID,
     ) -> None:
         if not 0 <= minimum_relevance_score <= 1:
             raise ValueError("minimum_relevance_score must be between 0 and 1")
+        try:
+            resolved_mode = RetrievalMode(retrieval_mode)
+        except ValueError as exc:
+            raise ValueError(
+                "retrieval_mode must be one of: vector, bm25, hybrid"
+            ) from exc
         self._chunks = chunks
         self.embedding_service = embedding_service
         self.minimum_relevance_score = minimum_relevance_score
+        self.retrieval_mode = resolved_mode
+        self._tokenized_chunks = [
+            self._tokenize(str(chunk["text"])) for chunk in chunks
+        ]
+        self._bm25 = (
+            BM25Okapi(self._tokenized_chunks)
+            if self._tokenized_chunks and any(self._tokenized_chunks)
+            else None
+        )
 
     @classmethod
     def from_index(
@@ -37,6 +78,7 @@ class PolicyRetriever:
         *,
         minimum_relevance_score: float = 0.05,
         policy_source_path: str | Path | None = None,
+        retrieval_mode: RetrievalMode | str = RetrievalMode.HYBRID,
     ) -> "PolicyRetriever":
         source = Path(index_path)
         try:
@@ -79,6 +121,16 @@ class PolicyRetriever:
             if indexed_version != LocalHashEmbeddingService.VERSION:
                 raise ValueError(
                     "Local embedding implementation version does not match the index"
+                )
+        if implementation == "OpenAIEmbeddingService":
+            indexed_model = metadata.get("model")
+            service_model = getattr(service, "model", None)
+            if not isinstance(indexed_model, str) or not indexed_model:
+                raise ValueError("OpenAI policy index has no valid embedding model")
+            if indexed_model != service_model:
+                raise ValueError(
+                    "Embedding model mismatch: "
+                    f"index={indexed_model}, service={service_model}"
                 )
 
         if policy_source_path is not None:
@@ -127,6 +179,7 @@ class PolicyRetriever:
             validated_chunks,
             service,
             minimum_relevance_score=minimum_relevance_score,
+            retrieval_mode=retrieval_mode,
         )
 
     def retrieve(self, query: str, top_k: int = 3) -> list[RetrievedPolicy]:
@@ -137,11 +190,86 @@ class PolicyRetriever:
         if not self._chunks:
             return []
 
+        if self.retrieval_mode is RetrievalMode.VECTOR:
+            return self._retrieve_vector(query, top_k)
+        if self.retrieval_mode is RetrievalMode.BM25:
+            return self._retrieve_bm25(query, top_k)
+        return self._retrieve_hybrid(query, top_k)
+
+    def get_by_policy_ids(self, policy_ids: Sequence[str]) -> list[RetrievedPolicy]:
+        """Return indexed policy passages without running an embedding search.
+
+        Signal-based inclusion is an exact policy lookup rather than another
+        relevance search. A score of ``1.0`` denotes that deterministic match;
+        semantic results retain their original search scores when the workflow
+        de-duplicates the combined evidence.
+        """
+
+        chunks_by_policy_id: dict[str, dict[str, Any]] = {}
+        for chunk in self._chunks:
+            chunks_by_policy_id.setdefault(str(chunk["policy_id"]), chunk)
+
+        policies: list[RetrievedPolicy] = []
+        for policy_id in dict.fromkeys(policy_ids):
+            chunk = chunks_by_policy_id.get(policy_id)
+            if chunk is not None:
+                policies.append(self._retrieved_policy(chunk, 1.0))
+        return policies
+
+    def _retrieve_vector(self, query: str, top_k: int) -> list[RetrievedPolicy]:
+        ranked = [
+            item
+            for item in self._vector_ranking(query)
+            if item[0] >= self.minimum_relevance_score
+        ]
+        return [
+            self._retrieved_policy(chunk, score)
+            for score, chunk in ranked[:top_k]
+        ]
+
+    def _retrieve_bm25(self, query: str, top_k: int) -> list[RetrievedPolicy]:
+        ranked = self._bm25_ranking(query)
+        if not ranked:
+            return []
+        maximum_score = ranked[0][0]
+        score_floor = min(0.0, ranked[-1][0])
+        score_range = maximum_score - score_floor
+        return [
+            self._retrieved_policy(
+                chunk,
+                (score - score_floor) / score_range if score_range else 1.0,
+            )
+            for score, chunk in ranked[:top_k]
+        ]
+
+    def _retrieve_hybrid(self, query: str, top_k: int) -> list[RetrievedPolicy]:
+        vector_ranked = [
+            item
+            for item in self._vector_ranking(query)
+            if item[0] >= self.minimum_relevance_score
+        ]
+        bm25_ranked = self._bm25_ranking(query)
+        fused = reciprocal_rank_fusion(
+            [
+                [str(chunk["chunk_id"]) for _, chunk in vector_ranked],
+                [str(chunk["chunk_id"]) for _, chunk in bm25_ranked],
+            ]
+        )
+        chunks_by_id = {
+            str(chunk["chunk_id"]): chunk
+            for chunk in self._chunks
+        }
+        return [
+            self._retrieved_policy(chunks_by_id[chunk_id], score)
+            for chunk_id, score in fused[:top_k]
+        ]
+
+    def _vector_ranking(self, query: str) -> list[tuple[float, dict[str, Any]]]:
         query_vector = self.embedding_service.embed(query)
         if len(query_vector) != self.embedding_service.dimension:
             raise ValueError("Embedding service returned an unexpected dimension")
 
-        ranked = sorted(
+        return sorted(
             (
                 (
                     self._cosine_similarity(query_vector, chunk["embedding"]),
@@ -151,16 +279,44 @@ class PolicyRetriever:
             ),
             key=lambda item: (-item[0], item[1]["policy_id"], item[1]["chunk_id"]),
         )
-        return [
-            RetrievedPolicy(
-                policy_id=chunk["policy_id"],
-                chunk_id=chunk["chunk_id"],
-                text=chunk["text"],
-                relevance_score=round(score, 6),
-            )
-            for score, chunk in ranked
-            if score >= self.minimum_relevance_score
-        ][:top_k]
+
+    def _bm25_ranking(self, query: str) -> list[tuple[float, dict[str, Any]]]:
+        if self._bm25 is None:
+            return []
+        query_tokens = self._tokenize(query)
+        if not query_tokens:
+            return []
+        scores = self._bm25.get_scores(query_tokens)
+        query_token_set = set(query_tokens)
+        return sorted(
+            (
+                (float(score), chunk)
+                for score, chunk, chunk_tokens in zip(
+                    scores,
+                    self._chunks,
+                    self._tokenized_chunks,
+                    strict=True,
+                )
+                if query_token_set.intersection(chunk_tokens)
+            ),
+            key=lambda item: (-item[0], item[1]["policy_id"], item[1]["chunk_id"]),
+        )
+
+    @staticmethod
+    def _retrieved_policy(
+        chunk: Mapping[str, Any],
+        score: float,
+    ) -> RetrievedPolicy:
+        return RetrievedPolicy(
+            policy_id=chunk["policy_id"],
+            chunk_id=chunk["chunk_id"],
+            text=chunk["text"],
+            relevance_score=round(float(score), 6),
+        )
+
+    @staticmethod
+    def _tokenize(text: str) -> list[str]:
+        return _TOKEN_PATTERN.findall(text.lower())
 
     @staticmethod
     def _cosine_similarity(left: list[float], right: list[float]) -> float:

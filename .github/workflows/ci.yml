@@ -12,7 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
+      API_KEY: ci-test-api-key
       SERVICE_MODE: local
+      EMBEDDING_MODE: local
       PERSISTENCE_BACKEND: memory
       POSTGRES_PASSWORD: ci-local-only
 

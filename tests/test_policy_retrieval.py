@@ -2,11 +2,13 @@ import json
 
 import pytest
 
+from app.config import RetrievalMode
 from app.rag import (
     AzureOpenAIEmbeddingService,
     LocalHashEmbeddingService,
     PolicyIngestor,
     PolicyRetriever,
+    reciprocal_rank_fusion,
 )
 
 
@@ -95,6 +97,118 @@ def test_azure_embedding_adapter_uses_injected_client_without_live_call() -> Non
             "input": ["first policy", "second policy"],
         }
     ]
+
+
+def test_reciprocal_rank_fusion_uses_one_based_ranks_and_constant_60() -> None:
+    fused = reciprocal_rank_fusion(
+        [
+            ["A", "B"],
+            ["B", "C"],
+        ]
+    )
+
+    assert [item_id for item_id, _ in fused] == ["B", "A", "C"]
+    assert dict(fused) == pytest.approx(
+        {
+            "A": 1 / 61,
+            "B": 1 / 62 + 1 / 61,
+            "C": 1 / 62,
+        }
+    )
+
+
+@pytest.mark.parametrize(
+    ("mode", "expected_policy_id", "expected_embedding_calls"),
+    [
+        (RetrievalMode.VECTOR, "POL-VECTOR", 1),
+        (RetrievalMode.BM25, "POL-BM25", 0),
+        (RetrievalMode.HYBRID, "POL-BM25", 1),
+    ],
+)
+def test_retriever_supports_vector_bm25_and_hybrid_modes(
+    mode: RetrievalMode,
+    expected_policy_id: str,
+    expected_embedding_calls: int,
+) -> None:
+    class StubEmbeddingService:
+        dimension = 2
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def embed(self, text: str) -> list[float]:
+            self.calls += 1
+            return [1.0, 0.0]
+
+    chunks = [
+        {
+            "policy_id": "POL-VECTOR",
+            "chunk_id": "POL-VECTOR#001",
+            "text": "semantic concept",
+            "embedding": [1.0, 0.0],
+        },
+        {
+            "policy_id": "POL-BM25",
+            "chunk_id": "POL-BM25#001",
+            "text": "needle keyword needle",
+            "embedding": [0.8, 0.6],
+        },
+        {
+            "policy_id": "POL-OTHER",
+            "chunk_id": "POL-OTHER#001",
+            "text": "other unrelated terms",
+            "embedding": [0.0, 1.0],
+        },
+    ]
+    service = StubEmbeddingService()
+    retriever = PolicyRetriever(
+        chunks,
+        service,
+        minimum_relevance_score=0.0,
+        retrieval_mode=mode,
+    )
+
+    results = retriever.retrieve("needle keyword", top_k=3)
+
+    assert results[0].policy_id == expected_policy_id
+    assert service.calls == expected_embedding_calls
+
+
+def test_exact_policy_lookup_does_not_call_embedding_service() -> None:
+    class StubEmbeddingService:
+        dimension = 2
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def embed(self, _text: str) -> list[float]:
+            self.calls += 1
+            return [1.0, 0.0]
+
+    chunks = [
+        {
+            "policy_id": "POL-SIGNAL",
+            "chunk_id": "POL-SIGNAL#001",
+            "text": "Policy passage selected by a deterministic signal.",
+            "embedding": [1.0, 0.0],
+        }
+    ]
+    service = StubEmbeddingService()
+    retriever = PolicyRetriever(
+        chunks,
+        service,
+        minimum_relevance_score=0.0,
+        retrieval_mode=RetrievalMode.VECTOR,
+    )
+
+    results = retriever.get_by_policy_ids(
+        ["POL-SIGNAL", "POL-UNKNOWN", "POL-SIGNAL"]
+    )
+
+    assert [item.policy_id for item in results] == ["POL-SIGNAL"]
+    assert results[0].text == chunks[0]["text"]
+    assert results[0].relevance_score == 1.0
+    assert service.calls == 0
 
 
 def test_ingestion_chunks_and_persists_a_portable_json_index(

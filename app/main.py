@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
-from fastapi import FastAPI, HTTPException, Response, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from pydantic import BaseModel, ConfigDict
 
+from app.auth import require_api_key
 from app.config import Settings, get_settings
+from app.graph.analyzer import TransactionConflictError
 from app.logging_config import configure_logging
+from app.middleware import HttpRequestLoggingMiddleware
 from app.models.domain import InvestigationResponse, RiskLevel
 from app.models.transaction import Transaction
 from app.services.investigation_service import (
@@ -20,6 +24,33 @@ from app.services.investigation_service import (
 from app.services.risk_scorer import score_transaction
 
 logger = logging.getLogger(__name__)
+
+_UNAUTHORIZED_RESPONSE = {
+    "description": "Invalid or missing API key",
+    "content": {
+        "application/json": {
+            "example": {"detail": "Invalid or missing API key"},
+        }
+    },
+}
+
+_NOT_FOUND_RESPONSE = {
+    "description": "Investigation not found",
+    "content": {
+        "application/json": {
+            "example": {"detail": "Investigation not found"},
+        }
+    },
+}
+
+_RETRIEVAL_UNAVAILABLE_RESPONSE = {
+    "description": "Investigation could not be retrieved",
+    "content": {
+        "application/json": {
+            "example": {"detail": "Investigation could not be retrieved"},
+        }
+    },
+}
 
 
 class LegacyRiskResponse(BaseModel):
@@ -52,6 +83,7 @@ def create_app(
             "oversight and must not be treated as autonomous financial decisions."
         ),
     )
+    application.add_middleware(HttpRequestLoggingMiddleware)
     application.state.settings = resolved_settings
     application.state.investigation_service = service
 
@@ -67,6 +99,8 @@ def create_app(
         "/assess-risk",
         response_model=LegacyRiskResponse,
         tags=["investigations"],
+        dependencies=[Depends(require_api_key)],
+        responses={status.HTTP_401_UNAUTHORIZED: _UNAUTHORIZED_RESPONSE},
     )
     def assess_risk(transaction: Transaction) -> LegacyRiskResponse:
         result = score_transaction(transaction)
@@ -81,13 +115,21 @@ def create_app(
         "/investigate",
         response_model=InvestigationResponse,
         tags=["investigations"],
+        dependencies=[Depends(require_api_key)],
+        responses={status.HTTP_401_UNAUTHORIZED: _UNAUTHORIZED_RESPONSE},
     )
     def investigate(
         transaction: Transaction,
+        request: Request,
         response: Response,
     ) -> InvestigationResponse:
         try:
             result = service.investigate(transaction)
+        except TransactionConflictError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="transaction_id already exists with different details",
+            ) from exc
         except Exception as exc:
             logger.exception(
                 "investigation_request_failed",
@@ -100,9 +142,48 @@ def create_app(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Investigation could not be completed",
             ) from exc
+        request.state.llm_usage = (
+            result.llm_usage.model_dump(mode="json")
+            if result.llm_usage is not None
+            else None
+        )
         if not result.persistence.succeeded:
             response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return result
+
+    @application.get(
+        "/investigations/{investigation_id}",
+        response_model=dict[str, Any],
+        tags=["investigations"],
+        dependencies=[Depends(require_api_key)],
+        responses={
+            status.HTTP_401_UNAUTHORIZED: _UNAUTHORIZED_RESPONSE,
+            status.HTTP_404_NOT_FOUND: _NOT_FOUND_RESPONSE,
+            status.HTTP_503_SERVICE_UNAVAILABLE: _RETRIEVAL_UNAVAILABLE_RESPONSE,
+        },
+    )
+    def get_investigation(investigation_id: str) -> dict[str, Any]:
+        try:
+            record = service.get_investigation(investigation_id)
+        except Exception as exc:
+            logger.exception(
+                "investigation_retrieval_failed",
+                extra={
+                    "event": "investigation_retrieval_failed",
+                    "investigation_id": investigation_id,
+                },
+            )
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Investigation could not be retrieved",
+            ) from exc
+
+        if record is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Investigation not found",
+            )
+        return record
 
     return application
 

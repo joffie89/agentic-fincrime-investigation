@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import pytest
+
 from app.repositories.memory import InMemoryInvestigationRepository
 from app.repositories.postgres import PostgresInvestigationRepository
 import app.repositories.postgres as postgres_module
@@ -92,9 +94,79 @@ def test_postgres_repository_commits_successful_write(monkeypatch) -> None:
     connection.close.assert_called_once_with()
 
 
-def test_postgres_repository_reports_connection_failure(monkeypatch) -> None:
+def test_postgres_repository_retrieves_full_record(monkeypatch) -> None:
+    cursor = MagicMock()
+    cursor.__enter__.return_value = cursor
+    cursor.__exit__.return_value = False
+    cursor.fetchone.return_value = (
+        '{"investigation_id":"inv-001","status":"COMPLETED",'
+        '"transaction":{"transaction_id":"txn-001"}}',
+    )
+    connection = MagicMock()
+    connection.cursor.return_value = cursor
+    fake_psycopg = SimpleNamespace(connect=MagicMock(return_value=connection))
+    monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
+    repository = PostgresInvestigationRepository(
+        "postgresql://demo:demo@postgres/demo"
+    )
+
+    result = repository.get("inv-001")
+
+    assert result == {
+        "investigation_id": "inv-001",
+        "status": "COMPLETED",
+        "transaction": {"transaction_id": "txn-001"},
+    }
+    assert cursor.execute.call_count == 2
+    create_call, select_call = cursor.execute.call_args_list
+    assert "CREATE TABLE IF NOT EXISTS investigations" in create_call.args[0]
+    assert "SELECT full_record" in select_call.args[0]
+    assert select_call.args[1] == ("inv-001",)
+    connection.commit.assert_called_once_with()
+    connection.rollback.assert_not_called()
+    connection.close.assert_called_once_with()
+
+
+def test_postgres_repository_returns_none_when_record_is_missing(monkeypatch) -> None:
+    cursor = MagicMock()
+    cursor.__enter__.return_value = cursor
+    cursor.__exit__.return_value = False
+    cursor.fetchone.return_value = None
+    connection = MagicMock()
+    connection.cursor.return_value = cursor
+    fake_psycopg = SimpleNamespace(connect=MagicMock(return_value=connection))
+    monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
+    repository = PostgresInvestigationRepository(
+        "postgresql://demo:demo@postgres/demo"
+    )
+
+    assert repository.get("missing-inv") is None
+    connection.commit.assert_called_once_with()
+    connection.rollback.assert_not_called()
+    connection.close.assert_called_once_with()
+
+
+def test_postgres_repository_sanitizes_retrieval_failure(monkeypatch) -> None:
+    database_error = "database unavailable at db.internal.example for admin_user"
     fake_psycopg = SimpleNamespace(
-        connect=MagicMock(side_effect=RuntimeError("database unavailable"))
+        connect=MagicMock(side_effect=RuntimeError(database_error))
+    )
+    monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
+    repository = PostgresInvestigationRepository(
+        "postgresql://demo:demo@postgres/demo"
+    )
+
+    with pytest.raises(RuntimeError) as exc_info:
+        repository.get("inv-001")
+
+    assert str(exc_info.value) == "Investigation could not be retrieved"
+    assert database_error not in str(exc_info.value)
+
+
+def test_postgres_repository_reports_connection_failure(monkeypatch) -> None:
+    database_error = "database unavailable at db.internal.example for admin_user"
+    fake_psycopg = SimpleNamespace(
+        connect=MagicMock(side_effect=RuntimeError(database_error))
     )
     monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
     repository = PostgresInvestigationRepository(
@@ -105,7 +177,8 @@ def test_postgres_repository_reports_connection_failure(monkeypatch) -> None:
 
     assert result.succeeded is False
     assert result.backend == "postgres"
-    assert "database unavailable" in (result.error or "")
+    assert result.error == "Investigation could not be saved"
+    assert database_error not in (result.error or "")
 
 
 def test_postgres_repository_rolls_back_failed_write(monkeypatch) -> None:
@@ -124,7 +197,7 @@ def test_postgres_repository_rolls_back_failed_write(monkeypatch) -> None:
     result = repository.save(_record())
 
     assert result.succeeded is False
-    assert "write rejected" in (result.error or "")
+    assert result.error == "Investigation could not be saved"
     connection.commit.assert_not_called()
     connection.rollback.assert_called_once_with()
     connection.close.assert_called_once_with()

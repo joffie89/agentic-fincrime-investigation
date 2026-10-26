@@ -1,0 +1,390 @@
+{
+  "cases": [
+    {
+      "name": "holdout clean domestic subscription payment",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-clean-001",
+        "amount": 63.25,
+        "account_age_days": 1507,
+        "new_payee": false,
+        "average_transaction_amount": 92.0,
+        "transactions_last_24h": 2,
+        "origin_country": "US",
+        "destination_country": "US",
+        "origin_account_id": "holdout-clean-origin-001",
+        "destination_account_id": "holdout-clean-destination-001"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout clean established household payment",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-clean-002",
+        "amount": 415.5,
+        "account_age_days": 2244,
+        "new_payee": false,
+        "average_transaction_amount": 360.0,
+        "transactions_last_24h": 4,
+        "origin_country": "CA",
+        "destination_country": "CA",
+        "origin_account_id": "holdout-clean-origin-002",
+        "destination_account_id": "holdout-clean-destination-002"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout clean routine insurance debit",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-clean-003",
+        "amount": 178.8,
+        "account_age_days": 934,
+        "new_payee": false,
+        "average_transaction_amount": 210.0,
+        "transactions_last_24h": 1,
+        "origin_country": "AU",
+        "destination_country": "AU",
+        "origin_account_id": "holdout-clean-origin-003",
+        "destination_account_id": "holdout-clean-destination-003"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout clean known contractor invoice",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-clean-004",
+        "amount": 980.25,
+        "account_age_days": 3011,
+        "new_payee": false,
+        "average_transaction_amount": 850.0,
+        "transactions_last_24h": 7,
+        "origin_country": "NZ",
+        "destination_country": "NZ",
+        "origin_account_id": "holdout-clean-origin-004",
+        "destination_account_id": "holdout-clean-destination-004"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout clean mature low value transfer",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-clean-005",
+        "amount": 52.6,
+        "account_age_days": 667,
+        "new_payee": false,
+        "average_transaction_amount": 80.0,
+        "transactions_last_24h": 6,
+        "origin_country": "SG",
+        "destination_country": "SG",
+        "origin_account_id": "holdout-clean-origin-005",
+        "destination_account_id": "holdout-clean-destination-005"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout single signal young account only",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-single-001",
+        "amount": 133.0,
+        "account_age_days": 26,
+        "new_payee": false,
+        "average_transaction_amount": 150.0,
+        "transactions_last_24h": 3,
+        "origin_country": "CH",
+        "destination_country": "CH",
+        "origin_account_id": "holdout-single-origin-001",
+        "destination_account_id": "holdout-single-destination-001"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": ["DEMO-AML-001"]
+    },
+    {
+      "name": "holdout single signal new payee normal value",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-single-002",
+        "amount": 275.0,
+        "account_age_days": 1044,
+        "new_payee": true,
+        "average_transaction_amount": 300.0,
+        "transactions_last_24h": 2,
+        "origin_country": "NO",
+        "destination_country": "NO",
+        "origin_account_id": "holdout-single-origin-002",
+        "destination_account_id": "holdout-single-destination-002"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-006"]
+    },
+    {
+      "name": "holdout single signal velocity on mature account",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-single-003",
+        "amount": 88.0,
+        "account_age_days": 1555,
+        "new_payee": false,
+        "average_transaction_amount": 95.0,
+        "transactions_last_24h": 11,
+        "origin_country": "SE",
+        "destination_country": "SE",
+        "origin_account_id": "holdout-single-origin-003",
+        "destination_account_id": "holdout-single-destination-003"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": ["DEMO-AML-002"]
+    },
+    {
+      "name": "holdout single signal amount above five times average",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-single-004",
+        "amount": 2610.0,
+        "account_age_days": 1245,
+        "new_payee": false,
+        "average_transaction_amount": 500.0,
+        "transactions_last_24h": 3,
+        "origin_country": "IT",
+        "destination_country": "IT",
+        "origin_account_id": "holdout-single-origin-004",
+        "destination_account_id": "holdout-single-destination-004"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001"]
+    },
+    {
+      "name": "holdout single signal young account cross border",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-single-005",
+        "amount": 147.0,
+        "account_age_days": 28,
+        "new_payee": false,
+        "average_transaction_amount": 160.0,
+        "transactions_last_24h": 5,
+        "origin_country": "PL",
+        "destination_country": "CZ",
+        "origin_account_id": "holdout-single-origin-005",
+        "destination_account_id": "holdout-single-destination-005"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004"]
+    },
+    {
+      "name": "holdout single signal velocity cross border",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-single-006",
+        "amount": 322.0,
+        "account_age_days": 1777,
+        "new_payee": false,
+        "average_transaction_amount": 350.0,
+        "transactions_last_24h": 12,
+        "origin_country": "AT",
+        "destination_country": "HU",
+        "origin_account_id": "holdout-single-origin-006",
+        "destination_account_id": "holdout-single-destination-006"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": ["DEMO-AML-002", "DEMO-AML-004"]
+    },
+    {
+      "name": "holdout multi APP pattern new payee and unusual amount",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-multi-001",
+        "amount": 3740.0,
+        "account_age_days": 888,
+        "new_payee": true,
+        "average_transaction_amount": 700.0,
+        "transactions_last_24h": 2,
+        "origin_country": "US",
+        "destination_country": "MX",
+        "origin_account_id": "holdout-multi-origin-001",
+        "destination_account_id": "holdout-multi-destination-001"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-004", "DEMO-AML-006"]
+    },
+    {
+      "name": "holdout multi signal young account unusual amount",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-multi-002",
+        "amount": 2865.0,
+        "account_age_days": 23,
+        "new_payee": false,
+        "average_transaction_amount": 550.0,
+        "transactions_last_24h": 4,
+        "origin_country": "CA",
+        "destination_country": "CA",
+        "origin_account_id": "holdout-multi-origin-002",
+        "destination_account_id": "holdout-multi-destination-002"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001"]
+    },
+    {
+      "name": "holdout multi signal velocity and unusual amount",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-multi-003",
+        "amount": 5410.0,
+        "account_age_days": 2015,
+        "new_payee": false,
+        "average_transaction_amount": 1000.0,
+        "transactions_last_24h": 14,
+        "origin_country": "AU",
+        "destination_country": "JP",
+        "origin_account_id": "holdout-multi-origin-003",
+        "destination_account_id": "holdout-multi-destination-003"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-004"]
+    },
+    {
+      "name": "holdout multi signal young new payee velocity",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-multi-004",
+        "amount": 195.0,
+        "account_age_days": 15,
+        "new_payee": true,
+        "average_transaction_amount": 180.0,
+        "transactions_last_24h": 13,
+        "origin_country": "NZ",
+        "destination_country": "NZ",
+        "origin_account_id": "holdout-multi-origin-004",
+        "destination_account_id": "holdout-multi-destination-004"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": ["DEMO-AML-001", "DEMO-AML-002", "DEMO-AML-006"]
+    },
+    {
+      "name": "holdout multi all signals high risk cross border",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-multi-005",
+        "amount": 6480.0,
+        "account_age_days": 10,
+        "new_payee": true,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 16,
+        "origin_country": "SG",
+        "destination_country": "AE",
+        "origin_account_id": "holdout-multi-origin-005",
+        "destination_account_id": "holdout-multi-destination-005"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout boundary account exactly thirty days",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-boundary-001",
+        "amount": 116.5,
+        "account_age_days": 30,
+        "new_payee": false,
+        "average_transaction_amount": 125.0,
+        "transactions_last_24h": 3,
+        "origin_country": "CH",
+        "destination_country": "CH",
+        "origin_account_id": "holdout-boundary-origin-001",
+        "destination_account_id": "holdout-boundary-destination-001"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout boundary exactly ten transactions",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-boundary-002",
+        "amount": 204.5,
+        "account_age_days": 1366,
+        "new_payee": false,
+        "average_transaction_amount": 225.0,
+        "transactions_last_24h": 10,
+        "origin_country": "NO",
+        "destination_country": "NO",
+        "origin_account_id": "holdout-boundary-origin-002",
+        "destination_account_id": "holdout-boundary-destination-002"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout boundary amount exactly five times average",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-boundary-003",
+        "amount": 2375.0,
+        "account_age_days": 742,
+        "new_payee": false,
+        "average_transaction_amount": 475.0,
+        "transactions_last_24h": 4,
+        "origin_country": "SE",
+        "destination_country": "SE",
+        "origin_account_id": "holdout-boundary-origin-003",
+        "destination_account_id": "holdout-boundary-destination-003"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout boundary cross border without risk signals",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-boundary-004",
+        "amount": 690.5,
+        "account_age_days": 1922,
+        "new_payee": false,
+        "average_transaction_amount": 720.0,
+        "transactions_last_24h": 2,
+        "origin_country": "IT",
+        "destination_country": "GR",
+        "origin_account_id": "holdout-boundary-origin-004",
+        "destination_account_id": "holdout-boundary-destination-004"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": ["DEMO-AML-004"]
+    }
+  ]
+}
