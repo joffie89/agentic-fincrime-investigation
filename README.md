@@ -1,32 +1,35 @@
 # AI Fraud Investigation Assistant
 
-An AI assistant for UK bank fraud and AML teams that investigates a payment alert, recommends an action with cited policies, and guarantees that risky cases reach a human.
+An AI assistant for UK bank fraud and AML teams that investigates a payment alert, recommends an action with cited policies, and is built so that high-risk and uncertain cases always go to a human reviewer.
 
-Demo video: (link)
+**Tech stack:** Python, FastAPI, Pydantic, LangGraph, OpenAI (gpt-4.1-mini, text-embedding-3-small), RAG (vector, BM25, hybrid), scikit-learn, NetworkX, PostgreSQL, Docker, GitHub Actions.
 
-Live API: (link)
+**Scope:** a portfolio project on synthetic data. It recommends actions; it never blocks accounts, rejects payments, or claims a human reviewed a case.
 
 ## Key results
 
 All evaluation data is synthetic. On the 60-query retrieval set, moving from the local lexical-hashing vector baseline to OpenAI `text-embedding-3-small` vector search improved hit@1 from **1.67% to 75.00%** and MRR from **0.1705 to 0.8469**.
 
-For the decision evaluations below, counts and accuracy rates show the mean with the minimum and maximum across three runs in parentheses; latency and cost are rounded headline figures. The runs used OpenAI assessment, OpenAI vector retrieval, `gpt-4.1-mini`, and temperature 0; LLM cost excludes embedding API calls.
-
 | Metric | In-sample (50 cases x 3 runs) | Held-out (20 cases x 3 runs) |
 |---|---:|---:|
-| Missed escalations | 0 (0–0) | 0 (0–0) |
-| Unnecessary escalations | 0 (0–0) | 2 (2–2) |
-| System recommendation accuracy | 100.0% (100.0%–100.0%) | 90.0% (90.0%–90.0%) |
-| LLM-alone accuracy | 94.0% (94.0%–94.0%) | 85.0% (85.0%–85.0%) |
-| Routing accuracy | 100.0% (100.0%–100.0%) | 90.0% (90.0%–90.0%) |
-| Citation match | 100.0% (100.0%–100.0%) | 100.0% (100.0%–100.0%) |
+| Missed escalations | 0 | 0 |
+| Unnecessary escalations | 0 | 2 |
+| System recommendation accuracy | 100% | 90% |
+| LLM-alone accuracy | 94% | 85% |
+| Routing accuracy | 100% | 90% |
+| Citation match | 100% | 100% |
 | Latency p50 | ~2.1 s | ~2.1 s |
 | Cost per case | ~$0.0009 | ~$0.0009 |
+
+Outcome metrics were identical across all 3 runs.
 
 The rubric was written against the in-sample cases, so the held-out set is the fairer test. In 3 of 50 in-sample cases the LLM recommended a softer action than policy allows and the rubric floor raised it; in 7-8 of 50 it omitted a required citation and deterministic citations added it.
 
 The exact committed outputs are in [`evaluation/decision_results_openai.json`](evaluation/decision_results_openai.json) and [`evaluation/decision_results_openai_holdout.json`](evaluation/decision_results_openai_holdout.json).
-All held-out outcome metrics were identical across the three runs; only latency and token-based cost varied.
+
+### Held-out errors
+
+Both held-out errors were single-signal velocity cases where the model escalated instead of requesting more information. This is stricter than the written policy rather than a missed escalation; whether velocity alone should escalate is a policy decision for the fraud team.
 
 ## How it decides
 
@@ -83,12 +86,6 @@ FastAPI request -> Pydantic validation -> compiled LangGraph
   -> memory or PostgreSQL audit persistence
   -> validated API response and retrievable audit record
 ```
-
-### Held-out errors
-
-Both held-out errors were single-signal velocity cases where the model escalated instead of requesting more information. This is stricter than the written policy rather than a missed escalation; whether velocity alone should escalate is a policy decision for the fraud team.
-
-This is a portfolio demonstration, not a production AML decision system. It uses only synthetic data, produces recommendations rather than consequential actions, and never claims that a human reviewed a case when they did not.
 
 ## What's implemented now
 
@@ -347,6 +344,8 @@ python -m app.evaluation.evaluate
 It calculates deterministic-rule correctness, expected-policy-in-Top-K retrieval, recommendation agreement, exact reference grounding, and escalation behavior. The dataset is synthetic and intended as a regression signal, not evidence of real-world performance.
 
 ### Live decision evaluation
+
+For the decision evaluations below, counts and accuracy rates show the mean with the minimum and maximum across three runs in parentheses; latency and cost are rounded headline figures. The runs used OpenAI assessment, OpenAI vector retrieval, `gpt-4.1-mini`, and temperature 0; LLM cost excludes embedding API calls.
 
 `decision_eval` runs labelled cases through the full configured workflow. It reports system and LLM-alone recommendation accuracy, routing accuracy, missed and unnecessary escalations, exact citation match, expected-policy retrieval recall, fallback counts by safe reason, rubric overrides, deterministic citation additions, p50/p95 latency, and total/per-case LLM cost. Each case result records confidence, evidence sufficiency, routing rules, retrieved IDs and sources, citations, considered policies, reasons, rejected IDs, fallback details, and enforcement diagnostics.
 
