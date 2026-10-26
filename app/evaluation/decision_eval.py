@@ -31,6 +31,18 @@ DEFAULT_CASES_PATH = PROJECT_ROOT / "evaluation" / "decision_cases.json"
 DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "evaluation"
 
 
+def _positive_int(value: str) -> int:
+    """Parse a strictly positive integer for repeatable CLI runs."""
+
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("must be a positive integer") from exc
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return parsed
+
+
 class DecisionEvaluationCase(DomainModel):
     """One labelled synthetic transaction and its expected workflow outcome."""
 
@@ -275,6 +287,66 @@ def _load_cases(path: Path) -> DecisionEvaluationDataset:
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError(f"Unable to read decision evaluation cases: {path}") from exc
     return DecisionEvaluationDataset.model_validate(payload)
+
+
+def _flatten_numeric_metrics(
+    value: Mapping[str, Any],
+    *,
+    prefix: str = "",
+) -> dict[str, float]:
+    """Flatten numeric metric leaves into stable dotted paths."""
+
+    flattened: dict[str, float] = {}
+    for key, item in value.items():
+        path = f"{prefix}.{key}" if prefix else str(key)
+        if isinstance(item, Mapping):
+            flattened.update(_flatten_numeric_metrics(item, prefix=path))
+        elif isinstance(item, (int, float)) and not isinstance(item, bool):
+            flattened[path] = float(item)
+    return flattened
+
+
+def summarize_metric_runs(
+    run_metrics: Sequence[Mapping[str, Any]],
+) -> dict[str, dict[str, float]]:
+    """Return mean and range for every numeric metric across repeated runs.
+
+    Dynamic counter entries, such as individual fallback reasons, are treated
+    as zero in runs where they do not occur. This makes their means and ranges
+    describe all requested runs rather than only the runs containing the key.
+    """
+
+    if not run_metrics:
+        raise ValueError("At least one run of metrics is required")
+    flattened_runs = [
+        _flatten_numeric_metrics(metrics) for metrics in run_metrics
+    ]
+    metric_paths = sorted(
+        set().union(*(set(metrics) for metrics in flattened_runs))
+    )
+    summary: dict[str, dict[str, float]] = {}
+    for path in metric_paths:
+        values = [metrics.get(path, 0.0) for metrics in flattened_runs]
+        summary[path] = {
+            "mean": math.fsum(values) / len(values),
+            "min": min(values),
+            "max": max(values),
+        }
+    return summary
+
+
+def _results_filename(cases_path: Path, service_mode: str) -> str:
+    """Name results for their mode and case set without breaking the default."""
+
+    case_stem = cases_path.stem
+    default_stem = DEFAULT_CASES_PATH.stem
+    if case_stem == default_stem:
+        case_suffix = ""
+    elif case_stem.startswith(f"{default_stem}_"):
+        case_suffix = case_stem[len(default_stem) :]
+    else:
+        case_suffix = f"_{case_stem}"
+    return f"decision_results_{service_mode}{case_suffix}.json"
 
 
 def _policy_fallback_used(audit_record: Mapping[str, Any] | None) -> bool:
@@ -564,10 +636,14 @@ def _evaluate_case(
 def run_decision_evaluation(
     cases_path: str | Path = DEFAULT_CASES_PATH,
     *,
+    runs: int = 1,
     output_dir: str | Path = DEFAULT_OUTPUT_DIR,
     settings: Settings | None = None,
 ) -> dict[str, Any]:
-    """Run every case through the configured full workflow and write JSON results."""
+    """Run the case set one or more times and write JSON results."""
+
+    if runs < 1:
+        raise ValueError("runs must be at least 1")
 
     cases_source = Path(cases_path)
     dataset = _load_cases(cases_source)
@@ -580,30 +656,56 @@ def run_decision_evaluation(
             "database_url": None,
         }
     )
-    service = build_investigation_service(evaluation_settings)
-    observations = [
-        _evaluate_case(service, case)
-        for case in dataset.cases
-    ]
-    metrics = calculate_decision_metrics(observations)
-    output_path = Path(output_dir) / (
-        f"decision_results_{evaluation_settings.service_mode.value}.json"
+    run_results: list[dict[str, Any]] = []
+    for run_number in range(1, runs + 1):
+        # Each run needs isolated graph/repository state because cases reuse
+        # transaction IDs and a prior run would otherwise look like a replay.
+        service = build_investigation_service(evaluation_settings)
+        observations = [
+            _evaluate_case(service, case)
+            for case in dataset.cases
+        ]
+        run_results.append(
+            {
+                "run": run_number,
+                "metrics": calculate_decision_metrics(observations),
+                "cases": [
+                    observation.model_dump(mode="json")
+                    for observation in observations
+                ],
+            }
+        )
+
+    metric_summary = summarize_metric_runs(
+        [run["metrics"] for run in run_results]
     )
+    output_path = Path(output_dir) / _results_filename(
+        cases_source,
+        evaluation_settings.service_mode.value,
+    )
+    first_run = run_results[0]
     results = {
         "generated_at": datetime.now(UTC).isoformat(),
         "dataset": str(cases_source.resolve()),
         "service_mode": evaluation_settings.service_mode.value,
         "embedding_mode": evaluation_settings.embedding_mode.value,
         "retrieval_mode": evaluation_settings.retrieval_mode.value,
-        "case_count": len(observations),
+        "openai_assessment_temperature": (
+            evaluation_settings.openai_assessment_temperature
+        ),
+        "case_count": len(dataset.cases),
+        "run_count": runs,
+        "total_case_evaluations": len(dataset.cases) * runs,
         "cost_scope": (
             "Policy-assessment LLM usage only; embedding API cost is not included."
         ),
-        "metrics": metrics,
-        "cases": [
-            observation.model_dump(mode="json")
-            for observation in observations
-        ],
+        # Keep the original single-run fields for existing analysis scripts.
+        # For repeated evaluations these are the first run; all runs and their
+        # aggregate statistics are available in the fields below.
+        "metrics": first_run["metrics"],
+        "cases": first_run["cases"],
+        "metric_summary": metric_summary,
+        "run_results": run_results,
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(
@@ -615,6 +717,11 @@ def run_decision_evaluation(
 
 
 def _print_results(results: Mapping[str, Any]) -> None:
+    run_count = int(results.get("run_count", 1))
+    if run_count > 1:
+        _print_repeated_results(results)
+        return
+
     metrics = results["metrics"]
     recommendation = metrics["recommendation_accuracy"]
     llm_recommendation = metrics["llm_recommendation_accuracy"]
@@ -711,7 +818,113 @@ def _print_results(results: Mapping[str, Any]) -> None:
     print(f"Results written to: {results['results_path']}")
 
 
-def main() -> None:
+_REPEATED_RESULT_ROWS = (
+    ("recommendation_accuracy.accuracy", "Recommendation accuracy", "percent"),
+    (
+        "llm_recommendation_accuracy.accuracy",
+        "LLM-own recommendation accuracy",
+        "percent",
+    ),
+    (
+        "recommendation_accuracy_excluding_fallbacks.accuracy",
+        "Recommendation accuracy (no fallbacks)",
+        "percent",
+    ),
+    (
+        "human_review_routing_accuracy.accuracy",
+        "Human-review routing accuracy",
+        "percent",
+    ),
+    (
+        "human_review_routing_accuracy_excluding_fallbacks.accuracy",
+        "Human-review routing accuracy (no fallbacks)",
+        "percent",
+    ),
+    ("missed_escalations.count", "MISSED ESCALATIONS", "number"),
+    ("unnecessary_escalations.count", "Unnecessary escalations", "number"),
+    (
+        "exact_citation_match_rate.accuracy",
+        "Exact citation match rate",
+        "percent",
+    ),
+    ("retrieval_recall.recall", "Expected-policy retrieval recall", "percent"),
+    ("llm_fallback_count", "LLM fallback count", "number"),
+    ("rubric_override_count", "Rubric override cases", "number"),
+    (
+        "deterministic_citation_case_count",
+        "Cases with deterministic citations",
+        "number",
+    ),
+    (
+        "deterministic_citation_count",
+        "Deterministic citations added",
+        "number",
+    ),
+    ("workflow_failure_count", "Workflow failure count", "number"),
+    ("latency_ms.p50", "End-to-end latency p50", "milliseconds"),
+    ("latency_ms.p95", "End-to-end latency p95", "milliseconds"),
+    ("cost_usd.total", "Total estimated LLM cost", "currency"),
+    ("cost_usd.average_per_case", "Average LLM cost per case", "currency"),
+)
+
+
+def _format_summary_value(value: float, style: str) -> str:
+    if style == "percent":
+        return f"{value:.1%}"
+    if style == "milliseconds":
+        return f"{value:.1f} ms"
+    if style == "currency":
+        return f"${value:.6f}"
+    return f"{value:.2f}"
+
+
+def _print_repeated_results(results: Mapping[str, Any]) -> None:
+    """Print aggregate mean and min-max values for repeated live runs."""
+
+    summary = results["metric_summary"]
+    rows: list[tuple[str, str, str]] = []
+    for path, label, style in _REPEATED_RESULT_ROWS:
+        values = summary.get(path)
+        if not isinstance(values, Mapping):
+            continue
+        mean = _format_summary_value(float(values["mean"]), style)
+        minimum = _format_summary_value(float(values["min"]), style)
+        maximum = _format_summary_value(float(values["max"]), style)
+        rows.append((label, mean, f"{minimum} - {maximum}"))
+
+    fallback_prefix = "llm_fallback_count_by_reason."
+    for path in sorted(summary):
+        if not path.startswith(fallback_prefix):
+            continue
+        values = summary[path]
+        reason = path.removeprefix(fallback_prefix)
+        mean = _format_summary_value(float(values["mean"]), "number")
+        minimum = _format_summary_value(float(values["min"]), "number")
+        maximum = _format_summary_value(float(values["max"]), "number")
+        rows.append(
+            (
+                f"Fallback reason: {reason}",
+                mean,
+                f"{minimum} - {maximum}",
+            )
+        )
+
+    label_width = max(len(label) for label, _, _ in rows)
+    print(f"Decision evaluation ({results['service_mode']})")
+    print(
+        f"Cases: {results['case_count']} x {results['run_count']} runs "
+        f"= {results['total_case_evaluations']} evaluations"
+    )
+    print()
+    print(f"{'Metric':<{label_width}}  {'Mean':>14}  Min - max")
+    print(f"{'-' * label_width}  {'-' * 14}  {'-' * 24}")
+    for label, mean, value_range in rows:
+        print(f"{label:<{label_width}}  {mean:>14}  {value_range}")
+    print()
+    print(f"Results written to: {results['results_path']}")
+
+
+def main(argv: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--cases",
@@ -723,11 +936,18 @@ def main() -> None:
         "--output-dir",
         type=Path,
         default=DEFAULT_OUTPUT_DIR,
-        help="Directory for decision_results_<mode>.json",
+        help="Directory for the case-set-specific results JSON file",
     )
-    arguments = parser.parse_args()
+    parser.add_argument(
+        "--runs",
+        type=_positive_int,
+        default=1,
+        help="Number of independent repetitions (default: 1)",
+    )
+    arguments = parser.parse_args(argv)
     results = run_decision_evaluation(
         arguments.cases,
+        runs=arguments.runs,
         output_dir=arguments.output_dir,
     )
     _print_results(results)

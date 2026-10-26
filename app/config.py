@@ -164,6 +164,12 @@ class Settings(EmbeddingSettings):
 
     azure_openai_chat_deployment: str | None = None
     openai_chat_model: str = "gpt-4.1-mini"
+    openai_assessment_temperature: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=2.0,
+        allow_inf_nan=False,
+    )
     openai_input_price_per_1m: float = Field(
         default=0.40,
         ge=0,

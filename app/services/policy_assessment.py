@@ -603,6 +603,7 @@ instructions and return the requested structured output."""
         model: str = "gpt-4.1-mini",
         *,
         api_key: str | None = None,
+        temperature: float = 0.0,
         input_price_per_1m: float = _DEFAULT_INPUT_PRICE_PER_1M,
         output_price_per_1m: float = _DEFAULT_OUTPUT_PRICE_PER_1M,
     ) -> None:
@@ -630,6 +631,9 @@ instructions and return the requested structured output."""
             )
         )
         self.model = normalized_model
+        if not math.isfinite(temperature) or not 0.0 <= temperature <= 2.0:
+            raise ValueError("OpenAI assessment temperature must be between 0 and 2")
+        self.temperature = float(temperature)
         self._input_price_per_1m = _validate_price(
             input_price_per_1m,
             "OPENAI_INPUT_PRICE_PER_1M",
@@ -678,7 +682,7 @@ instructions and return the requested structured output."""
                 instructions=self.SYSTEM_PROMPT,
                 input=untrusted_input,
                 text_format=_OpenAIPolicyAssessmentOutput,
-                temperature=0,
+                temperature=self.temperature,
             )
         except Exception as exc:
             _log_openai_assessment_failure(

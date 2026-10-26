@@ -372,6 +372,39 @@ def test_openai_pricing_settings_can_be_overridden() -> None:
     assert settings.openai_output_price_per_1m == 0.75
 
 
+def test_openai_assessment_temperature_defaults_to_zero_and_can_be_overridden() -> None:
+    default_settings = Settings(
+        _env_file=None,
+        api_key="test-api-key",
+        service_mode="local",
+        embedding_mode="local",
+    )
+    configured_settings = Settings(
+        _env_file=None,
+        api_key="test-api-key",
+        service_mode="local",
+        embedding_mode="local",
+        openai_assessment_temperature=0.25,
+    )
+
+    assert default_settings.openai_assessment_temperature == 0.0
+    assert configured_settings.openai_assessment_temperature == 0.25
+
+
+@pytest.mark.parametrize("temperature", [-0.01, 2.01, float("inf")])
+def test_openai_assessment_temperature_rejects_invalid_values(
+    temperature: float,
+) -> None:
+    with pytest.raises(ValidationError):
+        Settings(
+            _env_file=None,
+            api_key="test-api-key",
+            service_mode="local",
+            embedding_mode="local",
+            openai_assessment_temperature=temperature,
+        )
+
+
 @pytest.mark.parametrize(
     "price_field",
     ["openai_input_price_per_1m", "openai_output_price_per_1m"],
@@ -418,6 +451,7 @@ def test_openai_service_composition_configures_timeout_retries_and_default_model
         service_mode="openai",
         embedding_mode="local",
         openai_api_key="not-a-real-key",
+        openai_assessment_temperature=0.25,
     )
 
     with patch(
@@ -428,6 +462,7 @@ def test_openai_service_composition_configures_timeout_retries_and_default_model
 
     assert isinstance(service, OpenAIPolicyAssessmentService)
     assert service.model == "gpt-4.1-mini"
+    assert service.temperature == 0.25
     openai_client_constructor.assert_called_once_with(
         api_key="not-a-real-key",
         timeout=30.0,
@@ -481,7 +516,7 @@ def test_openai_assessor_returns_valid_structured_output_and_delimits_user_data(
     assert result.requires_human_review is False
     assert responses.kwargs is not None
     assert responses.kwargs["model"] == "gpt-4.1-mini"
-    assert responses.kwargs["temperature"] == 0
+    assert responses.kwargs["temperature"] == 0.0
     normalized_instructions = " ".join(
         str(responses.kwargs["instructions"]).casefold().split()
     )

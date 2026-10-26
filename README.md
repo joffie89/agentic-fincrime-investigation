@@ -264,6 +264,7 @@ Open `http://127.0.0.1:8000/docs` for the generated OpenAPI UI.
 | `HUMAN_REVIEW_CONFIDENCE_THRESHOLD` | `0.70` | Conditional-route threshold |
 | `OPENAI_API_KEY` | unset | Secret required when `SERVICE_MODE=openai` or `EMBEDDING_MODE=openai`; never committed |
 | `OPENAI_CHAT_MODEL` | `gpt-4.1-mini` | OpenAI model used for structured policy assessment |
+| `OPENAI_ASSESSMENT_TEMPERATURE` | `0` | Sampling temperature used for OpenAI policy assessment |
 | `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | OpenAI embedding model recorded in the generated index |
 | `AZURE_OPENAI_ENDPOINT` | unset | Required when `SERVICE_MODE=azure` or `EMBEDDING_MODE=azure` |
 | `AZURE_OPENAI_API_KEY` | unset | Required when `SERVICE_MODE=azure` or `EMBEDDING_MODE=azure`; never committed |

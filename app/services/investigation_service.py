@@ -95,6 +95,7 @@ def _build_policy_assessor(settings: Settings) -> PolicyAssessmentService:
         return OpenAIPolicyAssessmentService(
             api_key=settings.openai_api_key.get_secret_value(),
             model=settings.openai_chat_model,
+            temperature=settings.openai_assessment_temperature,
             input_price_per_1m=settings.openai_input_price_per_1m,
             output_price_per_1m=settings.openai_output_price_per_1m,
         )
