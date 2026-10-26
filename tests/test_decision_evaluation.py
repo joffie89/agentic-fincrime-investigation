@@ -123,6 +123,11 @@ def test_decision_metrics_cover_accuracy_escalations_latency_and_cost() -> None:
         "total": 4,
         "accuracy": 0.5,
     }
+    assert metrics["llm_recommendation_accuracy"] == {
+        "correct": 0,
+        "total": 0,
+        "accuracy": 0.0,
+    }
     assert metrics["recommendation_accuracy_excluding_fallbacks"] == {
         "correct": 2,
         "total": 3,
@@ -155,6 +160,11 @@ def test_decision_metrics_cover_accuracy_escalations_latency_and_cost() -> None:
     assert metrics["llm_fallback_count_by_reason"] == {
         "TimeoutError: assessment timed out": 1
     }
+    assert metrics["rubric_override_count"] == 0
+    assert metrics["rubric_override_case_names"] == []
+    assert metrics["deterministic_citation_case_count"] == 0
+    assert metrics["deterministic_citation_count"] == 0
+    assert metrics["deterministic_citation_case_names"] == []
     assert metrics["retrieval_recall"] == {
         "retrieved_expected_policy_count": 1,
         "expected_policy_count": 2,
@@ -180,6 +190,9 @@ def test_decision_observation_records_diagnostics_and_failure_defaults() -> None
         actual_requires_human_review=True,
         expected_policy_ids=["POL-A"],
         actual_policy_ids=["POL-A"],
+        original_llm_recommendation="CLEAR",
+        rubric_override=True,
+        deterministic_citations=["POL-A"],
         retrieved_policy_ids=["POL-A", "POL-B"],
         semantic_retrieved_policy_ids=["POL-B"],
         signal_included_policy_ids=["POL-A"],
@@ -199,6 +212,9 @@ def test_decision_observation_records_diagnostics_and_failure_defaults() -> None
     ).model_dump(mode="json")
 
     assert completed["confidence"] == pytest.approx(0.86)
+    assert completed["original_llm_recommendation"] == "CLEAR"
+    assert completed["rubric_override"] is True
+    assert completed["deterministic_citations"] == ["POL-A"]
     assert completed["evidence_sufficient"] is True
     assert completed["routing_rule_fired"] == (
         "medium_risk_assessment_not_clear"
@@ -231,6 +247,9 @@ def test_decision_observation_records_diagnostics_and_failure_defaults() -> None
     ).model_dump(mode="json")
 
     assert failed["confidence"] is None
+    assert failed["original_llm_recommendation"] is None
+    assert failed["rubric_override"] is False
+    assert failed["deterministic_citations"] == []
     assert failed["evidence_sufficient"] is None
     assert failed["routing_rule_fired"] is None
     assert failed["policy_references"] == []
@@ -278,4 +297,61 @@ def test_decision_diagnostics_read_current_audit_shape() -> None:
     assert _rejected_citations(assessment, audit_record) == ["POL-INVENTED"]
     assert _rejected_policies_considered(assessment, audit_record) == [
         "POL-NOT-REVIEWED"
+    ]
+
+
+def test_metrics_keep_llm_accuracy_visible_before_rubric_enforcement() -> None:
+    observations = [
+        DecisionObservation(
+            name="overridden escalation",
+            expected_recommendation="ESCALATE_TO_HUMAN",
+            actual_recommendation="ESCALATE_TO_HUMAN",
+            original_llm_recommendation="CLEAR",
+            rubric_override=True,
+            deterministic_citations=["DEMO-AML-004", "DEMO-AML-005"],
+            expected_requires_human_review=True,
+            actual_requires_human_review=True,
+            expected_policy_ids=["DEMO-AML-004", "DEMO-AML-005"],
+            actual_policy_ids=["DEMO-AML-004", "DEMO-AML-005"],
+            llm_fallback_used=False,
+            latency_ms=10.0,
+            estimated_cost_usd=0.01,
+            completed=True,
+        ),
+        DecisionObservation(
+            name="unaltered clear",
+            expected_recommendation="CLEAR",
+            actual_recommendation="CLEAR",
+            original_llm_recommendation="CLEAR",
+            expected_requires_human_review=False,
+            actual_requires_human_review=False,
+            expected_policy_ids=[],
+            actual_policy_ids=[],
+            llm_fallback_used=False,
+            latency_ms=5.0,
+            estimated_cost_usd=0.0,
+            completed=True,
+        ),
+    ]
+
+    metrics = calculate_decision_metrics(observations)
+
+    assert metrics["recommendation_accuracy"] == {
+        "correct": 2,
+        "total": 2,
+        "accuracy": 1.0,
+    }
+    assert metrics["llm_recommendation_accuracy"] == {
+        "correct": 1,
+        "total": 2,
+        "accuracy": 0.5,
+    }
+    assert metrics["rubric_override_count"] == 1
+    assert metrics["rubric_override_case_names"] == [
+        "overridden escalation"
+    ]
+    assert metrics["deterministic_citation_case_count"] == 1
+    assert metrics["deterministic_citation_count"] == 2
+    assert metrics["deterministic_citation_case_names"] == [
+        "overridden escalation"
     ]

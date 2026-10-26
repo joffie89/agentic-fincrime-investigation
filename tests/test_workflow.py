@@ -200,6 +200,9 @@ def test_successful_investigation_persists_complete_audit_trail(
         "signal_mapping": [],
     }
     assert record["policy_assessment"] == assessment.model_dump(mode="json")
+    assert record["original_llm_recommendation"] is None
+    assert record["rubric_override"] is False
+    assert record["deterministic_citations"] == []
     assert record["fallback_reason"] is None
     assert record["rejected_citations"] == []
     assert record["rejected_policies_considered"] == []

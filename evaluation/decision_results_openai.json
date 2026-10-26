@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-25T19:13:16.675954+00:00",
+  "generated_at": "2026-10-25T19:24:15.287403+00:00",
   "dataset": "C:\\Users\\joffi\\agentic-fincrime-investigation\\evaluation\\decision_cases.json",
   "service_mode": "openai",
   "embedding_mode": "openai",
@@ -9,23 +9,23 @@
   "metrics": {
     "case_count": 50,
     "recommendation_accuracy": {
-      "correct": 46,
+      "correct": 47,
       "total": 50,
-      "accuracy": 0.92
+      "accuracy": 0.94
     },
     "recommendation_accuracy_excluding_fallbacks": {
-      "correct": 45,
-      "total": 48,
-      "accuracy": 0.9375
+      "correct": 47,
+      "total": 50,
+      "accuracy": 0.94
     },
     "human_review_routing_accuracy": {
-      "correct": 49,
+      "correct": 50,
       "total": 50,
-      "accuracy": 0.98
+      "accuracy": 1.0
     },
     "human_review_routing_accuracy_excluding_fallbacks": {
-      "correct": 48,
-      "total": 48,
+      "correct": 50,
+      "total": 50,
       "accuracy": 1.0
     },
     "missed_escalations": {
@@ -33,21 +33,16 @@
       "case_names": []
     },
     "unnecessary_escalations": {
-      "count": 1,
-      "case_names": [
-        "ten routine payments in one day"
-      ]
+      "count": 0,
+      "case_names": []
     },
     "exact_citation_match_rate": {
-      "correct": 46,
+      "correct": 40,
       "total": 50,
-      "accuracy": 0.92
+      "accuracy": 0.8
     },
-    "llm_fallback_count": 2,
-    "llm_fallback_count_by_reason": {
-      "ValidationError: 1 validation error for PolicyAssessment\nreasons.0\n  String should have at most 256 characters [type=string_too_long, input_value='No risk signals are pres...uspicious network link.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/string_too_long": 1,
-      "ValidationError: 1 validation error for PolicyAssessment\nreasons.4\n  String should have at most 256 characters [type=string_too_long, input_value='According to the rubric,..._AMOUNT does not apply.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/string_too_long": 1
-    },
+    "llm_fallback_count": 0,
+    "llm_fallback_count_by_reason": {},
     "retrieval_recall": {
       "retrieved_expected_policy_count": 106,
       "expected_policy_count": 106,
@@ -59,12 +54,12 @@
     },
     "workflow_failure_count": 0,
     "latency_ms": {
-      "p50": 2230.9305999660864,
-      "p95": 3098.351189983077
+      "p50": 1984.008349943906,
+      "p95": 2489.123195048887
     },
     "cost_usd": {
-      "total": 0.0501676,
-      "average_per_case": 0.0010033519999999999
+      "total": 0.0464236,
+      "average_per_case": 0.0009284720000000001
     }
   },
   "cases": [
@@ -92,28 +87,26 @@
       "routing_rule_fired": "automatic_completion_criteria_met",
       "policy_references": [],
       "policies_considered": [
-        "DEMO-AML-001",
         "DEMO-AML-004",
-        "DEMO-AML-019"
+        "DEMO-AML-019",
+        "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "No risk signals are present: account age is well over 30 days, payee is not new, transaction amount is not unusually high, transaction velocity is low, and no suspicious network links detected.",
-        "Cross-border activity is not present as origin and destination countries are the same (GB).",
-        "Deterministic risk assessment indicates LOW risk level with no investigation needed.",
-        "Graph analysis and relationship anomaly show no suspicious signals or anomalies."
+        "No risk signals present: account is old, payee is not new, amount is not unusual, low transaction velocity, no network link."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 6983.19930001162,
-      "estimated_cost_usd": 0.0009364,
+      "latency_ms": 3335.997400106862,
+      "estimated_cost_usd": 0.00085,
       "completed": true,
-      "investigation_id": "9c8386a8-28a7-4f91-bd72-f6bec6322b17",
+      "investigation_id": "d8b25dcc-a2d3-4d62-9b77-903bed267262",
       "llm_usage": {
-        "input_tokens": 1765,
-        "output_tokens": 144,
-        "latency_ms": 3582.4,
-        "estimated_cost_usd": 0.0009364
+        "input_tokens": 1773,
+        "output_tokens": 88,
+        "latency_ms": 2642.8,
+        "estimated_cost_usd": 0.00085
       },
       "workflow_error": null
     },
@@ -146,23 +139,22 @@
         "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "No risk signals are present: account age is well above 30 days, payee is not new, transaction amount is not unusually high, transaction velocity is low, and no suspicious network links detected.",
-        "Cross-border activity is not present as origin and destination countries are the same (GB).",
-        "Deterministic risk assessment indicates LOW risk level with no investigation needed.",
-        "Graph analysis and relationship anomaly show no suspicious or anomalous behavior."
+        "No risk signals present: account is old, payee is not new, amount not unusually high, low transaction velocity, no suspicious network links.",
+        "Cross-border policy DEMO-AML-004 reviewed but not applicable as transaction is domestic."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2540.4417000245303,
-      "estimated_cost_usd": 0.0009384,
+      "latency_ms": 2147.369100013748,
+      "estimated_cost_usd": 0.0008808,
       "completed": true,
-      "investigation_id": "05600856-8049-4eeb-ac1b-da08606a660b",
+      "investigation_id": "c411a4a2-8e6d-449e-b65c-464d521f0730",
       "llm_usage": {
-        "input_tokens": 1766,
-        "output_tokens": 145,
-        "latency_ms": 2136.9,
-        "estimated_cost_usd": 0.0009384
+        "input_tokens": 1774,
+        "output_tokens": 107,
+        "latency_ms": 1713.5,
+        "estimated_cost_usd": 0.0008808
       },
       "workflow_error": null
     },
@@ -190,32 +182,27 @@
       "routing_rule_fired": "automatic_completion_criteria_met",
       "policy_references": [],
       "policies_considered": [
-        "DEMO-AML-001",
         "DEMO-AML-004",
-        "DEMO-AML-019"
+        "DEMO-AML-019",
+        "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is 780 days, so not a young account.",
-        "The payee is not new.",
-        "Transaction amount (450.0) is not more than 5 times the average transaction amount (100.0).",
-        "Number of transactions in last 24 hours is 3, which is not high velocity.",
-        "Graph analysis shows no suspicious signals or network links.",
-        "Origin and destination countries are the same (GB), so no cross-border concern.",
-        "Deterministic risk assessment is LOW risk level.",
-        "No risk signals present, so the transaction is clear."
+        "No risk signals present: account is old, payee is not new, amount is not unusually high, velocity is low, no network link.",
+        "Cross-border policy DEMO-AML-004 reviewed but not applicable as transaction is domestic."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 3168.5231998562813,
-      "estimated_cost_usd": 0.000976,
+      "latency_ms": 2177.967600058764,
+      "estimated_cost_usd": 0.0008800000000000001,
       "completed": true,
-      "investigation_id": "c689311d-09bf-41d0-b205-fb64cf81854c",
+      "investigation_id": "267c041c-27ad-4980-a996-fdd4cafc9e87",
       "llm_usage": {
-        "input_tokens": 1764,
-        "output_tokens": 169,
-        "latency_ms": 2230.4,
-        "estimated_cost_usd": 0.000976
+        "input_tokens": 1772,
+        "output_tokens": 107,
+        "latency_ms": 1456.6,
+        "estimated_cost_usd": 0.0008800000000000001
       },
       "workflow_error": null
     },
@@ -238,7 +225,7 @@
         "DEMO-AML-001"
       ],
       "signal_included_policy_ids": [],
-      "confidence": 1.0,
+      "confidence": 0.95,
       "evidence_sufficient": true,
       "routing_rule_fired": "automatic_completion_criteria_met",
       "policy_references": [],
@@ -248,20 +235,21 @@
         "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "No risk signals are present: account age is 640 days (not young), payee is not new, amount is 5 times average (not greater), transactions in last 24h are 4 (not high velocity), and no network link signals."
+        "No risk signals triggered: account age >30 days, not a new payee, amount not unusual, low transaction velocity, no network link."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2223.656899994239,
-      "estimated_cost_usd": 0.0008816000000000001,
+      "latency_ms": 1682.7120000962168,
+      "estimated_cost_usd": 0.0008512000000000001,
       "completed": true,
-      "investigation_id": "5a99e026-5a24-47ab-aa37-6e9a732ef5a6",
+      "investigation_id": "d4b66cc6-c5fc-4e81-9ecc-ec5815f78f4d",
       "llm_usage": {
-        "input_tokens": 1764,
-        "output_tokens": 110,
-        "latency_ms": 1968.2,
-        "estimated_cost_usd": 0.0008816000000000001
+        "input_tokens": 1772,
+        "output_tokens": 89,
+        "latency_ms": 1431.7,
+        "estimated_cost_usd": 0.0008512000000000001
       },
       "workflow_error": null
     },
@@ -289,37 +277,36 @@
       "routing_rule_fired": "automatic_completion_criteria_met",
       "policy_references": [],
       "policies_considered": [
-        "DEMO-AML-001",
         "DEMO-AML-004",
-        "DEMO-AML-019"
+        "DEMO-AML-019",
+        "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "No risk signals are present: account age is exactly 30 days (not less than 30), new_payee is false, amount is not greater than 5 times average transaction amount, transactions in last 24h are low, and no suspicious network links.",
-        "Cross-border activity is not present as origin and destination countries are the same (GB).",
-        "Deterministic risk assessment is LOW risk level with no investigation needed.",
-        "Graph analysis and relationship anomaly show no suspicious signals or anomalies."
+        "No risk signals triggered: account age is 30 days, payee is not new, amount is not unusual, low transaction velocity, no network link.",
+        "Cross-border policy DEMO-AML-004 reviewed but not applicable as origin and destination countries are the same."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2272.224900079891,
-      "estimated_cost_usd": 0.0009568000000000001,
+      "latency_ms": 1978.5787998698652,
+      "estimated_cost_usd": 0.0008896000000000002,
       "completed": true,
-      "investigation_id": "32ede506-421c-4e34-90d3-9a461ace1787",
+      "investigation_id": "0dd5389d-fe73-42b3-8d1d-fc7a2712c015",
       "llm_usage": {
-        "input_tokens": 1764,
-        "output_tokens": 157,
-        "latency_ms": 2012.3,
-        "estimated_cost_usd": 0.0009568000000000001
+        "input_tokens": 1772,
+        "output_tokens": 113,
+        "latency_ms": 1717.9,
+        "estimated_cost_usd": 0.0008896000000000002
       },
       "workflow_error": null
     },
     {
       "name": "ten routine payments in one day",
       "expected_recommendation": "CLEAR",
-      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "CLEAR",
       "expected_requires_human_review": false,
-      "actual_requires_human_review": true,
+      "actual_requires_human_review": false,
       "expected_policy_ids": [],
       "actual_policy_ids": [],
       "retrieved_policy_ids": [
@@ -333,26 +320,32 @@
         "DEMO-AML-001"
       ],
       "signal_included_policy_ids": [],
-      "confidence": 0.0,
-      "evidence_sufficient": false,
-      "routing_rule_fired": "assessment_confidence_below_threshold",
+      "confidence": 0.95,
+      "evidence_sufficient": true,
+      "routing_rule_fired": "automatic_completion_criteria_met",
       "policy_references": [],
-      "policies_considered": [],
-      "rejected_citations": [],
-      "llm_reasons": [
-        "AI assessment failed; human review is required."
+      "policies_considered": [
+        "DEMO-AML-004",
+        "DEMO-AML-019",
+        "DEMO-AML-001"
       ],
-      "llm_fallback_used": true,
-      "fallback_reason": "ValidationError: 1 validation error for PolicyAssessment\nreasons.0\n  String should have at most 256 characters [type=string_too_long, input_value='No risk signals are pres...uspicious network link.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/string_too_long",
-      "latency_ms": 2771.8028998933733,
-      "estimated_cost_usd": 0.000952,
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "No risk signals present: account is old, payee is not new, amount is not unusual, velocity is at threshold but not over, no network link.",
+        "Cross-border policy DEMO-AML-004 reviewed but not applicable as transaction is domestic."
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 1999.706899980083,
+      "estimated_cost_usd": 0.0008848,
       "completed": true,
-      "investigation_id": "242b3da8-8525-45bf-a691-b518bb0caf8c",
+      "investigation_id": "76a1b4f5-d7be-417e-82ab-1b1d01316721",
       "llm_usage": {
-        "input_tokens": 1764,
-        "output_tokens": 154,
-        "latency_ms": 2463.5,
-        "estimated_cost_usd": 0.000952
+        "input_tokens": 1772,
+        "output_tokens": 110,
+        "latency_ms": 1726.6,
+        "estimated_cost_usd": 0.0008848
       },
       "workflow_error": null
     },
@@ -375,7 +368,7 @@
         "DEMO-AML-001"
       ],
       "signal_included_policy_ids": [],
-      "confidence": 1.0,
+      "confidence": 0.95,
       "evidence_sufficient": true,
       "routing_rule_fired": "automatic_completion_criteria_met",
       "policy_references": [],
@@ -385,23 +378,22 @@
         "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "No risk signals are present: account age is 1750 days (not young), payee is not new, amount is not unusually large, transaction velocity is low, and no suspicious network links detected.",
-        "Cross-border activity is not present as origin and destination countries are the same (GB).",
-        "Deterministic risk assessment is LOW risk level with no investigation needed.",
-        "Graph analysis and relationship anomaly show no suspicious signals."
+        "No risk signals present: account is old, payee is not new, amount is not unusual, low transaction velocity, no network link.",
+        "Cross-border policy DEMO-AML-004 reviewed but not applicable as transaction is domestic."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 1905.7964999228716,
-      "estimated_cost_usd": 0.0009316,
+      "latency_ms": 1991.5738001000136,
+      "estimated_cost_usd": 0.0008788000000000001,
       "completed": true,
-      "investigation_id": "9717abe5-3cbc-45ea-8951-0bebc382161e",
+      "investigation_id": "4ea66963-1ca0-4f33-9639-f618ec1c1a6b",
       "llm_usage": {
-        "input_tokens": 1765,
-        "output_tokens": 141,
-        "latency_ms": 1628.4,
-        "estimated_cost_usd": 0.0009316
+        "input_tokens": 1773,
+        "output_tokens": 106,
+        "latency_ms": 1744.4,
+        "estimated_cost_usd": 0.0008788000000000001
       },
       "workflow_error": null
     },
@@ -424,33 +416,32 @@
         "DEMO-AML-001"
       ],
       "signal_included_policy_ids": [],
-      "confidence": 1.0,
+      "confidence": 0.95,
       "evidence_sufficient": true,
       "routing_rule_fired": "automatic_completion_criteria_met",
       "policy_references": [],
       "policies_considered": [
-        "DEMO-AML-001",
         "DEMO-AML-004",
-        "DEMO-AML-019"
+        "DEMO-AML-019",
+        "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "No risk signals are present: account age is well over 30 days, payee is not new, transaction amount is not unusually high, transaction velocity is moderate, and no suspicious network links detected.",
-        "Cross-border activity is not present as origin and destination countries are the same (GB).",
-        "Deterministic risk assessment indicates LOW risk level with no investigation needed.",
-        "Graph analysis and relationship anomaly show no suspicious signals or anomalies."
+        "No risk signals present: account is old, payee is not new, amount not unusually high, velocity normal, no network link.",
+        "Cross-border policy DEMO-AML-004 reviewed but not applicable as transaction is domestic."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2190.809200052172,
-      "estimated_cost_usd": 0.0009340000000000002,
+      "latency_ms": 1920.6211001146585,
+      "estimated_cost_usd": 0.000878,
       "completed": true,
-      "investigation_id": "27847a04-73df-4f69-acbb-7d25d8656bbb",
+      "investigation_id": "c73f5d22-27aa-40be-ab58-349559d57361",
       "llm_usage": {
-        "input_tokens": 1767,
-        "output_tokens": 142,
-        "latency_ms": 1944.6,
-        "estimated_cost_usd": 0.0009340000000000002
+        "input_tokens": 1775,
+        "output_tokens": 105,
+        "latency_ms": 1472.9,
+        "estimated_cost_usd": 0.000878
       },
       "workflow_error": null
     },
@@ -483,23 +474,22 @@
         "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "No risk signals are present: account age is 3650 days (not young), payee is not new, transaction amount is not unusually high (300 is not > 5x average 275), transaction count in last 24h is 2 (not >10), and no suspicious network links detected.",
-        "Cross-border activity is not present as origin and destination countries are the same (GB).",
-        "Deterministic risk assessment is LOW risk level with no investigation needed.",
-        "Graph analysis and relationship anomaly show no suspicious signals or anomalies."
+        "No risk signals triggered: account is old, payee is not new, amount is not unusually high, velocity is low, no network link.",
+        "Cross-border policy DEMO-AML-004 reviewed but not applicable as origin and destination countries are the same."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2211.1359001137316,
-      "estimated_cost_usd": 0.0009732,
+      "latency_ms": 1947.4185998551548,
+      "estimated_cost_usd": 0.0008868000000000001,
       "completed": true,
-      "investigation_id": "87f7b8c4-edfb-487f-b946-1108851cc813",
+      "investigation_id": "92a2a182-67e9-40ce-a43a-dc81acb6bf80",
       "llm_usage": {
-        "input_tokens": 1765,
-        "output_tokens": 167,
-        "latency_ms": 1962.2,
-        "estimated_cost_usd": 0.0009732
+        "input_tokens": 1773,
+        "output_tokens": 111,
+        "latency_ms": 1432.4,
+        "estimated_cost_usd": 0.0008868000000000001
       },
       "workflow_error": null
     },
@@ -527,28 +517,27 @@
       "routing_rule_fired": "automatic_completion_criteria_met",
       "policy_references": [],
       "policies_considered": [
-        "DEMO-AML-001",
         "DEMO-AML-004",
-        "DEMO-AML-019"
+        "DEMO-AML-019",
+        "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "No risk signals are present: account age is 825 days (not young), payee is not new, amount is not unusually large (200 <= 5x average 180), only 1 transaction in last 24h (no high velocity), and no network link signals detected.",
-        "Cross-border activity is not present as origin and destination countries are both GB, so no additional risk signal from geography.",
-        "Deterministic risk assessment is LOW risk, supporting a clear decision.",
-        "Graph analysis and relationship anomaly show no suspicious or anomalous indicators."
+        "No risk signals triggered: account is old, payee is not new, amount is not unusual, low transaction velocity, no network link.",
+        "Cross-border policy DEMO-AML-004 reviewed but not applicable as transaction is domestic."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2001.644599949941,
-      "estimated_cost_usd": 0.0009744,
+      "latency_ms": 1922.703499905765,
+      "estimated_cost_usd": 0.0008784000000000001,
       "completed": true,
-      "investigation_id": "7f08c8da-c675-4b18-912d-a901c921671c",
+      "investigation_id": "1b14e963-fce7-4b9b-8540-2be64c19eb0f",
       "llm_usage": {
-        "input_tokens": 1764,
-        "output_tokens": 168,
-        "latency_ms": 1769.1,
-        "estimated_cost_usd": 0.0009744
+        "input_tokens": 1772,
+        "output_tokens": 106,
+        "latency_ms": 1641.2,
+        "estimated_cost_usd": 0.0008784000000000001
       },
       "workflow_error": null
     },
@@ -576,28 +565,27 @@
       "routing_rule_fired": "automatic_completion_criteria_met",
       "policy_references": [],
       "policies_considered": [
-        "DEMO-AML-001",
         "DEMO-AML-004",
-        "DEMO-AML-019"
+        "DEMO-AML-019",
+        "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "No risk signals are present: account age is well above 30 days, payee is not new, transaction amount is not unusually high, transaction velocity is low, and no suspicious network links detected.",
-        "Cross-border activity is not present as origin and destination countries are the same (GB).",
-        "Deterministic risk assessment indicates LOW risk level with no investigation needed.",
-        "Graph analysis and relationship anomaly show no suspicious signals or anomalies."
+        "No risk signals triggered: account is old, payee is not new, amount is not unusually high, velocity is low, no network link.",
+        "Cross-border policy DEMO-AML-004 is considered but not applicable as origin and destination countries are the same."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2014.5169000606984,
-      "estimated_cost_usd": 0.0009372,
+      "latency_ms": 1781.0152999591082,
+      "estimated_cost_usd": 0.0008892,
       "completed": true,
-      "investigation_id": "8d3e34c5-9c4d-4578-bc44-5d0de28d56a6",
+      "investigation_id": "a5d0ac3a-1fd0-4f7e-a0ed-2f7527fc02d3",
       "llm_usage": {
-        "input_tokens": 1767,
-        "output_tokens": 144,
-        "latency_ms": 1761.8,
-        "estimated_cost_usd": 0.0009372
+        "input_tokens": 1775,
+        "output_tokens": 112,
+        "latency_ms": 1488.4,
+        "estimated_cost_usd": 0.0008892
       },
       "workflow_error": null
     },
@@ -630,22 +618,22 @@
         "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "No risk signals are present: account age is well above 30 days, payee is not new, transaction amount is not unusually high, transaction velocity is low, and no suspicious network links detected.",
-        "Cross-border policy DEMO-AML-004 is retrieved but not applicable since origin and destination countries are the same (GB).",
-        "Deterministic risk assessment is LOW risk with no flags."
+        "No risk signals present: account is old, payee is not new, amount is not unusual, low transaction velocity, no network link.",
+        "Cross-border policy DEMO-AML-004 reviewed but not applicable as transaction is domestic."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2159.8779999185354,
-      "estimated_cost_usd": 0.0009268,
+      "latency_ms": 1722.863599890843,
+      "estimated_cost_usd": 0.0008788000000000001,
       "completed": true,
-      "investigation_id": "b1310062-74e2-427a-85df-8a0861decdc0",
+      "investigation_id": "d71e3cc7-64dd-4d51-a721-97486b700d1f",
       "llm_usage": {
-        "input_tokens": 1765,
-        "output_tokens": 138,
-        "latency_ms": 1908.1,
-        "estimated_cost_usd": 0.0009268
+        "input_tokens": 1773,
+        "output_tokens": 106,
+        "latency_ms": 1466.9,
+        "estimated_cost_usd": 0.0008788000000000001
       },
       "workflow_error": null
     },
@@ -678,23 +666,22 @@
         "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "No risk signals are present: account age is 2900 days (not young), payee is not new, amount is not unusually high (18.5 <= 5x average 55.0), transactions in last 24h are 6 (not high velocity), and no suspicious network links detected.",
-        "Cross-border activity is not present as origin and destination countries are both GB.",
-        "Deterministic risk assessment is LOW risk with no investigation needed.",
-        "Graph analysis and relationship anomaly show no suspicious signals."
+        "No risk signals present: account is old, payee is not new, amount is not unusual, velocity is low, no network link.",
+        "Cross-border context present but origin and destination countries are the same, so no cross-border risk."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2503.5451999865472,
-      "estimated_cost_usd": 0.0009636,
+      "latency_ms": 1817.4312999472022,
+      "estimated_cost_usd": 0.0008804,
       "completed": true,
-      "investigation_id": "57922b3c-0e58-461f-8408-fe1e98880022",
+      "investigation_id": "33f11ec1-241a-4e25-bd1d-d6d302785e89",
       "llm_usage": {
-        "input_tokens": 1765,
-        "output_tokens": 161,
-        "latency_ms": 2007.4,
-        "estimated_cost_usd": 0.0009636
+        "input_tokens": 1773,
+        "output_tokens": 107,
+        "latency_ms": 1575.3,
+        "estimated_cost_usd": 0.0008804
       },
       "workflow_error": null
     },
@@ -727,21 +714,21 @@
         "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "No risk signals are present: account age is 510 days (not young), payee is not new, amount is not unusually high (760 is less than 5 times average 650), transaction count in last 24h is 2 (not high velocity), and no suspicious network links detected.",
-        "Cross-border activity is not present as origin and destination countries are both GB, so no additional risk signal from geography."
+        "No risk signals triggered: account age >30 days, not a new payee, amount not unusually high, low transaction velocity, no network link."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 1988.1890998221934,
-      "estimated_cost_usd": 0.000936,
+      "latency_ms": 1696.0592998657376,
+      "estimated_cost_usd": 0.0008528,
       "completed": true,
-      "investigation_id": "152b8ddb-351d-449b-af38-e6f235550496",
+      "investigation_id": "5e34c22f-fa21-4c11-8c97-51041356572b",
       "llm_usage": {
-        "input_tokens": 1764,
-        "output_tokens": 144,
-        "latency_ms": 1739.2,
-        "estimated_cost_usd": 0.000936
+        "input_tokens": 1772,
+        "output_tokens": 90,
+        "latency_ms": 1444.4,
+        "estimated_cost_usd": 0.0008528
       },
       "workflow_error": null
     },
@@ -764,33 +751,32 @@
         "DEMO-AML-001"
       ],
       "signal_included_policy_ids": [],
-      "confidence": 1.0,
+      "confidence": 0.95,
       "evidence_sufficient": true,
       "routing_rule_fired": "automatic_completion_criteria_met",
       "policy_references": [],
       "policies_considered": [
-        "DEMO-AML-001",
         "DEMO-AML-004",
-        "DEMO-AML-019"
+        "DEMO-AML-019",
+        "DEMO-AML-001"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "No risk signals are present: account age is well over 30 days, payee is not new, transaction amount is not unusually high, transaction velocity is below threshold, and no suspicious network links detected.",
-        "Cross-border policy DEMO-AML-004 is retrieved but not applicable since origin and destination countries are the same (GB).",
-        "Deterministic risk assessment is LOW risk with no investigation needed.",
-        "Graph analysis and relationship anomaly show no suspicious signals."
+        "No risk signals present: account is old, payee is not new, amount is not unusually high, velocity is moderate, no network link.",
+        "Cross-border policy DEMO-AML-004 reviewed but not applicable as transaction is domestic."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2043.72310009785,
-      "estimated_cost_usd": 0.0009427999999999999,
+      "latency_ms": 2089.2036000732332,
+      "estimated_cost_usd": 0.0008804,
       "completed": true,
-      "investigation_id": "b25ceed3-ac51-4f7c-8900-e80b5c549c32",
+      "investigation_id": "8ed80120-8237-4456-adb9-f096c25c69ac",
       "llm_usage": {
-        "input_tokens": 1765,
-        "output_tokens": 148,
-        "latency_ms": 1786.8,
-        "estimated_cost_usd": 0.0009427999999999999
+        "input_tokens": 1773,
+        "output_tokens": 107,
+        "latency_ms": 1654.6,
+        "estimated_cost_usd": 0.0008804
       },
       "workflow_error": null
     },
@@ -835,24 +821,25 @@
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days (YOUNG_ACCOUNT).",
-        "The payee is new (NEW_PAYEE).",
-        "Transaction amount is more than five times the average (UNUSUAL_AMOUNT).",
-        "Combination of NEW_PAYEE and UNUSUAL_AMOUNT triggers escalation.",
-        "Deterministic risk assessment indicates HIGH risk level."
+        "Account is less than 30 days old (YOUNG_ACCOUNT)",
+        "Transaction is to a new payee (NEW_PAYEE)",
+        "Transaction amount is more than 5x average (UNUSUAL_AMOUNT)",
+        "Combination of NEW_PAYEE and UNUSUAL_AMOUNT triggers escalation",
+        "Deterministic risk assessment is HIGH"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 1965.5989999882877,
-      "estimated_cost_usd": 0.0009308000000000001,
+      "latency_ms": 1989.437900017947,
+      "estimated_cost_usd": 0.0009340000000000002,
       "completed": true,
-      "investigation_id": "12b3a498-1c23-4f84-a0bf-680f64f32526",
+      "investigation_id": "ad2995a7-f305-45ac-b6e4-b4d24bf69392",
       "llm_usage": {
-        "input_tokens": 1803,
+        "input_tokens": 1811,
         "output_tokens": 131,
-        "latency_ms": 1729.4,
-        "estimated_cost_usd": 0.0009308000000000001
+        "latency_ms": 1734.2,
+        "estimated_cost_usd": 0.0009340000000000002
       },
       "workflow_error": null
     },
@@ -871,8 +858,7 @@
       "actual_policy_ids": [
         "DEMO-AML-001",
         "DEMO-AML-006",
-        "DEMO-AML-005",
-        "DEMO-AML-004"
+        "DEMO-AML-005"
       ],
       "retrieved_policy_ids": [
         "DEMO-AML-001",
@@ -897,30 +883,30 @@
       "policy_references": [
         "DEMO-AML-001",
         "DEMO-AML-006",
-        "DEMO-AML-005",
+        "DEMO-AML-005"
+      ],
+      "policies_considered": [
         "DEMO-AML-004"
       ],
-      "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days (YOUNG_ACCOUNT).",
-        "The payee is new (NEW_PAYEE).",
-        "Transaction amount is more than five times the average (UNUSUAL_AMOUNT).",
-        "Combination of NEW_PAYEE and UNUSUAL_AMOUNT triggers escalation.",
-        "Deterministic risk assessment indicates HIGH risk level.",
-        "Cross-border transaction context noted but not a risk signal by itself."
+        "Account is less than 30 days old (YOUNG_ACCOUNT)",
+        "Transaction is to a new payee (NEW_PAYEE)",
+        "Transaction amount is more than 5x average (UNUSUAL_AMOUNT)",
+        "Deterministic risk assessment is HIGH"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2191.6649998165667,
-      "estimated_cost_usd": 0.0010364,
+      "latency_ms": 2055.3395999595523,
+      "estimated_cost_usd": 0.000998,
       "completed": true,
-      "investigation_id": "2d6ba93f-8191-4763-a172-aa1871ef3b3c",
+      "investigation_id": "bf7612b3-051e-45c0-88bb-a9cee16f28dc",
       "llm_usage": {
-        "input_tokens": 1987,
-        "output_tokens": 151,
-        "latency_ms": 1950.1,
-        "estimated_cost_usd": 0.0010364
+        "input_tokens": 1995,
+        "output_tokens": 125,
+        "latency_ms": 1718.9,
+        "estimated_cost_usd": 0.000998
       },
       "workflow_error": null
     },
@@ -965,24 +951,25 @@
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days (YOUNG_ACCOUNT).",
-        "Transaction amount is more than 5 times the average (UNUSUAL_AMOUNT).",
-        "More than 10 transactions in the last 24 hours (HIGH_VELOCITY).",
-        "No network link detected, but multiple other risk signals present.",
-        "Deterministic risk assessment indicates HIGH risk level."
+        "Account is young (14 days)",
+        "Transaction amount is unusually high (9x average)",
+        "High velocity with 13 transactions in last 24h",
+        "No network link but multiple risk signals present",
+        "Deterministic risk assessment is HIGH"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2148.64999987185,
-      "estimated_cost_usd": 0.0009476,
+      "latency_ms": 1936.0988000407815,
+      "estimated_cost_usd": 0.0009108,
       "completed": true,
-      "investigation_id": "91a6daba-c2ac-4501-9205-75253814a5d3",
+      "investigation_id": "94b575d4-4cb6-48b7-9c74-5b1bb99b582a",
       "llm_usage": {
-        "input_tokens": 1813,
-        "output_tokens": 139,
-        "latency_ms": 1798.7,
-        "estimated_cost_usd": 0.0009476
+        "input_tokens": 1821,
+        "output_tokens": 114,
+        "latency_ms": 1702.0,
+        "estimated_cost_usd": 0.0009108
       },
       "workflow_error": null
     },
@@ -1032,22 +1019,23 @@
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "There are three risk signals present: NEW_PAYEE, UNUSUAL_AMOUNT, and HIGH_VELOCITY.",
-        "The combination of NEW_PAYEE and UNUSUAL_AMOUNT triggers escalation to human review.",
-        "The deterministic risk assessment indicates a HIGH risk level, supporting the need for escalation."
+        "Two or more risk signals present: NEW_PAYEE, UNUSUAL_AMOUNT, and HIGH_VELOCITY",
+        "Deterministic risk assessment risk_level is HIGH",
+        "Cross-border activity absent, but multiple risk signals require escalation"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2238.2042999379337,
-      "estimated_cost_usd": 0.0010256000000000002,
+      "latency_ms": 2395.1695000287145,
+      "estimated_cost_usd": 0.0009888,
       "completed": true,
-      "investigation_id": "f935ac95-1a72-4cd9-b8e2-63ef0a3d2ee8",
+      "investigation_id": "33330a41-4b31-4ac7-a4b8-32442bb70e70",
       "llm_usage": {
-        "input_tokens": 1992,
-        "output_tokens": 143,
-        "latency_ms": 1974.1,
-        "estimated_cost_usd": 0.0010256000000000002
+        "input_tokens": 2000,
+        "output_tokens": 118,
+        "latency_ms": 2107.0,
+        "estimated_cost_usd": 0.0009888
       },
       "workflow_error": null
     },
@@ -1097,25 +1085,24 @@
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days (YOUNG_ACCOUNT).",
-        "Transaction is to a new payee (NEW_PAYEE).",
-        "Transaction amount is more than five times the average (UNUSUAL_AMOUNT).",
-        "More than 10 transactions in the last 24 hours (HIGH_VELOCITY).",
-        "Multiple risk signals present, including NEW_PAYEE with UNUSUAL_AMOUNT, triggering escalation.",
-        "Deterministic risk assessment indicates HIGH risk level, supporting escalation."
+        "Account is young (7 days)",
+        "New payee involved",
+        "Transaction amount unusually high (12500 > 5x avg)",
+        "High velocity: 16 transactions in last 24h"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2245.0733999721706,
-      "estimated_cost_usd": 0.0010876000000000002,
+      "latency_ms": 2317.849999992177,
+      "estimated_cost_usd": 0.0009804000000000002,
       "completed": true,
-      "investigation_id": "f8e986e2-7a67-4080-98ec-ae907f5b77e5",
+      "investigation_id": "be12a5c4-1efc-4877-bfd8-e372a0b919d4",
       "llm_usage": {
-        "input_tokens": 2003,
-        "output_tokens": 179,
-        "latency_ms": 1988.4,
-        "estimated_cost_usd": 0.0010876000000000002
+        "input_tokens": 2011,
+        "output_tokens": 110,
+        "latency_ms": 1949.1,
+        "estimated_cost_usd": 0.0009804000000000002
       },
       "workflow_error": null
     },
@@ -1134,8 +1121,7 @@
       "actual_policy_ids": [
         "DEMO-AML-001",
         "DEMO-AML-006",
-        "DEMO-AML-005",
-        "DEMO-AML-004"
+        "DEMO-AML-005"
       ],
       "retrieved_policy_ids": [
         "DEMO-AML-001",
@@ -1160,30 +1146,30 @@
       "policy_references": [
         "DEMO-AML-001",
         "DEMO-AML-006",
-        "DEMO-AML-005",
+        "DEMO-AML-005"
+      ],
+      "policies_considered": [
         "DEMO-AML-004"
       ],
-      "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "The account is young (19 days old), triggering the YOUNG_ACCOUNT signal.",
-        "The payee is new, triggering the NEW_PAYEE signal.",
-        "The transaction amount (5600.0) is more than 5 times the average transaction amount (700.0), triggering the UNUSUAL_AMOUNT signal.",
-        "There are three risk signals present, which requires escalation to human review.",
-        "The deterministic risk assessment also indicates a HIGH risk level, supporting escalation.",
-        "The transaction is cross-border (GB to DE), which requires contextual review but is not a risk signal by itself."
+        "Account is less than 30 days old (YOUNG_ACCOUNT)",
+        "Transaction is to a new payee (NEW_PAYEE)",
+        "Transaction amount is more than 5x average (UNUSUAL_AMOUNT)",
+        "Deterministic risk assessment is HIGH"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2427.118099993095,
-      "estimated_cost_usd": 0.0010924,
+      "latency_ms": 2565.9944000653923,
+      "estimated_cost_usd": 0.000998,
       "completed": true,
-      "investigation_id": "9c73d358-d8fd-47b0-92fc-0ddabc42c0b8",
+      "investigation_id": "88250ef6-80ec-415e-ac16-06eec5a0e8bc",
       "llm_usage": {
-        "input_tokens": 1987,
-        "output_tokens": 186,
-        "latency_ms": 2188.6,
-        "estimated_cost_usd": 0.0010924
+        "input_tokens": 1995,
+        "output_tokens": 125,
+        "latency_ms": 2320.2,
+        "estimated_cost_usd": 0.000998
       },
       "workflow_error": null
     },
@@ -1228,23 +1214,24 @@
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days (YOUNG_ACCOUNT).",
-        "Transaction amount is more than 5 times the average (UNUSUAL_AMOUNT).",
-        "Number of transactions in the last 24 hours exceeds 10 (HIGH_VELOCITY).",
-        "Deterministic risk assessment indicates HIGH risk level."
+        "Account is young (5 days)",
+        "Transaction amount is unusually high (4100 > 5x average 500)",
+        "High velocity with 21 transactions in last 24h",
+        "No network link but multiple risk signals present"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2131.063000066206,
-      "estimated_cost_usd": 0.0009632,
+      "latency_ms": 1691.364899976179,
+      "estimated_cost_usd": 0.0009072,
       "completed": true,
-      "investigation_id": "e4deb2c8-69f8-4cb2-a2f8-a5e4696ca055",
+      "investigation_id": "79fcd8a5-0a6c-43a1-b6f4-1bedda1200dd",
       "llm_usage": {
-        "input_tokens": 1812,
-        "output_tokens": 149,
-        "latency_ms": 1847.6,
-        "estimated_cost_usd": 0.0009632
+        "input_tokens": 1820,
+        "output_tokens": 112,
+        "latency_ms": 1442.7,
+        "estimated_cost_usd": 0.0009072
       },
       "workflow_error": null
     },
@@ -1263,8 +1250,8 @@
       "actual_policy_ids": [
         "DEMO-AML-001",
         "DEMO-AML-002",
-        "DEMO-AML-006",
-        "DEMO-AML-005"
+        "DEMO-AML-005",
+        "DEMO-AML-006"
       ],
       "retrieved_policy_ids": [
         "DEMO-AML-001",
@@ -1289,27 +1276,28 @@
       "policy_references": [
         "DEMO-AML-001",
         "DEMO-AML-002",
-        "DEMO-AML-006",
-        "DEMO-AML-005"
+        "DEMO-AML-005",
+        "DEMO-AML-006"
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "There are three risk signals present: NEW_PAYEE, UNUSUAL_AMOUNT, and HIGH_VELOCITY.",
-        "The combination of NEW_PAYEE and UNUSUAL_AMOUNT triggers escalation to human review.",
-        "The deterministic risk assessment risk level is HIGH, supporting the need for escalation."
+        "Two risk signals present: NEW_PAYEE and HIGH_VELOCITY",
+        "Transaction amount is unusually high (UNUSUAL_AMOUNT) and new payee present",
+        "Deterministic risk assessment level is HIGH"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 1932.346299989149,
-      "estimated_cost_usd": 0.0010244000000000002,
+      "latency_ms": 1909.1970000881702,
+      "estimated_cost_usd": 0.0009828,
       "completed": true,
-      "investigation_id": "643bc4e5-a002-4bc2-aa5d-cd883afc1d1f",
+      "investigation_id": "fe558cba-2f7c-4247-83ad-a21e0b11771b",
       "llm_usage": {
-        "input_tokens": 1993,
-        "output_tokens": 142,
-        "latency_ms": 1703.9,
-        "estimated_cost_usd": 0.0010244000000000002
+        "input_tokens": 2001,
+        "output_tokens": 114,
+        "latency_ms": 1666.2,
+        "estimated_cost_usd": 0.0009828
       },
       "workflow_error": null
     },
@@ -1348,7 +1336,7 @@
         "DEMO-AML-005",
         "DEMO-AML-006"
       ],
-      "confidence": 0.95,
+      "confidence": 1.0,
       "evidence_sufficient": true,
       "routing_rule_fired": "high_risk_requires_human_review",
       "policy_references": [
@@ -1359,25 +1347,25 @@
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days (YOUNG_ACCOUNT).",
-        "The payee is new (NEW_PAYEE).",
-        "Transaction amount is more than 5 times the average (UNUSUAL_AMOUNT).",
-        "There are more than 10 transactions in the last 24 hours (HIGH_VELOCITY).",
-        "Combination of NEW_PAYEE and UNUSUAL_AMOUNT triggers escalation.",
-        "Multiple risk signals present (4 signals)."
+        "Account is young (2 days)",
+        "New payee involved",
+        "Transaction amount unusually high (10x average)",
+        "High velocity with 25 transactions in 24h",
+        "No network link but multiple risk signals present"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2938.3024000562727,
-      "estimated_cost_usd": 0.001078,
+      "latency_ms": 1672.4492001812905,
+      "estimated_cost_usd": 0.0009868000000000001,
       "completed": true,
-      "investigation_id": "f8b59652-2ab0-4b63-93d2-cf2f4144a8b1",
+      "investigation_id": "66d14034-e66e-4161-9638-88b24228e0f7",
       "llm_usage": {
-        "input_tokens": 2003,
-        "output_tokens": 173,
-        "latency_ms": 2697.0,
-        "estimated_cost_usd": 0.001078
+        "input_tokens": 2011,
+        "output_tokens": 114,
+        "latency_ms": 1423.4,
+        "estimated_cost_usd": 0.0009868000000000001
       },
       "workflow_error": null
     },
@@ -1427,24 +1415,24 @@
         "DEMO-AML-004"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "The account is young (21 days old), triggering the YOUNG_ACCOUNT signal.",
-        "The payee is new, triggering the NEW_PAYEE signal.",
-        "The transaction amount (3500.0) is more than 5 times the average transaction amount (450.0), triggering the UNUSUAL_AMOUNT signal.",
-        "There are three risk signals present, which requires escalation to human review.",
-        "The deterministic risk assessment also indicates a HIGH risk level, supporting escalation."
+        "Account is less than 30 days old (YOUNG_ACCOUNT)",
+        "Transaction is to a new payee (NEW_PAYEE)",
+        "Transaction amount is more than 5x average (UNUSUAL_AMOUNT)",
+        "Deterministic risk assessment is HIGH"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2411.2996000330895,
-      "estimated_cost_usd": 0.0010556,
+      "latency_ms": 2142.90350000374,
+      "estimated_cost_usd": 0.000998,
       "completed": true,
-      "investigation_id": "d2e8c149-6385-4042-9d0b-6271f9dd53e9",
+      "investigation_id": "40a46bbb-d425-43ad-8f67-145c9ecb4f8d",
       "llm_usage": {
-        "input_tokens": 1987,
-        "output_tokens": 163,
-        "latency_ms": 2179.1,
-        "estimated_cost_usd": 0.0010556
+        "input_tokens": 1995,
+        "output_tokens": 125,
+        "latency_ms": 1892.3,
+        "estimated_cost_usd": 0.000998
       },
       "workflow_error": null
     },
@@ -1489,24 +1477,23 @@
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days (YOUNG_ACCOUNT).",
-        "Transaction amount is more than 5 times the average (UNUSUAL_AMOUNT).",
-        "Number of transactions in the last 24 hours exceeds 10 (HIGH_VELOCITY).",
-        "There are 3 risk signals present, which requires escalation to human review.",
-        "The deterministic risk assessment risk level is HIGH, supporting escalation."
+        "Account is young (27 days)",
+        "Transaction amount is unusually high (6800 > 5x average 900)",
+        "High velocity with 12 transactions in last 24h"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 1952.4864999111742,
-      "estimated_cost_usd": 0.0009568000000000001,
+      "latency_ms": 2332.2395000141114,
+      "estimated_cost_usd": 0.0008927999999999999,
       "completed": true,
-      "investigation_id": "ea342129-b10a-4ed1-89bf-c52567df2731",
+      "investigation_id": "20594c1e-df68-4184-a5e1-b21907fd184e",
       "llm_usage": {
-        "input_tokens": 1812,
-        "output_tokens": 145,
-        "latency_ms": 1664.7,
-        "estimated_cost_usd": 0.0009568000000000001
+        "input_tokens": 1820,
+        "output_tokens": 103,
+        "latency_ms": 1765.8,
+        "estimated_cost_usd": 0.0008927999999999999
       },
       "workflow_error": null
     },
@@ -1556,23 +1543,23 @@
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "The transaction has three risk signals: NEW_PAYEE, UNUSUAL_AMOUNT, and HIGH_VELOCITY.",
-        "NEW_PAYEE combined with UNUSUAL_AMOUNT triggers escalation to human review.",
-        "HIGH_VELOCITY alone also requires escalation.",
-        "The deterministic risk assessment indicates HIGH risk level, supporting escalation."
+        "Two risk signals present: NEW_PAYEE and HIGH_VELOCITY",
+        "UNUSUAL_AMOUNT also present with NEW_PAYEE triggers escalation",
+        "Deterministic risk assessment is HIGH risk level"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 1843.3230000082403,
-      "estimated_cost_usd": 0.0010328,
+      "latency_ms": 2102.3053999524564,
+      "estimated_cost_usd": 0.0009784000000000001,
       "completed": true,
-      "investigation_id": "4bb1db11-eb2f-430d-b034-ba44e5f5bcd8",
+      "investigation_id": "41aee264-021c-4dbb-8686-4b39d302873f",
       "llm_usage": {
-        "input_tokens": 1994,
-        "output_tokens": 147,
-        "latency_ms": 1584.1,
-        "estimated_cost_usd": 0.0010328
+        "input_tokens": 2002,
+        "output_tokens": 111,
+        "latency_ms": 1846.2,
+        "estimated_cost_usd": 0.0009784000000000001
       },
       "workflow_error": null
     },
@@ -1617,23 +1604,23 @@
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days (YOUNG_ACCOUNT).",
-        "Transaction amount is more than 5 times the average (UNUSUAL_AMOUNT).",
-        "Number of transactions in the last 24 hours exceeds 10 (HIGH_VELOCITY).",
-        "Deterministic risk assessment indicates HIGH risk level."
+        "Account is young (11 days)",
+        "Transaction amount is unusually high (2900 > 5x average 400)",
+        "High velocity with 17 transactions in last 24h"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2467.669100034982,
-      "estimated_cost_usd": 0.0009296000000000002,
+      "latency_ms": 1915.5922001227736,
+      "estimated_cost_usd": 0.0008927999999999999,
       "completed": true,
-      "investigation_id": "2c339728-c0b5-4f10-ae7b-87d9d379e7e4",
+      "investigation_id": "e44b6c57-bf1c-4c41-a9c3-4586d3e4a890",
       "llm_usage": {
-        "input_tokens": 1812,
-        "output_tokens": 128,
-        "latency_ms": 1996.8,
-        "estimated_cost_usd": 0.0009296000000000002
+        "input_tokens": 1820,
+        "output_tokens": 103,
+        "latency_ms": 1672.1,
+        "estimated_cost_usd": 0.0008927999999999999
       },
       "workflow_error": null
     },
@@ -1652,8 +1639,7 @@
       "actual_policy_ids": [
         "DEMO-AML-001",
         "DEMO-AML-006",
-        "DEMO-AML-005",
-        "DEMO-AML-004"
+        "DEMO-AML-005"
       ],
       "retrieved_policy_ids": [
         "DEMO-AML-001",
@@ -1678,29 +1664,30 @@
       "policy_references": [
         "DEMO-AML-001",
         "DEMO-AML-006",
-        "DEMO-AML-005",
+        "DEMO-AML-005"
+      ],
+      "policies_considered": [
         "DEMO-AML-004"
       ],
-      "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days (YOUNG_ACCOUNT).",
-        "Transaction is to a new payee (NEW_PAYEE).",
-        "Transaction amount is more than five times the average (UNUSUAL_AMOUNT).",
-        "Deterministic risk assessment indicates HIGH risk level.",
-        "Cross-border transaction from GB to ES provides context but is not a risk signal."
+        "Account is less than 30 days old (YOUNG_ACCOUNT)",
+        "Transaction is to a new payee (NEW_PAYEE)",
+        "Transaction amount is more than 5x average (UNUSUAL_AMOUNT)",
+        "Deterministic risk assessment is HIGH"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2047.482900088653,
-      "estimated_cost_usd": 0.0010236000000000002,
+      "latency_ms": 2269.5249000098556,
+      "estimated_cost_usd": 0.000998,
       "completed": true,
-      "investigation_id": "c95c0667-50b3-4f20-9a9b-83a55b718a44",
+      "investigation_id": "19caa4c2-151f-4cf3-b4f7-b2b0af4eaaf0",
       "llm_usage": {
-        "input_tokens": 1987,
-        "output_tokens": 143,
-        "latency_ms": 1775.7,
-        "estimated_cost_usd": 0.0010236000000000002
+        "input_tokens": 1995,
+        "output_tokens": 125,
+        "latency_ms": 2013.7,
+        "estimated_cost_usd": 0.000998
       },
       "workflow_error": null
     },
@@ -1739,7 +1726,7 @@
         "DEMO-AML-005",
         "DEMO-AML-006"
       ],
-      "confidence": 1.0,
+      "confidence": 0.95,
       "evidence_sufficient": true,
       "routing_rule_fired": "high_risk_requires_human_review",
       "policy_references": [
@@ -1750,25 +1737,28 @@
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [
+        "DEMO-AML-003",
+        "DEMO-AML-004"
+      ],
       "llm_reasons": [
-        "Account age is less than 30 days (YOUNG_ACCOUNT).",
-        "Transaction is to a new payee (NEW_PAYEE).",
-        "Transaction amount is more than five times the average (UNUSUAL_AMOUNT).",
-        "More than 10 transactions in the last 24 hours (HIGH_VELOCITY).",
-        "Multiple risk signals present including NEW_PAYEE and UNUSUAL_AMOUNT, triggering escalation.",
-        "No NETWORK_LINK signal present, but other conditions suffice for escalation."
+        "Account is young (4 days)",
+        "New payee involved",
+        "Transaction amount unusually high (22000 > 5x avg)",
+        "High velocity with 22 transactions in 24h",
+        "Multiple risk signals exceed threshold"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2262.8538999706507,
-      "estimated_cost_usd": 0.001086,
+      "latency_ms": 2324.183400021866,
+      "estimated_cost_usd": 0.0010140000000000001,
       "completed": true,
-      "investigation_id": "ab6450ac-db60-4eeb-adc9-493d546db31d",
+      "investigation_id": "32f197d0-9e68-4bff-91e1-4bab445f5139",
       "llm_usage": {
-        "input_tokens": 2003,
-        "output_tokens": 178,
-        "latency_ms": 2024.4,
-        "estimated_cost_usd": 0.001086
+        "input_tokens": 2011,
+        "output_tokens": 131,
+        "latency_ms": 2068.0,
+        "estimated_cost_usd": 0.0010140000000000001
       },
       "workflow_error": null
     },
@@ -1808,23 +1798,22 @@
         "DEMO-AML-019"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "The transaction amount is more than 5 times the average transaction amount, triggering the UNUSUAL_AMOUNT risk signal.",
-        "There is exactly one risk signal present, which requires requesting more information rather than clearing or escalating.",
-        "The account is not young, the payee is not new, there is no high velocity, and no network link detected.",
-        "The transaction is domestic, so no cross-border policy applies as a risk signal."
+        "Transaction amount is more than 5 times average, triggering a risk signal.",
+        "No other risk signals present, so further info is needed for context."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2685.1436998695135,
-      "estimated_cost_usd": 0.0009428,
+      "latency_ms": 2588.9383999165148,
+      "estimated_cost_usd": 0.0008596,
       "completed": true,
-      "investigation_id": "c1fe91fb-7183-44c1-8923-1b2089a1359b",
+      "investigation_id": "dbecbe54-50ef-485f-9533-f18599d68962",
       "llm_usage": {
-        "input_tokens": 1777,
-        "output_tokens": 145,
-        "latency_ms": 2205.2,
-        "estimated_cost_usd": 0.0009428
+        "input_tokens": 1785,
+        "output_tokens": 91,
+        "latency_ms": 2355.1,
+        "estimated_cost_usd": 0.0008596
       },
       "workflow_error": null
     },
@@ -1867,24 +1856,23 @@
         "DEMO-AML-016"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days (YOUNG_ACCOUNT).",
-        "Transaction is to a new payee (NEW_PAYEE).",
-        "No unusual amount or high velocity or network link signals present.",
-        "Combination of NEW_PAYEE and YOUNG_ACCOUNT triggers escalation due to potential risk.",
-        "No cross-border activity present, so no additional context risk signal."
+        "Account is young (18 days) and payee is new, triggering multiple risk signals.",
+        "No unusual amount or high velocity, but two risk signals present require escalation.",
+        "No network link or cross-border activity to reduce concern."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2065.3493001591414,
-      "estimated_cost_usd": 0.0009316,
+      "latency_ms": 1737.5463999342173,
+      "estimated_cost_usd": 0.0008932,
       "completed": true,
-      "investigation_id": "934b9512-8c4b-4c0c-9982-bd26a50ed965",
+      "investigation_id": "f69a70ae-9f6f-4b77-9359-679c8b98cfac",
       "llm_usage": {
-        "input_tokens": 1785,
-        "output_tokens": 136,
-        "latency_ms": 1693.5,
-        "estimated_cost_usd": 0.0009316
+        "input_tokens": 1793,
+        "output_tokens": 110,
+        "latency_ms": 1504.9,
+        "estimated_cost_usd": 0.0008932
       },
       "workflow_error": null
     },
@@ -1929,24 +1917,23 @@
         "DEMO-AML-018"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days, triggering the YOUNG_ACCOUNT risk signal.",
-        "Number of transactions in the last 24 hours is 14, exceeding the threshold of 10, triggering the HIGH_VELOCITY risk signal.",
-        "Presence of two risk signals (YOUNG_ACCOUNT and HIGH_VELOCITY) requires escalation to human review according to the decision rubric.",
-        "No new payee, unusual amount, or network link signals present, but the combination of young account and high velocity is a known risk pattern (possible mule or account testing).",
-        "Cross-border activity is not a risk signal here as origin and destination countries are the same (GB)."
+        "Account is young (9 days)",
+        "High transaction velocity (14 in last 24h)",
+        "Young account with velocity spike suggests possible mule or testing pattern"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 3012.5854001380503,
-      "estimated_cost_usd": 0.0011148000000000002,
+      "latency_ms": 1695.1463997829705,
+      "estimated_cost_usd": 0.0009564,
       "completed": true,
-      "investigation_id": "683c135e-b7f7-47fd-8089-ef7dafb489af",
+      "investigation_id": "0c45ec1a-9f89-4960-bbe5-6b5039a97a1e",
       "llm_usage": {
-        "input_tokens": 1963,
-        "output_tokens": 206,
-        "latency_ms": 2512.4,
-        "estimated_cost_usd": 0.0011148000000000002
+        "input_tokens": 1971,
+        "output_tokens": 105,
+        "latency_ms": 1430.8,
+        "estimated_cost_usd": 0.0009564
       },
       "workflow_error": null
     },
@@ -1996,24 +1983,25 @@
         "DEMO-AML-016"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Two risk signals are present: NEW_PAYEE and HIGH_VELOCITY.",
-        "The presence of NEW_PAYEE together with HIGH_VELOCITY triggers escalation according to the decision rubric.",
-        "Account age is not young, so YOUNG_ACCOUNT is false, but the velocity spike with a new payee is suspicious.",
-        "No NETWORK_LINK signal is present, so escalation is due to combined NEW_PAYEE and HIGH_VELOCITY signals.",
-        "Cross-border activity is not present as origin and destination countries are the same (GB)."
+        "Two risk signals present: NEW_PAYEE and HIGH_VELOCITY",
+        "NEW_PAYEE and UNUSUAL_AMOUNT combination not met (amount not >5x avg)",
+        "Account age is not young, so no YOUNG_ACCOUNT risk",
+        "No NETWORK_LINK signals found",
+        "Cross-border activity not present (same country GB)"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2211.784099927172,
-      "estimated_cost_usd": 0.0011592,
+      "latency_ms": 2084.4806998502463,
+      "estimated_cost_usd": 0.0011,
       "completed": true,
-      "investigation_id": "9e82075e-7873-4618-9541-f08940a98b03",
+      "investigation_id": "1e2543dd-f2c2-446a-8c25-7bb513601c41",
       "llm_usage": {
-        "input_tokens": 2158,
-        "output_tokens": 185,
-        "latency_ms": 1966.6,
-        "estimated_cost_usd": 0.0011592
+        "input_tokens": 2166,
+        "output_tokens": 146,
+        "latency_ms": 1840.4,
+        "estimated_cost_usd": 0.0011
       },
       "workflow_error": null
     },
@@ -2056,24 +2044,24 @@
         "DEMO-AML-016"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "The transaction involves a new payee, which is a risk signal.",
-        "The transaction amount is more than five times the average transaction amount, which is a risk signal.",
-        "There are exactly two risk signals present, which requires escalation or further review.",
-        "No network link or high velocity signals are present.",
-        "The account is not young and transaction velocity is low, so no mule or testing pattern is indicated."
+        "New payee present, triggering review per policy.",
+        "Transaction amount is over 5x average, a risk signal.",
+        "No network link or high velocity signals present.",
+        "Account age is not young, so no young account risk."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 1949.3185998871922,
-      "estimated_cost_usd": 0.0009392000000000001,
+      "latency_ms": 2081.5987999085337,
+      "estimated_cost_usd": 0.0008880000000000001,
       "completed": true,
-      "investigation_id": "ed3e90d2-b23e-455f-b087-2591f6eea7d3",
+      "investigation_id": "81c34e0c-ac5d-4144-901f-6e9819a68f7c",
       "llm_usage": {
-        "input_tokens": 1788,
-        "output_tokens": 140,
-        "latency_ms": 1690.1,
-        "estimated_cost_usd": 0.0009392000000000001
+        "input_tokens": 1796,
+        "output_tokens": 106,
+        "latency_ms": 1797.8,
+        "estimated_cost_usd": 0.0008880000000000001
       },
       "workflow_error": null
     },
@@ -2102,7 +2090,7 @@
       "signal_included_policy_ids": [
         "DEMO-AML-001"
       ],
-      "confidence": 0.9,
+      "confidence": 0.85,
       "evidence_sufficient": true,
       "routing_rule_fired": "medium_risk_assessment_not_clear",
       "policy_references": [
@@ -2113,25 +2101,23 @@
         "DEMO-AML-005"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days, triggering the YOUNG_ACCOUNT risk signal.",
-        "Transaction amount is more than 5 times the average transaction amount, triggering the UNUSUAL_AMOUNT risk signal.",
-        "There are exactly 2 risk signals present, which requires escalation or additional review according to the rubric.",
-        "However, since NEW_PAYEE is false, the combined NEW_PAYEE and UNUSUAL_AMOUNT escalation rule does not apply.",
-        "No NETWORK_LINK or HIGH_VELOCITY signals are present.",
-        "Cross-border activity is not present as origin and destination countries are the same (GB)."
+        "Account is less than 30 days old (YOUNG_ACCOUNT).",
+        "Transaction amount is more than 5 times average (UNUSUAL_AMOUNT).",
+        "No new payee or network link signals present."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2170.0255000032485,
-      "estimated_cost_usd": 0.001002,
+      "latency_ms": 2215.9390999004245,
+      "estimated_cost_usd": 0.0008852,
       "completed": true,
-      "investigation_id": "81757986-4ead-4a84-9e91-ef8db035042d",
+      "investigation_id": "e3d1a188-7136-4c29-ad5d-d08efc8f874c",
       "llm_usage": {
-        "input_tokens": 1793,
-        "output_tokens": 178,
-        "latency_ms": 1926.5,
-        "estimated_cost_usd": 0.001002
+        "input_tokens": 1801,
+        "output_tokens": 103,
+        "latency_ms": 1968.4,
+        "estimated_cost_usd": 0.0008852
       },
       "workflow_error": null
     },
@@ -2174,23 +2160,23 @@
         "DEMO-AML-016"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "The transaction amount (6100.0) is more than 5 times the average transaction amount (1000.0), triggering the UNUSUAL_AMOUNT signal.",
-        "There are 12 transactions in the last 24 hours, exceeding the threshold of 10, triggering the HIGH_VELOCITY signal.",
-        "No new payee or network link signals are present, but two risk signals (UNUSUAL_AMOUNT and HIGH_VELOCITY) are active, which requires escalation according to the rubric.",
-        "The account is not young (980 days), so YOUNG_ACCOUNT is false, but the combination of two risk signals mandates escalation."
+        "Transaction amount > 5x average (UNUSUAL_AMOUNT)",
+        "More than 10 transactions in last 24h (HIGH_VELOCITY)",
+        "Two risk signals present, escalation required"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2449.803499970585,
-      "estimated_cost_usd": 0.0010264,
+      "latency_ms": 1780.579000012949,
+      "estimated_cost_usd": 0.0008920000000000001,
       "completed": true,
-      "investigation_id": "979ac84c-6485-49dc-b0f7-28b07fb482af",
+      "investigation_id": "6b156f4c-6c7c-4786-95aa-4bff98a2338a",
       "llm_usage": {
-        "input_tokens": 1798,
-        "output_tokens": 192,
-        "latency_ms": 2137.3,
-        "estimated_cost_usd": 0.0010264
+        "input_tokens": 1806,
+        "output_tokens": 106,
+        "latency_ms": 1516.5,
+        "estimated_cost_usd": 0.0008920000000000001
       },
       "workflow_error": null
     },
@@ -2205,8 +2191,7 @@
         "DEMO-AML-004"
       ],
       "actual_policy_ids": [
-        "DEMO-AML-001",
-        "DEMO-AML-004"
+        "DEMO-AML-001"
       ],
       "retrieved_policy_ids": [
         "DEMO-AML-001",
@@ -2226,36 +2211,36 @@
       "evidence_sufficient": true,
       "routing_rule_fired": "medium_risk_assessment_not_clear",
       "policy_references": [
-        "DEMO-AML-001",
-        "DEMO-AML-004"
+        "DEMO-AML-001"
       ],
       "policies_considered": [
+        "DEMO-AML-004",
         "DEMO-AML-019"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "The transaction amount is more than 5 times the average transaction amount, triggering the UNUSUAL_AMOUNT risk signal.",
-        "There is cross-border activity between GB and IE, which requires contextual review but is not itself a risk signal.",
-        "No other risk signals such as YOUNG_ACCOUNT, NEW_PAYEE, HIGH_VELOCITY, or NETWORK_LINK are present."
+        "Transaction amount is more than 5 times average, triggering a risk signal.",
+        "No other risk signals present, so further info is needed."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 1896.8113998416811,
-      "estimated_cost_usd": 0.0009256000000000001,
+      "latency_ms": 2036.5124000236392,
+      "estimated_cost_usd": 0.0008568000000000001,
       "completed": true,
-      "investigation_id": "91cc2ba7-ce4b-4f19-ac09-4e5642080905",
+      "investigation_id": "bf33a72c-e671-4b7a-9cd2-63e835720b28",
       "llm_usage": {
-        "input_tokens": 1778,
-        "output_tokens": 134,
-        "latency_ms": 1659.9,
-        "estimated_cost_usd": 0.0009256000000000001
+        "input_tokens": 1786,
+        "output_tokens": 89,
+        "latency_ms": 1783.5,
+        "estimated_cost_usd": 0.0008568000000000001
       },
       "workflow_error": null
     },
     {
       "name": "new young customer makes first cross-border payment",
       "expected_recommendation": "ESCALATE_TO_HUMAN",
-      "actual_recommendation": "REQUEST_MORE_INFO",
+      "actual_recommendation": "ESCALATE_TO_HUMAN",
       "expected_requires_human_review": true,
       "actual_requires_human_review": true,
       "expected_policy_ids": [
@@ -2283,7 +2268,7 @@
         "DEMO-AML-004",
         "DEMO-AML-006"
       ],
-      "confidence": 0.9,
+      "confidence": 0.95,
       "evidence_sufficient": true,
       "routing_rule_fired": "medium_risk_assessment_not_clear",
       "policy_references": [
@@ -2291,27 +2276,27 @@
         "DEMO-AML-006"
       ],
       "policies_considered": [
-        "DEMO-AML-004",
-        "DEMO-AML-016"
+        "DEMO-AML-016",
+        "DEMO-AML-004"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days, triggering the YOUNG_ACCOUNT risk signal.",
-        "The payee is new, triggering the NEW_PAYEE risk signal.",
-        "Only two risk signals are present, which requires requesting more information according to the decision rubric.",
-        "The transaction is cross-border but cross-border activity is not a risk signal and does not affect the recommendation."
+        "Account is young (25 days)",
+        "Transaction is to a new payee",
+        "Two risk signals present, escalation required"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2486.643800046295,
-      "estimated_cost_usd": 0.0010116,
+      "latency_ms": 2068.0323999840766,
+      "estimated_cost_usd": 0.0009460000000000001,
       "completed": true,
-      "investigation_id": "90b0fc82-97ef-4fe1-b4b3-ee0d549005b8",
+      "investigation_id": "68c787fe-4a97-440e-8385-df39fa09d917",
       "llm_usage": {
-        "input_tokens": 1969,
-        "output_tokens": 140,
-        "latency_ms": 2060.8,
-        "estimated_cost_usd": 0.0010116
+        "input_tokens": 1977,
+        "output_tokens": 97,
+        "latency_ms": 1823.4,
+        "estimated_cost_usd": 0.0009460000000000001
       },
       "workflow_error": null
     },
@@ -2329,8 +2314,8 @@
       ],
       "actual_policy_ids": [
         "DEMO-AML-001",
-        "DEMO-AML-006",
         "DEMO-AML-002",
+        "DEMO-AML-006",
         "DEMO-AML-004"
       ],
       "retrieved_policy_ids": [
@@ -2355,30 +2340,29 @@
       "routing_rule_fired": "medium_risk_assessment_not_clear",
       "policy_references": [
         "DEMO-AML-001",
-        "DEMO-AML-006",
         "DEMO-AML-002",
+        "DEMO-AML-006",
         "DEMO-AML-004"
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
         "Two risk signals present: NEW_PAYEE and HIGH_VELOCITY.",
-        "The combination of NEW_PAYEE and HIGH_VELOCITY triggers escalation due to increased risk of fraud or scam.",
-        "Cross-border activity is noted but does not affect risk signal count.",
-        "No NETWORK_LINK signal present.",
-        "Account is not young, so no YOUNG_ACCOUNT risk signal."
+        "Cross-border activity noted but not a risk signal.",
+        "Account age is not young, so no YOUNG_ACCOUNT signal."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2351.758699864149,
-      "estimated_cost_usd": 0.001022,
+      "latency_ms": 2206.034899922088,
+      "estimated_cost_usd": 0.0009740000000000001,
       "completed": true,
-      "investigation_id": "6d014b3b-d71f-484a-b8e8-bf93f073282a",
+      "investigation_id": "bde0a7eb-5f77-4fe9-aa75-386c8280221b",
       "llm_usage": {
-        "input_tokens": 1979,
-        "output_tokens": 144,
-        "latency_ms": 1730.5,
-        "estimated_cost_usd": 0.001022
+        "input_tokens": 1987,
+        "output_tokens": 112,
+        "latency_ms": 1620.4,
+        "estimated_cost_usd": 0.0009740000000000001
       },
       "workflow_error": null
     },
@@ -2395,8 +2379,7 @@
       ],
       "actual_policy_ids": [
         "DEMO-AML-001",
-        "DEMO-AML-002",
-        "DEMO-AML-004"
+        "DEMO-AML-002"
       ],
       "retrieved_policy_ids": [
         "DEMO-AML-001",
@@ -2419,31 +2402,30 @@
       "routing_rule_fired": "medium_risk_assessment_not_clear",
       "policy_references": [
         "DEMO-AML-001",
-        "DEMO-AML-002",
-        "DEMO-AML-004"
+        "DEMO-AML-002"
       ],
       "policies_considered": [
+        "DEMO-AML-004",
         "DEMO-AML-016"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days, triggering the YOUNG_ACCOUNT risk signal.",
-        "Number of transactions in the last 24 hours is 13, exceeding the threshold of 10, triggering the HIGH_VELOCITY risk signal.",
-        "Two risk signals present (YOUNG_ACCOUNT and HIGH_VELOCITY) require escalation according to the decision rubric.",
-        "No new payee or unusual amount signals present, so no override applies.",
-        "Cross-border activity is noted but does not affect risk signal count."
+        "Account is less than 30 days old (YOUNG_ACCOUNT)",
+        "More than 10 transactions in last 24h (HIGH_VELOCITY)",
+        "Combination of young account and high velocity suggests possible mule or testing pattern"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2535.475099924952,
-      "estimated_cost_usd": 0.001068,
+      "latency_ms": 1880.8527998626232,
+      "estimated_cost_usd": 0.0009864000000000001,
       "completed": true,
-      "investigation_id": "9783f9a6-1881-4f2f-a948-a8794a35e641",
+      "investigation_id": "28b8e017-d84c-4cdb-9d51-9f13aae00763",
       "llm_usage": {
-        "input_tokens": 1978,
-        "output_tokens": 173,
-        "latency_ms": 2265.3,
-        "estimated_cost_usd": 0.001068
+        "input_tokens": 1986,
+        "output_tokens": 120,
+        "latency_ms": 1631.8,
+        "estimated_cost_usd": 0.0009864000000000001
       },
       "workflow_error": null
     },
@@ -2488,38 +2470,39 @@
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "The transaction involves a new payee, which is one risk signal.",
-        "The transaction amount is more than five times the average transaction amount, which is another risk signal.",
-        "Having two risk signals (NEW_PAYEE and UNUSUAL_AMOUNT) triggers escalation according to the decision rubric.",
-        "The account is not young and there is no high velocity or network link risk signal, but the combination of new payee and unusual amount is sufficient for escalation.",
-        "The transaction is cross-border but cross-border activity is context and not a risk signal, so it does not affect the risk signal count."
+        "New payee and unusual amount both present, triggering escalation.",
+        "Account is not young, velocity is low, no network link, but combined signals require escalation.",
+        "Cross-border context noted but not a risk signal here."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2192.969399970025,
-      "estimated_cost_usd": 0.001006,
+      "latency_ms": 1754.6033998951316,
+      "estimated_cost_usd": 0.000894,
       "completed": true,
-      "investigation_id": "b4b7d48c-f1c7-4470-b4bc-ee8677beb0f0",
+      "investigation_id": "6c1a4175-7515-461d-9a06-2d5c648c6e45",
       "llm_usage": {
-        "input_tokens": 1795,
-        "output_tokens": 180,
-        "latency_ms": 1939.8,
-        "estimated_cost_usd": 0.001006
+        "input_tokens": 1803,
+        "output_tokens": 108,
+        "latency_ms": 1471.6,
+        "estimated_cost_usd": 0.000894
       },
       "workflow_error": null
     },
     {
       "name": "young account makes oversized cross-border transfer",
       "expected_recommendation": "ESCALATE_TO_HUMAN",
-      "actual_recommendation": "ESCALATE_TO_HUMAN",
+      "actual_recommendation": "REQUEST_MORE_INFO",
       "expected_requires_human_review": true,
       "actual_requires_human_review": true,
       "expected_policy_ids": [
         "DEMO-AML-001",
         "DEMO-AML-004"
       ],
-      "actual_policy_ids": [],
+      "actual_policy_ids": [
+        "DEMO-AML-001"
+      ],
       "retrieved_policy_ids": [
         "DEMO-AML-001",
         "DEMO-AML-016",
@@ -2535,26 +2518,36 @@
         "DEMO-AML-001",
         "DEMO-AML-004"
       ],
-      "confidence": 0.0,
-      "evidence_sufficient": false,
+      "confidence": 0.9,
+      "evidence_sufficient": true,
       "routing_rule_fired": "medium_risk_assessment_not_clear",
-      "policy_references": [],
-      "policies_considered": [],
-      "rejected_citations": [],
-      "llm_reasons": [
-        "AI assessment failed; human review is required."
+      "policy_references": [
+        "DEMO-AML-001"
       ],
-      "llm_fallback_used": true,
-      "fallback_reason": "ValidationError: 1 validation error for PolicyAssessment\nreasons.4\n  String should have at most 256 characters [type=string_too_long, input_value='According to the rubric,..._AMOUNT does not apply.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/string_too_long",
-      "latency_ms": 3309.132100082934,
-      "estimated_cost_usd": 0.0011988,
+      "policies_considered": [
+        "DEMO-AML-004",
+        "DEMO-AML-005",
+        "DEMO-AML-016"
+      ],
+      "rejected_citations": [],
+      "rejected_policies_considered": [],
+      "llm_reasons": [
+        "Account is young (6 days) - risk signal YOUNG_ACCOUNT",
+        "Transaction amount is 6x average - risk signal UNUSUAL_AMOUNT",
+        "No new payee, no high velocity, no network link",
+        "Cross-border transaction present but not a risk signal"
+      ],
+      "llm_fallback_used": false,
+      "fallback_reason": null,
+      "latency_ms": 1853.7703000474721,
+      "estimated_cost_usd": 0.0009892,
       "completed": true,
-      "investigation_id": "65df8a58-6e4d-44ea-9deb-92985e6fb21a",
+      "investigation_id": "c7375001-2584-4094-9c21-0b418f29ba4d",
       "llm_usage": {
-        "input_tokens": 1977,
-        "output_tokens": 255,
-        "latency_ms": 2727.7,
-        "estimated_cost_usd": 0.0011988
+        "input_tokens": 1985,
+        "output_tokens": 122,
+        "latency_ms": 1604.9,
+        "estimated_cost_usd": 0.0009892
       },
       "workflow_error": null
     },
@@ -2571,8 +2564,7 @@
       ],
       "actual_policy_ids": [
         "DEMO-AML-001",
-        "DEMO-AML-002",
-        "DEMO-AML-004"
+        "DEMO-AML-002"
       ],
       "retrieved_policy_ids": [
         "DEMO-AML-001",
@@ -2595,33 +2587,32 @@
       "routing_rule_fired": "medium_risk_assessment_not_clear",
       "policy_references": [
         "DEMO-AML-001",
-        "DEMO-AML-002",
-        "DEMO-AML-004"
+        "DEMO-AML-002"
       ],
       "policies_considered": [
+        "DEMO-AML-004",
         "DEMO-AML-017"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "The transaction amount (5900.0) is more than 5 times the average transaction amount (950.0), triggering the UNUSUAL_AMOUNT signal.",
-        "There are 17 transactions in the last 24 hours, exceeding the threshold of 10, triggering the HIGH_VELOCITY signal.",
-        "The account age is 1050 days, so YOUNG_ACCOUNT is false.",
-        "The payee is not new, so NEW_PAYEE is false.",
-        "No network link signals are present.",
-        "There are 2 risk signals (UNUSUAL_AMOUNT and HIGH_VELOCITY), which requires escalation to human review according to the rubric.",
-        "The transaction is cross-border (GB to DK), but cross-border is context and not a risk signal."
+        "High velocity with 17 transactions in last 24h triggers concern",
+        "Transaction amount 5900 exceeds 5x average of 950",
+        "Two risk signals present: UNUSUAL_AMOUNT and HIGH_VELOCITY",
+        "Cross-border activity noted but not a risk signal",
+        "Account age is 1050 days, so YOUNG_ACCOUNT not triggered"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2363.308300031349,
-      "estimated_cost_usd": 0.0011428000000000002,
+      "latency_ms": 1824.266199953854,
+      "estimated_cost_usd": 0.0010212,
       "completed": true,
-      "investigation_id": "83d9f799-8add-4521-96e6-d83e2a6485ca",
+      "investigation_id": "1eaacf30-3eca-42cc-9c12-91b6d358dcee",
       "llm_usage": {
-        "input_tokens": 1973,
-        "output_tokens": 221,
-        "latency_ms": 2107.6,
-        "estimated_cost_usd": 0.0011428000000000002
+        "input_tokens": 1981,
+        "output_tokens": 143,
+        "latency_ms": 1592.8,
+        "estimated_cost_usd": 0.0010212
       },
       "workflow_error": null
     },
@@ -2669,23 +2660,25 @@
         "DEMO-AML-016"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days (YOUNG_ACCOUNT).",
-        "The payee is new (NEW_PAYEE).",
-        "Graph analysis indicates suspicious network links (NETWORK_LINK).",
-        "Relationship anomaly is detected, supporting suspicion of unusual activity."
+        "Account is young (17 days) triggering YOUNG_ACCOUNT signal.",
+        "Transaction is to a new payee triggering NEW_PAYEE signal.",
+        "Graph analysis marks account as suspicious triggering NETWORK_LINK signal.",
+        "NETWORK_LINK alone mandates escalation per rubric.",
+        "Combination of NEW_PAYEE and UNUSUAL_AMOUNT would escalate, but UNUSUAL_AMOUNT not triggered here."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2517.786599928513,
-      "estimated_cost_usd": 0.0009824,
+      "latency_ms": 1965.2843000367284,
+      "estimated_cost_usd": 0.0010176,
       "completed": true,
-      "investigation_id": "01d05a1c-dec5-474f-8d9b-1357fa92e35b",
+      "investigation_id": "3808d519-9797-4c3e-8cc3-fe49516f2a7b",
       "llm_usage": {
-        "input_tokens": 1972,
-        "output_tokens": 121,
-        "latency_ms": 2257.6,
-        "estimated_cost_usd": 0.0009824
+        "input_tokens": 1980,
+        "output_tokens": 141,
+        "latency_ms": 1718.8,
+        "estimated_cost_usd": 0.0010176
       },
       "workflow_error": null
     },
@@ -2728,25 +2721,23 @@
         "DEMO-AML-019"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "The transaction amount (5100.0) is more than 5 times the average transaction amount (900.0), triggering the UNUSUAL_AMOUNT risk signal.",
-        "The graph analysis indicates suspicious network activity (suspicious is true), triggering the NETWORK_LINK risk signal.",
-        "Having NETWORK_LINK risk signal alone mandates escalation to human review according to the decision rubric.",
-        "There are 2 risk signals present (UNUSUAL_AMOUNT and NETWORK_LINK), which also requires escalation to human review.",
-        "The account is not young (account_age_days=870) and the payee is not new, so those signals are not triggered.",
-        "The transaction is domestic (origin_country and destination_country both GB), so cross-border policy is not applicable."
+        "Transaction amount > 5x average triggers risk signal UNUSUAL_AMOUNT.",
+        "Graph analysis flags suspicious network link, triggering NETWORK_LINK risk signal.",
+        "NETWORK_LINK risk signal alone mandates escalation per rubric."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2297.395800007507,
-      "estimated_cost_usd": 0.0010464,
+      "latency_ms": 2019.011499825865,
+      "estimated_cost_usd": 0.0008816000000000001,
       "completed": true,
-      "investigation_id": "5e5cf35c-7428-4e17-b8b0-69868e57d4bb",
+      "investigation_id": "237b282e-376b-4889-9b94-38cb2654c1df",
       "llm_usage": {
-        "input_tokens": 1780,
-        "output_tokens": 209,
-        "latency_ms": 2009.2,
-        "estimated_cost_usd": 0.0010464
+        "input_tokens": 1788,
+        "output_tokens": 104,
+        "latency_ms": 1699.5,
+        "estimated_cost_usd": 0.0008816000000000001
       },
       "workflow_error": null
     },
@@ -2796,27 +2787,23 @@
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "The transaction involves a new payee, which is one risk signal.",
-        "There is a high velocity of transactions with 18 transactions in the last 24 hours, which is a second risk signal.",
-        "The combination of NEW_PAYEE and HIGH_VELOCITY risk signals triggers escalation.",
-        "The graph analysis indicates suspicious network links, which alone mandates escalation.",
-        "Account age is not young, so YOUNG_ACCOUNT is false.",
-        "The transaction amount is not unusually high compared to average, so UNUSUAL_AMOUNT is false.",
-        "Origin and destination countries are the same, so no cross-border policy applies.",
-        "Deterministic risk level is MEDIUM, so no HIGH risk policy applies."
+        "Two risk signals present: NEW_PAYEE and HIGH_VELOCITY",
+        "Graph analysis shows suspicious network link",
+        "NEW_PAYEE with UNUSUAL_AMOUNT rule triggers escalation"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2391.01090002805,
-      "estimated_cost_usd": 0.0011228000000000002,
+      "latency_ms": 1731.734300032258,
+      "estimated_cost_usd": 0.0009676000000000001,
       "completed": true,
-      "investigation_id": "0d58155c-6220-488f-92fc-3f0849ac2d48",
+      "investigation_id": "25ee1389-732c-4c97-9570-492a48964cf6",
       "llm_usage": {
-        "input_tokens": 1983,
-        "output_tokens": 206,
-        "latency_ms": 2085.8,
-        "estimated_cost_usd": 0.0011228000000000002
+        "input_tokens": 1991,
+        "output_tokens": 107,
+        "latency_ms": 1479.1,
+        "estimated_cost_usd": 0.0009676000000000001
       },
       "workflow_error": null
     },
@@ -2863,24 +2850,23 @@
         "DEMO-AML-019"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "The transaction amount (7300.0) is more than 5 times the average transaction amount (1200.0), triggering the UNUSUAL_AMOUNT risk signal.",
-        "The graph analysis indicates the origin account is suspicious, triggering the NETWORK_LINK risk signal.",
-        "Any NETWORK_LINK risk signal requires escalation to human review regardless of other signals.",
-        "The account is not young and the payee is not new, so those signals are not present.",
-        "Cross-border activity is present but does not count as a risk signal under the rubric."
+        "Transaction amount >5x average triggers risk signal UNUSUAL_AMOUNT.",
+        "Graph analysis shows suspicious network link, triggering NETWORK_LINK signal.",
+        "NETWORK_LINK signal alone mandates escalation per rubric."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2221.7571998480707,
-      "estimated_cost_usd": 0.0010676,
+      "latency_ms": 1716.7350000236183,
+      "estimated_cost_usd": 0.000962,
       "completed": true,
-      "investigation_id": "ba7be864-5217-40fe-8132-b37e89113703",
+      "investigation_id": "89961640-7ac3-4400-9ea3-679db9f3cc5c",
       "llm_usage": {
-        "input_tokens": 1965,
-        "output_tokens": 176,
-        "latency_ms": 1944.5,
-        "estimated_cost_usd": 0.0010676
+        "input_tokens": 1973,
+        "output_tokens": 108,
+        "latency_ms": 1477.7,
+        "estimated_cost_usd": 0.000962
       },
       "workflow_error": null
     },
@@ -2925,24 +2911,24 @@
       ],
       "policies_considered": [],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "Account age is less than 30 days, triggering YOUNG_ACCOUNT signal.",
-        "Number of transactions in the last 24 hours is 20, exceeding 10, triggering HIGH_VELOCITY signal.",
-        "Graph analysis indicates suspicious network link, triggering NETWORK_LINK signal.",
-        "Presence of NETWORK_LINK signal alone mandates escalation to human.",
-        "Combination of multiple risk signals (YOUNG_ACCOUNT, HIGH_VELOCITY, NETWORK_LINK) increases risk concern."
+        "Account is young (24 days)",
+        "High transaction velocity (20 in 24h)",
+        "Graph analysis shows suspicious network link",
+        "Young account with velocity spike suggests mule or testing pattern"
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2009.5535998698324,
-      "estimated_cost_usd": 0.0009672000000000001,
+      "latency_ms": 2355.049300007522,
+      "estimated_cost_usd": 0.0008887999999999999,
       "completed": true,
-      "investigation_id": "c4646341-1153-4f77-aee2-7ecf24030c54",
+      "investigation_id": "9bf7822a-ce4c-47a6-a12a-783daa3136e4",
       "llm_usage": {
-        "input_tokens": 1802,
-        "output_tokens": 154,
-        "latency_ms": 1710.5,
-        "estimated_cost_usd": 0.0009672000000000001
+        "input_tokens": 1810,
+        "output_tokens": 103,
+        "latency_ms": 2111.2,
+        "estimated_cost_usd": 0.0008887999999999999
       },
       "workflow_error": null
     },
@@ -2990,24 +2976,23 @@
         "DEMO-AML-019"
       ],
       "rejected_citations": [],
+      "rejected_policies_considered": [],
       "llm_reasons": [
-        "The transaction involves a new payee, which is one risk signal.",
-        "The transaction amount is more than five times the average transaction amount, which is a second risk signal.",
-        "The graph analysis indicates a suspicious network link, which mandates escalation regardless of other signals.",
-        "The combination of NEW_PAYEE and UNUSUAL_AMOUNT risk signals requires escalation to human review.",
-        "The account is not young and transaction velocity is low, but the presence of NETWORK_LINK and multiple other risk signals outweighs this."
+        "New payee and unusual amount present, triggering escalation.",
+        "Graph analysis shows suspicious network link, requiring escalation.",
+        "Account is not young, but combined signals exceed one risk factor."
       ],
       "llm_fallback_used": false,
       "fallback_reason": null,
-      "latency_ms": 2297.7428999729455,
-      "estimated_cost_usd": 0.0010592,
+      "latency_ms": 1754.230699967593,
+      "estimated_cost_usd": 0.0009632,
       "completed": true,
-      "investigation_id": "8c1598b3-9caf-4c40-93b0-d1cb1c05b06d",
+      "investigation_id": "3da2b35a-69ce-46a1-b11d-e524c4d01169",
       "llm_usage": {
-        "input_tokens": 1972,
-        "output_tokens": 169,
-        "latency_ms": 1982.2,
-        "estimated_cost_usd": 0.0010592
+        "input_tokens": 1980,
+        "output_tokens": 107,
+        "latency_ms": 1431.9,
+        "estimated_cost_usd": 0.0009632
       },
       "workflow_error": null
     }

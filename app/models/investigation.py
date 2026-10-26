@@ -119,6 +119,11 @@ class PolicyAssessment(DomainModel):
     missing_information: list[ShortText]
     requires_human_review: StrictBool
     evidence_sufficient: StrictBool
+    original_llm_recommendation: Recommendation | None = None
+    rubric_override: StrictBool = False
+    # These are the rule-required citations that application code appended
+    # because the model did not return them itself.
+    deterministic_citations: list[Identifier] = Field(default_factory=list)
     fallback_reason: LongText | None = None
     # Rejected values come from untrusted model output and may not satisfy the
     # application's Identifier constraints. Keeping them as raw strings lets

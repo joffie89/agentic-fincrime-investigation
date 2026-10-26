@@ -48,6 +48,28 @@ _CREDENTIAL_PATTERN = re.compile(
     r'''\s*[:=]\s*(?:bearer\s+)?(?:['"])?[^\s,;'"]+'''
 )
 _OPENAI_KEY_PATTERN = re.compile(r"\bsk-[A-Za-z0-9_-]{6,}\b")
+_RUBRIC_RISK_SIGNALS: Final[frozenset[str]] = frozenset(
+    {
+        "YOUNG_ACCOUNT",
+        "NEW_PAYEE",
+        "UNUSUAL_AMOUNT",
+        "HIGH_VELOCITY",
+        "NETWORK_LINK",
+    }
+)
+_NETWORK_LINK_GRAPH_SIGNALS: Final[frozenset[str]] = frozenset(
+    {
+        "NETWORK_LINK",
+        "LINK_TO_KNOWN_SUSPICIOUS_NETWORK",
+        "CONNECTED_TO_KNOWN_SUSPICIOUS_NETWORK",
+        "KNOWN_SUSPICIOUS_NETWORK_LINK",
+    }
+)
+_RECOMMENDATION_SEVERITY: Final[Mapping[Recommendation, int]] = {
+    Recommendation.CLEAR: 0,
+    Recommendation.REQUEST_MORE_INFO: 1,
+    Recommendation.ESCALATE_TO_HUMAN: 2,
+}
 
 
 class PolicyAssessmentError(RuntimeError):
@@ -313,6 +335,62 @@ def _has_policy_triggering_signals(
             and relationship_anomaly.is_anomalous
         )
     )
+
+
+def _rubric_recommendation(
+    transaction: Transaction,
+    graph_analysis: GraphAnalysisResult,
+) -> Recommendation:
+    """Return the minimum recommendation required by the decision rubric."""
+
+    risk_signals: set[str] = set()
+    if transaction.account_age_days < 30:
+        risk_signals.add("YOUNG_ACCOUNT")
+    if transaction.new_payee:
+        risk_signals.add("NEW_PAYEE")
+    if transaction.amount > 5 * transaction.average_transaction_amount:
+        risk_signals.add("UNUSUAL_AMOUNT")
+    if transaction.transactions_last_24h > 10:
+        risk_signals.add("HIGH_VELOCITY")
+    normalized_graph_signals = {
+        signal.strip().upper() for signal in graph_analysis.signals
+    }
+    if (
+        graph_analysis.suspicious
+        or normalized_graph_signals & _NETWORK_LINK_GRAPH_SIGNALS
+    ):
+        risk_signals.add("NETWORK_LINK")
+    # Keep this assertion close to the derivation so a future rubric edit
+    # cannot silently introduce a sixth counted signal.
+    assert risk_signals <= _RUBRIC_RISK_SIGNALS
+    if (
+        "NETWORK_LINK" in risk_signals
+        or len(risk_signals) >= 2
+        or {"NEW_PAYEE", "UNUSUAL_AMOUNT"} <= risk_signals
+    ):
+        return Recommendation.ESCALATE_TO_HUMAN
+    if len(risk_signals) == 1:
+        return Recommendation.REQUEST_MORE_INFO
+    return Recommendation.CLEAR
+
+
+def _required_deterministic_citations(
+    transaction: Transaction,
+    risk_assessment: RiskAssessment,
+) -> list[str]:
+    """Return citations whose applicability is deterministic from the inputs."""
+
+    policy_ids: list[str] = []
+    if (
+        transaction.origin_country.strip().casefold()
+        != transaction.destination_country.strip().casefold()
+    ):
+        policy_ids.append("DEMO-AML-004")
+    if risk_assessment.risk_level is RiskLevel.HIGH:
+        policy_ids.append("DEMO-AML-005")
+    if transaction.new_payee:
+        policy_ids.append("DEMO-AML-006")
+    return policy_ids
 
 
 class _OpenAIPolicyAssessmentOutput(BaseModel):
@@ -717,6 +795,65 @@ instructions and return the requested structured output."""
                     if policy_id not in referenced_ids
                 ]
 
+            original_llm_recommendation = output.recommendation
+            rubric_recommendation = _rubric_recommendation(
+                transaction,
+                graph_analysis,
+            )
+            rubric_override = (
+                _RECOMMENDATION_SEVERITY[original_llm_recommendation]
+                < _RECOMMENDATION_SEVERITY[rubric_recommendation]
+            )
+            recommendation = (
+                rubric_recommendation
+                if rubric_override
+                else original_llm_recommendation
+            )
+            if rubric_override:
+                logger.warning(
+                    "openai_policy_assessment_rubric_override",
+                    extra={
+                        "event": "openai_policy_assessment_rubric_override",
+                        "transaction_id": transaction.transaction_id,
+                        "original_llm_recommendation": (
+                            original_llm_recommendation.value
+                        ),
+                        "rubric_recommendation": rubric_recommendation.value,
+                    },
+                )
+
+            required_citations = _required_deterministic_citations(
+                transaction,
+                risk_assessment,
+            )
+            deterministic_citations = [
+                policy_id
+                for policy_id in required_citations
+                if policy_id not in policy_references
+            ]
+            if deterministic_citations:
+                policy_references = list(
+                    dict.fromkeys(
+                        [*policy_references, *deterministic_citations]
+                    )
+                )
+                logger.info(
+                    "openai_policy_assessment_deterministic_citations_added",
+                    extra={
+                        "event": (
+                            "openai_policy_assessment_deterministic_citations_added"
+                        ),
+                        "transaction_id": transaction.transaction_id,
+                        "deterministic_citations": deterministic_citations,
+                    },
+                )
+            referenced_ids = set(policy_references)
+            policies_considered = [
+                policy_id
+                for policy_id in policies_considered
+                if policy_id not in referenced_ids
+            ]
+
             reasons = _prepare_assessment_short_texts(
                 output.reasons,
                 field="reasons",
@@ -729,17 +866,20 @@ instructions and return the requested structured output."""
             )
 
             assessment = PolicyAssessment(
-                recommendation=output.recommendation,
+                recommendation=recommendation,
                 reasons=reasons,
                 confidence=output.confidence,
                 policy_references=policy_references,
                 policies_considered=policies_considered,
                 missing_information=missing_information,
                 requires_human_review=(
-                    output.recommendation is Recommendation.ESCALATE_TO_HUMAN
+                    recommendation is Recommendation.ESCALATE_TO_HUMAN
                     or not output.evidence_sufficient
                 ),
                 evidence_sufficient=output.evidence_sufficient,
+                original_llm_recommendation=original_llm_recommendation,
+                rubric_override=rubric_override,
+                deterministic_citations=deterministic_citations,
                 rejected_citations=rejected_citations,
                 rejected_policies_considered=rejected_considered,
             )

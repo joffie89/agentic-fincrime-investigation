@@ -58,6 +58,9 @@ class DecisionObservation(DomainModel):
     actual_requires_human_review: StrictBool | None
     expected_policy_ids: list[Identifier]
     actual_policy_ids: list[Identifier]
+    original_llm_recommendation: Recommendation | None = None
+    rubric_override: StrictBool = False
+    deterministic_citations: list[Identifier] = Field(default_factory=list)
     retrieved_policy_ids: list[Identifier] = Field(default_factory=list)
     semantic_retrieved_policy_ids: list[Identifier] = Field(
         default_factory=list
@@ -125,6 +128,15 @@ def calculate_decision_metrics(
         and item.actual_recommendation is item.expected_recommendation
         for item in validated
     )
+    llm_scored = [
+        item
+        for item in validated
+        if item.completed and item.original_llm_recommendation is not None
+    ]
+    llm_recommendation_correct = sum(
+        item.original_llm_recommendation is item.expected_recommendation
+        for item in llm_scored
+    )
     routing_correct = sum(
         item.completed
         and item.actual_requires_human_review
@@ -185,9 +197,20 @@ def calculate_decision_metrics(
         if item.llm_fallback_used:
             fallback_reasons[item.fallback_reason or "unknown"] += 1
 
+    rubric_override_cases = [
+        item.name for item in validated if item.rubric_override
+    ]
+    deterministic_citation_cases = [
+        item.name for item in validated if item.deterministic_citations
+    ]
+
     return {
         "case_count": total,
         "recommendation_accuracy": _accuracy(recommendation_correct, total),
+        "llm_recommendation_accuracy": _accuracy(
+            llm_recommendation_correct,
+            len(llm_scored),
+        ),
         "recommendation_accuracy_excluding_fallbacks": _accuracy(
             recommendation_correct_without_fallbacks,
             len(without_fallbacks),
@@ -210,6 +233,15 @@ def calculate_decision_metrics(
             item.llm_fallback_used for item in validated
         ),
         "llm_fallback_count_by_reason": dict(sorted(fallback_reasons.items())),
+        "rubric_override_count": len(rubric_override_cases),
+        "rubric_override_case_names": rubric_override_cases,
+        "deterministic_citation_case_count": len(
+            deterministic_citation_cases
+        ),
+        "deterministic_citation_count": sum(
+            len(item.deterministic_citations) for item in validated
+        ),
+        "deterministic_citation_case_names": deterministic_citation_cases,
         "retrieval_recall": {
             "retrieved_expected_policy_count": retrieved_expected_policy_count,
             "expected_policy_count": expected_policy_count,
@@ -369,6 +401,26 @@ def _rejected_policies_considered(
     return _string_list(audit_record.get("rejected_policies_considered"))
 
 
+def _recorded_assessment_value(
+    policy_assessment: Any,
+    audit_record: Mapping[str, Any] | None,
+    field_name: str,
+) -> Any:
+    """Read an enforcement diagnostic from the response or persisted audit."""
+
+    value = getattr(policy_assessment, field_name, None)
+    if value is not None:
+        return value
+    if audit_record is None:
+        return None
+    recorded_assessment = audit_record.get("policy_assessment")
+    if isinstance(recorded_assessment, Mapping):
+        value = recorded_assessment.get(field_name)
+        if value is not None:
+            return value
+    return audit_record.get(field_name)
+
+
 def _evaluate_case(
     service: InvestigationService,
     case: DecisionEvaluationCase,
@@ -397,6 +449,9 @@ def _evaluate_case(
             actual_requires_human_review=None,
             expected_policy_ids=case.expected_policy_ids,
             actual_policy_ids=[],
+            original_llm_recommendation=None,
+            rubric_override=False,
+            deterministic_citations=[],
             retrieved_policy_ids=[],
             semantic_retrieved_policy_ids=[],
             signal_included_policy_ids=[],
@@ -443,6 +498,23 @@ def _evaluate_case(
     policy_references = list(result.policy_assessment.policy_references)
     semantic_policy_ids, signal_policy_ids = _retrieval_source_ids(audit_record)
     fallback_reason = _fallback_reason(result.policy_assessment, audit_record)
+    original_llm_recommendation = _recorded_assessment_value(
+        result.policy_assessment,
+        audit_record,
+        "original_llm_recommendation",
+    )
+    rubric_override = _recorded_assessment_value(
+        result.policy_assessment,
+        audit_record,
+        "rubric_override",
+    )
+    deterministic_citations = _string_list(
+        _recorded_assessment_value(
+            result.policy_assessment,
+            audit_record,
+            "deterministic_citations",
+        )
+    )
     return DecisionObservation(
         name=case.name,
         expected_recommendation=case.expected_recommendation,
@@ -451,6 +523,11 @@ def _evaluate_case(
         actual_requires_human_review=result.requires_human_review,
         expected_policy_ids=case.expected_policy_ids,
         actual_policy_ids=policy_references,
+        original_llm_recommendation=original_llm_recommendation,
+        rubric_override=(
+            rubric_override if isinstance(rubric_override, bool) else False
+        ),
+        deterministic_citations=deterministic_citations,
         retrieved_policy_ids=list(
             dict.fromkeys(item.policy_id for item in result.retrieved_policies)
         ),
@@ -540,6 +617,7 @@ def run_decision_evaluation(
 def _print_results(results: Mapping[str, Any]) -> None:
     metrics = results["metrics"]
     recommendation = metrics["recommendation_accuracy"]
+    llm_recommendation = metrics["llm_recommendation_accuracy"]
     recommendation_without_fallbacks = metrics[
         "recommendation_accuracy_excluding_fallbacks"
     ]
@@ -556,6 +634,12 @@ def _print_results(results: Mapping[str, Any]) -> None:
             "Recommendation accuracy",
             f"{recommendation['correct']}/{recommendation['total']} "
             f"({recommendation['accuracy']:.1%})",
+        ),
+        (
+            "LLM-own recommendation accuracy",
+            f"{llm_recommendation['correct']}/"
+            f"{llm_recommendation['total']} "
+            f"({llm_recommendation['accuracy']:.1%})",
         ),
         (
             "Recommendation accuracy (no fallbacks)",
@@ -591,6 +675,11 @@ def _print_results(results: Mapping[str, Any]) -> None:
             f"({retrieval['recall']:.1%})",
         ),
         ("LLM fallback count", str(metrics["llm_fallback_count"])),
+        ("Rubric override cases", str(metrics["rubric_override_count"])),
+        (
+            "Cases with deterministic citations",
+            str(metrics["deterministic_citation_case_count"]),
+        ),
         (
             "LLM fallback reasons",
             ", ".join(

@@ -703,6 +703,22 @@ class InvestigationWorkflow:
                 if policy_assessment is not None
                 else None
             ),
+            "original_llm_recommendation": (
+                policy_assessment.original_llm_recommendation.value
+                if policy_assessment is not None
+                and policy_assessment.original_llm_recommendation is not None
+                else None
+            ),
+            "rubric_override": (
+                policy_assessment.rubric_override
+                if policy_assessment is not None
+                else False
+            ),
+            "deterministic_citations": (
+                policy_assessment.deterministic_citations
+                if policy_assessment is not None
+                else []
+            ),
             "fallback_reason": (
                 policy_assessment.fallback_reason
                 if policy_assessment is not None
