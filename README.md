@@ -106,6 +106,9 @@ Financial-crime investigations often need several kinds of evidence at once: tra
 
 ```text
 .
+├── .github/workflows/
+│   ├── ci.yml                           # checks every push and pull request
+│   └── publish-image.yml                # tests and publishes the GHCR image
 ├── app/
 │   ├── main.py                         # FastAPI factory and routes
 │   ├── config.py                       # environment-backed settings
@@ -428,18 +431,29 @@ Compose waits for the PostgreSQL health check and configures the API to use the 
 
 ## Deploying to Azure
 
-The repository includes a manual Azure Container Apps deployment script; no
-deployment has been run for you. After installing the Azure CLI, selecting the
-intended subscription, and running `az login`, execute:
+On pushes to `main` and manual dispatches,
+`.github/workflows/publish-image.yml` runs pytest and then builds the Dockerfile.
+It publishes `ghcr.io/joffie89/agentic-fincrime-investigation` with both `latest`
+and commit-SHA tags. The Docker build context excludes `.env` and `.env.*`.
+
+After the first successful publication, open the package settings on GitHub and
+change the GHCR package visibility to **Public** once. Azure Container Apps can
+then pull it without registry credentials. After installing the Azure CLI,
+selecting the intended subscription, and running `az login`, execute:
 
 ```powershell
 .\scripts\deploy_azure.ps1
 ```
 
-The script securely prompts for `API_KEY` and `OPENAI_API_KEY`, builds from the
-local Docker source, stores both values as Container Apps secrets, deploys the
-bundled OpenAI policy index behind external ingress, and prints the app URL. It
-uses resource group `fincrime-demo-rg` in `uksouth`, with zero to one replica.
+The script securely prompts for `API_KEY` and `OPENAI_API_KEY`, pulls the
+prebuilt `latest` image, stores both values as Container Apps secrets, deploys
+the bundled OpenAI policy index behind external ingress, and prints the app URL.
+It uses resource group `fincrime-demo-rg` in `uksouth`, with zero to one replica.
+To deploy an immutable build, pass its commit-SHA tag explicitly:
+
+```powershell
+.\scripts\deploy_azure.ps1 -Image ghcr.io/joffie89/agentic-fincrime-investigation:<commit-sha>
+```
 
 This demo sets `PERSISTENCE_BACKEND=memory`. Investigation and audit records are
 lost whenever its replica stops or restarts, including when Container Apps
@@ -457,7 +471,9 @@ demo configuration, limitations, and a separate production-oriented topology.
 
 `.github/workflows/ci.yml` defines CI for pushes and pull requests. It installs dependencies, checks the environment, compiles the application, runs pytest, validates Compose, and builds the Docker image. It does not deploy anywhere.
 
-The Azure scripts are manual and opt-in; CI never invokes them.
+`.github/workflows/publish-image.yml` runs pytest and publishes `latest` and
+commit-SHA image tags to GHCR. It never deploys to Azure. The Azure scripts are
+manual and opt-in; neither workflow invokes them.
 
 ## Responsible AI
 

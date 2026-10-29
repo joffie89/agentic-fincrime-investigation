@@ -1,5 +1,8 @@
 [CmdletBinding()]
-param()
+param(
+    [ValidateNotNullOrEmpty()]
+    [string] $Image = "ghcr.io/joffie89/agentic-fincrime-investigation:latest"
+)
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -10,7 +13,6 @@ $AppName = "fincrime-api"
 $TargetPort = 8000
 $ApiKeySecretName = "api-key"
 $OpenAiApiKeySecretName = "openai-api-key"
-$RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 
 function Invoke-AzureCli {
     param(
@@ -79,49 +81,41 @@ Invoke-AzureCli -Arguments @(
     "--output", "none"
 )
 
-$ApiKey = Read-Host -Prompt "API_KEY" -AsSecureString
-if ($ApiKey.Length -eq 0) {
-    throw "API_KEY must not be empty."
-}
-$ApiKey.MakeReadOnly()
-
-$OpenAiApiKey = Read-Host -Prompt "OPENAI_API_KEY" -AsSecureString
-if ($OpenAiApiKey.Length -eq 0) {
-    $ApiKey.Dispose()
-    throw "OPENAI_API_KEY must not be empty."
-}
-$OpenAiApiKey.MakeReadOnly()
-
+$ApiKey = $null
+$OpenAiApiKey = $null
 try {
+    $ApiKey = Read-Host -Prompt "API_KEY" -AsSecureString
+    $OpenAiApiKey = Read-Host -Prompt "OPENAI_API_KEY" -AsSecureString
+
+    if ($ApiKey.Length -lt 20 -or $OpenAiApiKey.Length -lt 20) {
+        throw "Key looks too short - paste with right-click in a normal PowerShell window."
+    }
+
+    $ApiKey.MakeReadOnly()
+    $OpenAiApiKey.MakeReadOnly()
+
     # A Container App must exist before app-level secrets can be added. This random,
     # short-lived bootstrap value lets the first revision start without a .env file;
     # the final update replaces it with the Container Apps secret reference.
     $BootstrapApiKey = "bootstrap-$([Guid]::NewGuid().ToString('N'))"
     try {
-        Push-Location $RepositoryRoot
-        try {
-            Invoke-AzureCli -Arguments @(
-                "containerapp", "up",
-                "--name", $AppName,
-                "--resource-group", $ResourceGroup,
-                "--location", $Location,
-                "--source", ".",
-                "--ingress", "external",
-                "--target-port", $TargetPort.ToString(),
-                "--env-vars",
-                "API_KEY=$BootstrapApiKey",
-                "SERVICE_MODE=local",
-                "EMBEDDING_MODE=local",
-                "POLICY_INDEX_PATH=data/policy_index.json",
-                "PERSISTENCE_BACKEND=memory",
-                "LLM_ASSESSMENT_ENABLED=false",
-                "--only-show-errors",
-                "--output", "none"
-            )
-        }
-        finally {
-            Pop-Location
-        }
+        Invoke-AzureCli -Arguments @(
+            "containerapp", "up",
+            "--name", $AppName,
+            "--resource-group", $ResourceGroup,
+            "--location", $Location,
+            "--image", $Image,
+            "--ingress", "external",
+            "--target-port", $TargetPort.ToString(),
+            "--env-vars",
+            "API_KEY=$BootstrapApiKey",
+            "SERVICE_MODE=local",
+            "EMBEDDING_MODE=local",
+            "POLICY_INDEX_PATH=data/policy_index.json",
+            "PERSISTENCE_BACKEND=memory",
+            "LLM_ASSESSMENT_ENABLED=false",
+            "--output", "none"
+        )
     }
     finally {
         $BootstrapApiKey = $null
@@ -167,6 +161,10 @@ try {
     Write-Host "Application URL: https://$Fqdn"
 }
 finally {
-    $ApiKey.Dispose()
-    $OpenAiApiKey.Dispose()
+    if ($null -ne $ApiKey) {
+        $ApiKey.Dispose()
+    }
+    if ($null -ne $OpenAiApiKey) {
+        $OpenAiApiKey.Dispose()
+    }
 }
