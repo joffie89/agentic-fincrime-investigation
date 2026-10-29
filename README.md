@@ -6,6 +6,10 @@ An AI assistant for UK bank fraud and AML teams that investigates a payment aler
 
 **Scope:** a portfolio project on synthetic data. It recommends actions; it never blocks accounts, rejects payments, or claims a human reviewed a case.
 
+**Live API docs:** https://fincrime-api.icytree-54e1672f.uksouth.azurecontainerapps.io/docs
+(deployed on Azure Container Apps; investigation endpoints require an API key,
+and the first request after idle may take ~30 s while the app scales up from zero).
+
 ## Key results
 
 All evaluation data is synthetic. On the 60-query retrieval set, moving from the local lexical-hashing vector baseline to OpenAI `text-embedding-3-small` vector search improved hit@1 from **1.67% to 75.00%** and MRR from **0.1705 to 0.8469**.
