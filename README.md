@@ -134,7 +134,10 @@ Financial-crime investigations often need several kinds of evidence at once: tra
 │   ├── decision_cases.json              # 50 in-sample decision cases
 │   └── decision_cases_holdout.json      # 20 held-out decision cases
 ├── tests/                               # 222 network-free tests
-├── docs/azure-deployment-design.md      # design only; not deployed
+├── docs/azure-deployment-design.md      # prepared Azure design; not deployed
+├── scripts/
+│   ├── deploy_azure.ps1               # manual Container Apps deployment
+│   └── teardown_azure.ps1             # confirmed demo resource cleanup
 ├── Dockerfile
 ├── docker-compose.yml
 └── requirements.txt
@@ -423,11 +426,38 @@ docker compose up --build
 
 Compose waits for the PostgreSQL health check and configures the API to use the PostgreSQL repository. Stop it with `docker compose down`; add `--volumes` only if you intentionally want to remove the local database volume.
 
+## Deploying to Azure
+
+The repository includes a manual Azure Container Apps deployment script; no
+deployment has been run for you. After installing the Azure CLI, selecting the
+intended subscription, and running `az login`, execute:
+
+```powershell
+.\scripts\deploy_azure.ps1
+```
+
+The script securely prompts for `API_KEY` and `OPENAI_API_KEY`, builds from the
+local Docker source, stores both values as Container Apps secrets, deploys the
+bundled OpenAI policy index behind external ingress, and prints the app URL. It
+uses resource group `fincrime-demo-rg` in `uksouth`, with zero to one replica.
+
+This demo sets `PERSISTENCE_BACKEND=memory`. Investigation and audit records are
+lost whenever its replica stops or restarts, including when Container Apps
+scales to zero. Delete the complete demo resource group with the separately
+confirmed teardown script:
+
+```powershell
+.\scripts\teardown_azure.ps1
+```
+
+See [`docs/azure-deployment-design.md`](docs/azure-deployment-design.md) for the
+demo configuration, limitations, and a separate production-oriented topology.
+
 ## CI/CD
 
 `.github/workflows/ci.yml` defines CI for pushes and pull requests. It installs dependencies, checks the environment, compiles the application, runs pytest, validates Compose, and builds the Docker image. It does not deploy anywhere.
 
-An intended Azure topology is documented separately in [`docs/azure-deployment-design.md`](docs/azure-deployment-design.md). That document is a design, not evidence of a completed deployment.
+The Azure scripts are manual and opt-in; CI never invokes them.
 
 ## Responsible AI
 
