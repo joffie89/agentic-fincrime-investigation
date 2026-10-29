@@ -32,9 +32,7 @@ def reciprocal_rank_fusion(
             if item_id in seen:
                 continue
             seen.add(item_id)
-            scores[item_id] = scores.get(item_id, 0.0) + 1 / (
-                RRF_RANK_CONSTANT + rank
-            )
+            scores[item_id] = scores.get(item_id, 0.0) + 1 / (RRF_RANK_CONSTANT + rank)
     return sorted(scores.items(), key=lambda item: (-item[1], item[0]))
 
 
@@ -54,16 +52,12 @@ class PolicyRetriever:
         try:
             resolved_mode = RetrievalMode(retrieval_mode)
         except ValueError as exc:
-            raise ValueError(
-                "retrieval_mode must be one of: vector, bm25, hybrid"
-            ) from exc
+            raise ValueError("retrieval_mode must be one of: vector, bm25, hybrid") from exc
         self._chunks = chunks
         self.embedding_service = embedding_service
         self.minimum_relevance_score = minimum_relevance_score
         self.retrieval_mode = resolved_mode
-        self._tokenized_chunks = [
-            self._tokenize(str(chunk["text"])) for chunk in chunks
-        ]
+        self._tokenized_chunks = [self._tokenize(str(chunk["text"])) for chunk in chunks]
         self._bm25 = (
             BM25Okapi(self._tokenized_chunks)
             if self._tokenized_chunks and any(self._tokenized_chunks)
@@ -79,7 +73,7 @@ class PolicyRetriever:
         minimum_relevance_score: float = 0.05,
         policy_source_path: str | Path | None = None,
         retrieval_mode: RetrievalMode | str = RetrievalMode.HYBRID,
-    ) -> "PolicyRetriever":
+    ) -> PolicyRetriever:
         source = Path(index_path)
         try:
             payload = json.loads(source.read_text(encoding="utf-8"))
@@ -100,9 +94,7 @@ class PolicyRetriever:
         implementation = metadata.get("implementation")
         if embedding_service is None:
             if implementation != "LocalHashEmbeddingService":
-                raise ValueError(
-                    "A matching embedding service is required for this policy index"
-                )
+                raise ValueError("A matching embedding service is required for this policy index")
             service: EmbeddingService = LocalHashEmbeddingService(dimension=dimension)
         else:
             service = embedding_service
@@ -119,9 +111,7 @@ class PolicyRetriever:
         if implementation == "LocalHashEmbeddingService":
             indexed_version = metadata.get("implementation_version")
             if indexed_version != LocalHashEmbeddingService.VERSION:
-                raise ValueError(
-                    "Local embedding implementation version does not match the index"
-                )
+                raise ValueError("Local embedding implementation version does not match the index")
         if implementation == "OpenAIEmbeddingService":
             indexed_model = metadata.get("model")
             service_model = getattr(service, "model", None)
@@ -129,29 +119,22 @@ class PolicyRetriever:
                 raise ValueError("OpenAI policy index has no valid embedding model")
             if indexed_model != service_model:
                 raise ValueError(
-                    "Embedding model mismatch: "
-                    f"index={indexed_model}, service={service_model}"
+                    f"Embedding model mismatch: index={indexed_model}, service={service_model}"
                 )
 
         if policy_source_path is not None:
             policy_source = Path(policy_source_path)
             source_metadata = payload.get("source")
             expected_digest = (
-                source_metadata.get("sha256")
-                if isinstance(source_metadata, dict)
-                else None
+                source_metadata.get("sha256") if isinstance(source_metadata, dict) else None
             )
             try:
                 source_text = policy_source.read_text(encoding="utf-8")
             except OSError as exc:
-                raise ValueError(
-                    f"Unable to verify policy source: {policy_source}"
-                ) from exc
+                raise ValueError(f"Unable to verify policy source: {policy_source}") from exc
             actual_digest = hashlib.sha256(source_text.encode("utf-8")).hexdigest()
             if not expected_digest or expected_digest != actual_digest:
-                raise ValueError(
-                    "Policy index is stale or does not match its source document"
-                )
+                raise ValueError("Policy index is stale or does not match its source document")
 
         validated_chunks: list[dict[str, Any]] = []
         seen_chunk_ids: set[str] = set()
@@ -218,14 +201,9 @@ class PolicyRetriever:
 
     def _retrieve_vector(self, query: str, top_k: int) -> list[RetrievedPolicy]:
         ranked = [
-            item
-            for item in self._vector_ranking(query)
-            if item[0] >= self.minimum_relevance_score
+            item for item in self._vector_ranking(query) if item[0] >= self.minimum_relevance_score
         ]
-        return [
-            self._retrieved_policy(chunk, score)
-            for score, chunk in ranked[:top_k]
-        ]
+        return [self._retrieved_policy(chunk, score) for score, chunk in ranked[:top_k]]
 
     def _retrieve_bm25(self, query: str, top_k: int) -> list[RetrievedPolicy]:
         ranked = self._bm25_ranking(query)
@@ -244,9 +222,7 @@ class PolicyRetriever:
 
     def _retrieve_hybrid(self, query: str, top_k: int) -> list[RetrievedPolicy]:
         vector_ranked = [
-            item
-            for item in self._vector_ranking(query)
-            if item[0] >= self.minimum_relevance_score
+            item for item in self._vector_ranking(query) if item[0] >= self.minimum_relevance_score
         ]
         bm25_ranked = self._bm25_ranking(query)
         fused = reciprocal_rank_fusion(
@@ -255,10 +231,7 @@ class PolicyRetriever:
                 [str(chunk["chunk_id"]) for _, chunk in bm25_ranked],
             ]
         )
-        chunks_by_id = {
-            str(chunk["chunk_id"]): chunk
-            for chunk in self._chunks
-        }
+        chunks_by_id = {str(chunk["chunk_id"]): chunk for chunk in self._chunks}
         return [
             self._retrieved_policy(chunks_by_id[chunk_id], score)
             for chunk_id, score in fused[:top_k]
@@ -351,9 +324,7 @@ def build_policy_query(
     if _field(transaction, "new_payee"):
         parts.append("new payee")
 
-    reasons = _field(risk_assessment, "risk_reasons") or _field(
-        risk_assessment, "reasons"
-    )
+    reasons = _field(risk_assessment, "risk_reasons") or _field(risk_assessment, "reasons")
     signals = _field(graph_analysis, "signals")
     for values in (reasons, signals):
         if isinstance(values, (list, tuple, set)):

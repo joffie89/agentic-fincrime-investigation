@@ -74,9 +74,7 @@ class DecisionObservation(DomainModel):
     rubric_override: StrictBool = False
     deterministic_citations: list[Identifier] = Field(default_factory=list)
     retrieved_policy_ids: list[Identifier] = Field(default_factory=list)
-    semantic_retrieved_policy_ids: list[Identifier] = Field(
-        default_factory=list
-    )
+    semantic_retrieved_policy_ids: list[Identifier] = Field(default_factory=list)
     signal_included_policy_ids: list[Identifier] = Field(default_factory=list)
     confidence: UnitInterval | None = None
     evidence_sufficient: StrictBool | None = None
@@ -116,9 +114,7 @@ def _percentile(values: Sequence[float], percentile: float) -> float:
     if lower_index == upper_index:
         return ordered[lower_index]
     fraction = position - lower_index
-    return ordered[lower_index] + (
-        ordered[upper_index] - ordered[lower_index]
-    ) * fraction
+    return ordered[lower_index] + (ordered[upper_index] - ordered[lower_index]) * fraction
 
 
 def calculate_decision_metrics(
@@ -129,15 +125,12 @@ def calculate_decision_metrics(
     if not observations:
         raise ValueError("At least one decision observation is required")
     validated = [
-        item
-        if isinstance(item, DecisionObservation)
-        else DecisionObservation.model_validate(item)
+        item if isinstance(item, DecisionObservation) else DecisionObservation.model_validate(item)
         for item in observations
     ]
     total = len(validated)
     recommendation_correct = sum(
-        item.completed
-        and item.actual_recommendation is item.expected_recommendation
+        item.completed and item.actual_recommendation is item.expected_recommendation
         for item in validated
     )
     llm_scored = [
@@ -146,32 +139,23 @@ def calculate_decision_metrics(
         if item.completed and item.original_llm_recommendation is not None
     ]
     llm_recommendation_correct = sum(
-        item.original_llm_recommendation is item.expected_recommendation
-        for item in llm_scored
+        item.original_llm_recommendation is item.expected_recommendation for item in llm_scored
     )
     routing_correct = sum(
-        item.completed
-        and item.actual_requires_human_review
-        is item.expected_requires_human_review
+        item.completed and item.actual_requires_human_review is item.expected_requires_human_review
         for item in validated
     )
-    without_fallbacks = [
-        item for item in validated if not item.llm_fallback_used
-    ]
+    without_fallbacks = [item for item in validated if not item.llm_fallback_used]
     recommendation_correct_without_fallbacks = sum(
-        item.completed
-        and item.actual_recommendation is item.expected_recommendation
+        item.completed and item.actual_recommendation is item.expected_recommendation
         for item in without_fallbacks
     )
     routing_correct_without_fallbacks = sum(
-        item.completed
-        and item.actual_requires_human_review
-        is item.expected_requires_human_review
+        item.completed and item.actual_requires_human_review is item.expected_requires_human_review
         for item in without_fallbacks
     )
     citation_correct = sum(
-        item.completed
-        and set(item.actual_policy_ids) == set(item.expected_policy_ids)
+        item.completed and set(item.actual_policy_ids) == set(item.expected_policy_ids)
         for item in validated
     )
     missed = [
@@ -209,12 +193,8 @@ def calculate_decision_metrics(
         if item.llm_fallback_used:
             fallback_reasons[item.fallback_reason or "unknown"] += 1
 
-    rubric_override_cases = [
-        item.name for item in validated if item.rubric_override
-    ]
-    deterministic_citation_cases = [
-        item.name for item in validated if item.deterministic_citations
-    ]
+    rubric_override_cases = [item.name for item in validated if item.rubric_override]
+    deterministic_citation_cases = [item.name for item in validated if item.deterministic_citations]
 
     return {
         "case_count": total,
@@ -241,15 +221,11 @@ def calculate_decision_metrics(
             "case_names": unnecessary,
         },
         "exact_citation_match_rate": _accuracy(citation_correct, total),
-        "llm_fallback_count": sum(
-            item.llm_fallback_used for item in validated
-        ),
+        "llm_fallback_count": sum(item.llm_fallback_used for item in validated),
         "llm_fallback_count_by_reason": dict(sorted(fallback_reasons.items())),
         "rubric_override_count": len(rubric_override_cases),
         "rubric_override_case_names": rubric_override_cases,
-        "deterministic_citation_case_count": len(
-            deterministic_citation_cases
-        ),
+        "deterministic_citation_case_count": len(deterministic_citation_cases),
         "deterministic_citation_count": sum(
             len(item.deterministic_citations) for item in validated
         ),
@@ -318,12 +294,8 @@ def summarize_metric_runs(
 
     if not run_metrics:
         raise ValueError("At least one run of metrics is required")
-    flattened_runs = [
-        _flatten_numeric_metrics(metrics) for metrics in run_metrics
-    ]
-    metric_paths = sorted(
-        set().union(*(set(metrics) for metrics in flattened_runs))
-    )
+    flattened_runs = [_flatten_numeric_metrics(metrics) for metrics in run_metrics]
+    metric_paths = sorted(set().union(*(set(metrics) for metrics in flattened_runs)))
     summary: dict[str, dict[str, float]] = {}
     for path in metric_paths:
         values = [metrics.get(path, 0.0) for metrics in flattened_runs]
@@ -354,8 +326,7 @@ def _policy_fallback_used(audit_record: Mapping[str, Any] | None) -> bool:
         return False
     fallbacks = audit_record.get("fallbacks", [])
     return any(
-        isinstance(item, Mapping) and item.get("step") == "policy_validation"
-        for item in fallbacks
+        isinstance(item, Mapping) and item.get("step") == "policy_validation" for item in fallbacks
     )
 
 
@@ -374,9 +345,7 @@ def _string_list(value: Any) -> list[str]:
 
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
         return []
-    return list(
-        dict.fromkeys(item for item in value if isinstance(item, str) and item)
-    )
+    return list(dict.fromkeys(item for item in value if isinstance(item, str) and item))
 
 
 def _retrieval_source_ids(
@@ -396,9 +365,7 @@ def _retrieval_source_ids(
     # Keep the evaluator able to read intermediate/older result files that
     # recorded these fields flat while the audit schema was being introduced.
     if not semantic:
-        semantic = _string_list(
-            audit_record.get("semantic_retrieved_policy_ids")
-        )
+        semantic = _string_list(audit_record.get("semantic_retrieved_policy_ids"))
     if not signal:
         signal = _string_list(audit_record.get("signal_included_policy_ids"))
     return semantic, signal
@@ -428,12 +395,8 @@ def _fallback_reason(
         reason = fallback.get("fallback_reason")
         if isinstance(reason, str) and reason:
             return reason
-        exception_type = fallback.get("exception_type") or fallback.get(
-            "error_type"
-        )
-        exception_message = fallback.get("exception_message") or fallback.get(
-            "message"
-        )
+        exception_type = fallback.get("exception_type") or fallback.get("error_type")
+        exception_message = fallback.get("exception_message") or fallback.get("message")
         if isinstance(exception_type, str) and exception_type:
             if isinstance(exception_message, str) and exception_message:
                 return f"{exception_type}: {exception_message}"
@@ -445,9 +408,7 @@ def _rejected_citations(
     policy_assessment: Any,
     audit_record: Mapping[str, Any] | None,
 ) -> list[str]:
-    citations = _string_list(
-        getattr(policy_assessment, "rejected_citations", None)
-    )
+    citations = _string_list(getattr(policy_assessment, "rejected_citations", None))
     if citations or audit_record is None:
         return citations
     recorded_assessment = audit_record.get("policy_assessment")
@@ -460,16 +421,12 @@ def _rejected_policies_considered(
     policy_assessment: Any,
     audit_record: Mapping[str, Any] | None,
 ) -> list[str]:
-    rejected = _string_list(
-        getattr(policy_assessment, "rejected_policies_considered", None)
-    )
+    rejected = _string_list(getattr(policy_assessment, "rejected_policies_considered", None))
     if rejected or audit_record is None:
         return rejected
     recorded_assessment = audit_record.get("policy_assessment")
     if isinstance(recorded_assessment, Mapping):
-        return _string_list(
-            recorded_assessment.get("rejected_policies_considered")
-        )
+        return _string_list(recorded_assessment.get("rejected_policies_considered"))
     return _string_list(audit_record.get("rejected_policies_considered"))
 
 
@@ -515,9 +472,7 @@ def _evaluate_case(
             name=case.name,
             expected_recommendation=case.expected_recommendation,
             actual_recommendation=None,
-            expected_requires_human_review=(
-                case.expected_requires_human_review
-            ),
+            expected_requires_human_review=(case.expected_requires_human_review),
             actual_requires_human_review=None,
             expected_policy_ids=case.expected_policy_ids,
             actual_policy_ids=[],
@@ -557,16 +512,8 @@ def _evaluate_case(
             },
         )
         audit_record = None
-    usage = (
-        result.llm_usage.model_dump(mode="json")
-        if result.llm_usage is not None
-        else None
-    )
-    cost = (
-        result.llm_usage.estimated_cost_usd
-        if result.llm_usage is not None
-        else 0.0
-    )
+    usage = result.llm_usage.model_dump(mode="json") if result.llm_usage is not None else None
+    cost = result.llm_usage.estimated_cost_usd if result.llm_usage is not None else 0.0
     policy_references = list(result.policy_assessment.policy_references)
     semantic_policy_ids, signal_policy_ids = _retrieval_source_ids(audit_record)
     fallback_reason = _fallback_reason(result.policy_assessment, audit_record)
@@ -596,9 +543,7 @@ def _evaluate_case(
         expected_policy_ids=case.expected_policy_ids,
         actual_policy_ids=policy_references,
         original_llm_recommendation=original_llm_recommendation,
-        rubric_override=(
-            rubric_override if isinstance(rubric_override, bool) else False
-        ),
+        rubric_override=(rubric_override if isinstance(rubric_override, bool) else False),
         deterministic_citations=deterministic_citations,
         retrieved_policy_ids=list(
             dict.fromkeys(item.policy_id for item in result.retrieved_policies)
@@ -609,9 +554,7 @@ def _evaluate_case(
         evidence_sufficient=result.policy_assessment.evidence_sufficient,
         routing_rule_fired=_routing_rule_fired(audit_record),
         policy_references=policy_references,
-        policies_considered=list(
-            result.policy_assessment.policies_considered
-        ),
+        policies_considered=list(result.policy_assessment.policies_considered),
         rejected_citations=_rejected_citations(
             result.policy_assessment,
             audit_record,
@@ -621,9 +564,7 @@ def _evaluate_case(
             audit_record,
         ),
         llm_reasons=list(result.policy_assessment.reasons),
-        llm_fallback_used=(
-            fallback_reason is not None or _policy_fallback_used(audit_record)
-        ),
+        llm_fallback_used=(fallback_reason is not None or _policy_fallback_used(audit_record)),
         fallback_reason=fallback_reason,
         latency_ms=float(latency_ms),
         estimated_cost_usd=float(cost),
@@ -647,9 +588,7 @@ def run_decision_evaluation(
 
     cases_source = Path(cases_path)
     dataset = _load_cases(cases_source)
-    configured_settings = settings or Settings(
-        persistence_backend=PersistenceBackend.MEMORY
-    )
+    configured_settings = settings or Settings(persistence_backend=PersistenceBackend.MEMORY)
     evaluation_settings = configured_settings.model_copy(
         update={
             "persistence_backend": PersistenceBackend.MEMORY,
@@ -661,24 +600,16 @@ def run_decision_evaluation(
         # Each run needs isolated graph/repository state because cases reuse
         # transaction IDs and a prior run would otherwise look like a replay.
         service = build_investigation_service(evaluation_settings)
-        observations = [
-            _evaluate_case(service, case)
-            for case in dataset.cases
-        ]
+        observations = [_evaluate_case(service, case) for case in dataset.cases]
         run_results.append(
             {
                 "run": run_number,
                 "metrics": calculate_decision_metrics(observations),
-                "cases": [
-                    observation.model_dump(mode="json")
-                    for observation in observations
-                ],
+                "cases": [observation.model_dump(mode="json") for observation in observations],
             }
         )
 
-    metric_summary = summarize_metric_runs(
-        [run["metrics"] for run in run_results]
-    )
+    metric_summary = summarize_metric_runs([run["metrics"] for run in run_results])
     output_path = Path(output_dir) / _results_filename(
         cases_source,
         evaluation_settings.service_mode.value,
@@ -690,15 +621,11 @@ def run_decision_evaluation(
         "service_mode": evaluation_settings.service_mode.value,
         "embedding_mode": evaluation_settings.embedding_mode.value,
         "retrieval_mode": evaluation_settings.retrieval_mode.value,
-        "openai_assessment_temperature": (
-            evaluation_settings.openai_assessment_temperature
-        ),
+        "openai_assessment_temperature": (evaluation_settings.openai_assessment_temperature),
         "case_count": len(dataset.cases),
         "run_count": runs,
         "total_case_evaluations": len(dataset.cases) * runs,
-        "cost_scope": (
-            "Policy-assessment LLM usage only; embedding API cost is not included."
-        ),
+        "cost_scope": ("Policy-assessment LLM usage only; embedding API cost is not included."),
         # Keep the original single-run fields for existing analysis scripts.
         # For repeated evaluations these are the first run; all runs and their
         # aggregate statistics are available in the fields below.
@@ -725,13 +652,9 @@ def _print_results(results: Mapping[str, Any]) -> None:
     metrics = results["metrics"]
     recommendation = metrics["recommendation_accuracy"]
     llm_recommendation = metrics["llm_recommendation_accuracy"]
-    recommendation_without_fallbacks = metrics[
-        "recommendation_accuracy_excluding_fallbacks"
-    ]
+    recommendation_without_fallbacks = metrics["recommendation_accuracy_excluding_fallbacks"]
     routing = metrics["human_review_routing_accuracy"]
-    routing_without_fallbacks = metrics[
-        "human_review_routing_accuracy_excluding_fallbacks"
-    ]
+    routing_without_fallbacks = metrics["human_review_routing_accuracy_excluding_fallbacks"]
     citations = metrics["exact_citation_match_rate"]
     retrieval = metrics["retrieval_recall"]
     latency = metrics["latency_ms"]
@@ -756,8 +679,7 @@ def _print_results(results: Mapping[str, Any]) -> None:
         ),
         (
             "Human-review routing accuracy",
-            f"{routing['correct']}/{routing['total']} "
-            f"({routing['accuracy']:.1%})",
+            f"{routing['correct']}/{routing['total']} ({routing['accuracy']:.1%})",
         ),
         (
             "Human-review routing accuracy (no fallbacks)",
@@ -772,8 +694,7 @@ def _print_results(results: Mapping[str, Any]) -> None:
         ),
         (
             "Exact citation match rate",
-            f"{citations['correct']}/{citations['total']} "
-            f"({citations['accuracy']:.1%})",
+            f"{citations['correct']}/{citations['total']} ({citations['accuracy']:.1%})",
         ),
         (
             "Expected-policy retrieval recall",
@@ -791,9 +712,7 @@ def _print_results(results: Mapping[str, Any]) -> None:
             "LLM fallback reasons",
             ", ".join(
                 f"{reason} ({count})"
-                for reason, count in metrics[
-                    "llm_fallback_count_by_reason"
-                ].items()
+                for reason, count in metrics["llm_fallback_count_by_reason"].items()
             )
             or "none",
         ),

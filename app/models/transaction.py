@@ -32,7 +32,5 @@ class Transaction(DomainModel):
             and self.destination_account_id is not None
             and self.origin_account_id == self.destination_account_id
         ):
-            raise ValueError(
-                "origin_account_id and destination_account_id must differ"
-            )
+            raise ValueError("origin_account_id and destination_account_id must differ")
         return self

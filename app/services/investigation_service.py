@@ -83,8 +83,6 @@ class InvestigationService:
         return result
 
     def get_investigation(self, investigation_id: str) -> dict[str, Any] | None:
-        """Return a persisted investigation audit trail by its identifier."""
-
         return self.workflow.get_investigation(investigation_id)
 
 
@@ -136,8 +134,6 @@ def _build_policy_retriever(settings: Settings) -> PolicyRetriever:
 
 
 def _build_azure_client(settings: Settings):
-    """Create an SDK client only when an Azure-backed component is selected."""
-
     from openai import AzureOpenAI
 
     return AzureOpenAI(
@@ -148,8 +144,6 @@ def _build_azure_client(settings: Settings):
 
 
 def build_investigation_service(settings: Settings) -> InvestigationService:
-    """Construct all workflow dependencies from validated settings."""
-
     workflow = InvestigationWorkflow(
         risk_assessor=assess_transaction,
         graph_analyzer=GraphAnalyzer(),
@@ -157,9 +151,7 @@ def build_investigation_service(settings: Settings) -> InvestigationService:
         policy_assessor=_build_policy_assessor(settings),
         repository=build_repository(settings),
         retrieval_top_k=settings.retrieval_top_k,
-        human_review_confidence_threshold=(
-            settings.human_review_confidence_threshold
-        ),
+        human_review_confidence_threshold=(settings.human_review_confidence_threshold),
         llm_assessment_enabled=settings.llm_assessment_enabled,
         qa_sample_rate=settings.qa_sample_rate,
     )

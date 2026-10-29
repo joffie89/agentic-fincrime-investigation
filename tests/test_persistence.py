@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
 
+import app.repositories.postgres as postgres_module
 from app.repositories.memory import InMemoryInvestigationRepository
 from app.repositories.postgres import PostgresInvestigationRepository
-import app.repositories.postgres as postgres_module
 
 
 def _record() -> dict:
@@ -21,16 +21,14 @@ def _record() -> dict:
             "risk_reasons": ["young_account", "unusual_amount"],
         },
         "graph_analysis": {"counterparty_count": 4, "signals": ["shared_payee"]},
-        "retrieved_policies": [
-            {"policy_id": "POL-HIGH-RISK", "text": "Escalate high-risk cases."}
-        ],
+        "retrieved_policies": [{"policy_id": "POL-HIGH-RISK", "text": "Escalate high-risk cases."}],
         "recommendation": {
             "recommendation": "ESCALATE_TO_HUMAN",
             "requires_human_review": True,
         },
         "requires_human_review": True,
         "status": "PENDING_HUMAN_REVIEW",
-        "created_at": datetime(2026, 1, 1, tzinfo=timezone.utc),
+        "created_at": datetime(2026, 1, 1, tzinfo=UTC),
     }
 
 
@@ -71,9 +69,7 @@ def test_postgres_repository_commits_successful_write(monkeypatch) -> None:
     connection.cursor.return_value = cursor
     fake_psycopg = SimpleNamespace(connect=MagicMock(return_value=connection))
     monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
-    repository = PostgresInvestigationRepository(
-        "postgresql://demo:demo@postgres/demo"
-    )
+    repository = PostgresInvestigationRepository("postgresql://demo:demo@postgres/demo")
 
     result = repository.save(_record())
 
@@ -106,9 +102,7 @@ def test_postgres_repository_retrieves_full_record(monkeypatch) -> None:
     connection.cursor.return_value = cursor
     fake_psycopg = SimpleNamespace(connect=MagicMock(return_value=connection))
     monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
-    repository = PostgresInvestigationRepository(
-        "postgresql://demo:demo@postgres/demo"
-    )
+    repository = PostgresInvestigationRepository("postgresql://demo:demo@postgres/demo")
 
     result = repository.get("inv-001")
 
@@ -136,9 +130,7 @@ def test_postgres_repository_returns_none_when_record_is_missing(monkeypatch) ->
     connection.cursor.return_value = cursor
     fake_psycopg = SimpleNamespace(connect=MagicMock(return_value=connection))
     monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
-    repository = PostgresInvestigationRepository(
-        "postgresql://demo:demo@postgres/demo"
-    )
+    repository = PostgresInvestigationRepository("postgresql://demo:demo@postgres/demo")
 
     assert repository.get("missing-inv") is None
     connection.commit.assert_called_once_with()
@@ -148,13 +140,9 @@ def test_postgres_repository_returns_none_when_record_is_missing(monkeypatch) ->
 
 def test_postgres_repository_sanitizes_retrieval_failure(monkeypatch) -> None:
     database_error = "database unavailable at db.internal.example for admin_user"
-    fake_psycopg = SimpleNamespace(
-        connect=MagicMock(side_effect=RuntimeError(database_error))
-    )
+    fake_psycopg = SimpleNamespace(connect=MagicMock(side_effect=RuntimeError(database_error)))
     monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
-    repository = PostgresInvestigationRepository(
-        "postgresql://demo:demo@postgres/demo"
-    )
+    repository = PostgresInvestigationRepository("postgresql://demo:demo@postgres/demo")
 
     with pytest.raises(RuntimeError) as exc_info:
         repository.get("inv-001")
@@ -165,13 +153,9 @@ def test_postgres_repository_sanitizes_retrieval_failure(monkeypatch) -> None:
 
 def test_postgres_repository_reports_connection_failure(monkeypatch) -> None:
     database_error = "database unavailable at db.internal.example for admin_user"
-    fake_psycopg = SimpleNamespace(
-        connect=MagicMock(side_effect=RuntimeError(database_error))
-    )
+    fake_psycopg = SimpleNamespace(connect=MagicMock(side_effect=RuntimeError(database_error)))
     monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
-    repository = PostgresInvestigationRepository(
-        "postgresql://demo:demo@postgres/demo"
-    )
+    repository = PostgresInvestigationRepository("postgresql://demo:demo@postgres/demo")
 
     result = repository.save(_record())
 
@@ -190,9 +174,7 @@ def test_postgres_repository_rolls_back_failed_write(monkeypatch) -> None:
     connection.cursor.return_value = cursor
     fake_psycopg = SimpleNamespace(connect=MagicMock(return_value=connection))
     monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
-    repository = PostgresInvestigationRepository(
-        "postgresql://demo:demo@postgres/demo"
-    )
+    repository = PostgresInvestigationRepository("postgresql://demo:demo@postgres/demo")
 
     result = repository.save(_record())
 
@@ -206,9 +188,7 @@ def test_postgres_repository_rolls_back_failed_write(monkeypatch) -> None:
 def test_postgres_repository_does_not_connect_for_invalid_record(monkeypatch) -> None:
     fake_psycopg = SimpleNamespace(connect=MagicMock())
     monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
-    repository = PostgresInvestigationRepository(
-        "postgresql://demo:demo@postgres/demo"
-    )
+    repository = PostgresInvestigationRepository("postgresql://demo:demo@postgres/demo")
 
     result = repository.save({"transaction_id": "txn-001"})
 

@@ -20,8 +20,7 @@ from app.services.policy_assessment import (
     PolicyAssessmentError,
 )
 from app.services.risk_scorer import assess_transaction
-from app.workflow.investigation_workflow import InvestigationWorkflow
-from app.workflow.investigation_workflow import _should_qa_sample
+from app.workflow.investigation_workflow import InvestigationWorkflow, _should_qa_sample
 
 
 class StaticGraphAnalyzer:
@@ -49,8 +48,7 @@ class StaticRetriever:
     def __init__(self, policies, catalog=None) -> None:
         self.policies = policies
         self.catalog = {
-            item.policy_id: item
-            for item in (catalog if catalog is not None else policies)
+            item.policy_id: item for item in (catalog if catalog is not None else policies)
         }
         self.queries: list[str] = []
         self.lookup_requests: list[list[str]] = []
@@ -61,11 +59,7 @@ class StaticRetriever:
 
     def get_by_policy_ids(self, policy_ids: list[str]):
         self.lookup_requests.append(policy_ids)
-        return [
-            self.catalog[policy_id]
-            for policy_id in policy_ids
-            if policy_id in self.catalog
-        ]
+        return [self.catalog[policy_id] for policy_id in policy_ids if policy_id in self.catalog]
 
 
 class StaticAssessor:
@@ -111,15 +105,11 @@ def build_workflow(
         human_review_confidence_threshold=threshold,
         llm_assessment_enabled=llm_assessment_enabled,
         qa_sample_rate=qa_sample_rate,
-        relationship_anomaly_scorer=StaticRelationshipAnomalyScorer(
-            anomaly_result
-        ),
+        relationship_anomaly_scorer=StaticRelationshipAnomalyScorer(anomaly_result),
     )
 
 
-def test_compiled_graph_contains_real_nodes(
-    clean_graph_result, retrieved_policy
-):
+def test_compiled_graph_contains_real_nodes(clean_graph_result, retrieved_policy):
     workflow = build_workflow(
         graph_result=clean_graph_result,
         policies=[retrieved_policy],
@@ -139,9 +129,7 @@ def test_compiled_graph_contains_real_nodes(
     } <= node_names
 
 
-def test_low_risk_routes_to_completed(
-    transaction_factory, clean_graph_result, retrieved_policy
-):
+def test_low_risk_routes_to_completed(transaction_factory, clean_graph_result, retrieved_policy):
     repository = InMemoryInvestigationRepository()
     workflow = build_workflow(
         graph_result=clean_graph_result,
@@ -192,9 +180,7 @@ def test_successful_investigation_persists_complete_audit_trail(
     assert record["transaction"] == transaction.model_dump(mode="json")
     assert record["risk_assessment"] == result.risk_assessment.model_dump(mode="json")
     assert record["graph_analysis"] == clean_graph_result.model_dump(mode="json")
-    assert record["relationship_anomaly"] == (
-        result.relationship_anomaly.model_dump(mode="json")
-    )
+    assert record["relationship_anomaly"] == (result.relationship_anomaly.model_dump(mode="json"))
     assert record["retrieved_policies"] == [
         {
             "policy_id": retrieved_policy.policy_id,
@@ -215,9 +201,7 @@ def test_successful_investigation_persists_complete_audit_trail(
     assert record["rejected_policies_considered"] == []
     assert record["routing"]["decision"] == "complete"
     assert record["routing"]["triggered_rule"]
-    assert record["routing"]["triggered_rule"] in record["routing"][
-        "triggered_rules"
-    ]
+    assert record["routing"]["triggered_rule"] in record["routing"]["triggered_rules"]
     assert record["llm_usage"] is None
     assert record["llm_disabled"] is False
     assert record["qa_sampled"] is False
@@ -263,9 +247,7 @@ def test_signal_mapped_policy_is_added_to_semantic_results(
         policy_assessor=DemoPolicyAssessmentService(),
         repository=repository,
         retrieval_top_k=3,
-        relationship_anomaly_scorer=StaticRelationshipAnomalyScorer(
-            (-0.1, False)
-        ),
+        relationship_anomaly_scorer=StaticRelationshipAnomalyScorer((-0.1, False)),
     )
 
     result = workflow.invoke(
@@ -300,9 +282,7 @@ def test_suspicious_graph_always_adds_network_policy(
         [retrieved_policy],
         catalog=[retrieved_policy, network_policy],
     )
-    suspicious_graph = clean_graph_result.model_copy(
-        update={"signals": [], "suspicious": True}
-    )
+    suspicious_graph = clean_graph_result.model_copy(update={"signals": [], "suspicious": True})
     workflow = InvestigationWorkflow(
         risk_assessor=assess_transaction,
         graph_analyzer=StaticGraphAnalyzer(suspicious_graph),
@@ -310,14 +290,10 @@ def test_suspicious_graph_always_adds_network_policy(
         policy_assessor=DemoPolicyAssessmentService(),
         repository=repository,
         retrieval_top_k=3,
-        relationship_anomaly_scorer=StaticRelationshipAnomalyScorer(
-            (-0.1, False)
-        ),
+        relationship_anomaly_scorer=StaticRelationshipAnomalyScorer((-0.1, False)),
     )
 
-    result = workflow.invoke(
-        transaction_factory(transaction_id="txn-network-policy-inclusion")
-    )
+    result = workflow.invoke(transaction_factory(transaction_id="txn-network-policy-inclusion"))
 
     assert [item.policy_id for item in result.retrieved_policies] == [
         "DEMO-AML-001",
@@ -330,9 +306,7 @@ def test_suspicious_graph_always_adds_network_policy(
     }
 
 
-def test_graph_failure_persists_partial_audit_trail(
-    transaction_factory, retrieved_policy
-):
+def test_graph_failure_persists_partial_audit_trail(transaction_factory, retrieved_policy):
     repository = InMemoryInvestigationRepository()
     workflow = InvestigationWorkflow(
         risk_assessor=assess_transaction,
@@ -342,9 +316,7 @@ def test_graph_failure_persists_partial_audit_trail(
         repository=repository,
         retrieval_top_k=3,
         human_review_confidence_threshold=0.6,
-        relationship_anomaly_scorer=StaticRelationshipAnomalyScorer(
-            (-0.1, False)
-        ),
+        relationship_anomaly_scorer=StaticRelationshipAnomalyScorer((-0.1, False)),
     )
     transaction = transaction_factory(transaction_id="txn-audit-partial")
 
@@ -414,9 +386,7 @@ def test_medium_clear_high_confidence_with_sufficient_evidence_completes(
         assessor=StaticAssessor(assessment),
     )
 
-    result = workflow.invoke(
-        transaction_factory(transaction_id="txn-medium-clear", amount=600.0)
-    )
+    result = workflow.invoke(transaction_factory(transaction_id="txn-medium-clear", amount=600.0))
 
     assert result.risk_assessment.risk_score == 30
     assert result.status is InvestigationStatus.COMPLETED
@@ -597,15 +567,9 @@ def test_provider_failure_uses_safe_validated_fallback(
     assert result.policy_assessment.evidence_sufficient is False
     assert result.policy_assessment.policy_references == []
     assert result.policy_assessment.policies_considered == [retrieved_policy.policy_id]
-    assert (
-        result.policy_assessment.fallback_reason
-        == "PolicyAssessmentError: provider unavailable"
-    )
+    assert result.policy_assessment.fallback_reason == "PolicyAssessmentError: provider unavailable"
     record = repository.records[0]
-    assert (
-        record["fallback_reason"]
-        == "PolicyAssessmentError: provider unavailable"
-    )
+    assert record["fallback_reason"] == "PolicyAssessmentError: provider unavailable"
     assert (
         record["policy_assessment"]["fallback_reason"]
         == "PolicyAssessmentError: provider unavailable"
@@ -613,8 +577,7 @@ def test_provider_failure_uses_safe_validated_fallback(
     assert record["fallbacks"]
     assert record["fallbacks"][0]["step"] == "policy_validation"
     assert (
-        record["fallbacks"][0]["fallback_reason"]
-        == "PolicyAssessmentError: provider unavailable"
+        record["fallbacks"][0]["fallback_reason"] == "PolicyAssessmentError: provider unavailable"
     )
     assert "provider unavailable" in record["fallbacks"][0]["message"]
     assert any("provider unavailable" in error for error in record["errors"])
@@ -678,9 +641,7 @@ def test_llm_disabled_routes_nontrivial_risk_to_human_review(
         llm_assessment_enabled=False,
     )
 
-    result = workflow.invoke(
-        transaction_factory(transaction_id=transaction_id, **updates)
-    )
+    result = workflow.invoke(transaction_factory(transaction_id=transaction_id, **updates))
 
     assert result.risk_assessment.risk_level.value == expected_risk_level
     assert result.status is InvestigationStatus.PENDING_HUMAN_REVIEW
@@ -690,9 +651,7 @@ def test_llm_disabled_routes_nontrivial_risk_to_human_review(
     record = repository.records[0]
     assert record["llm_disabled"] is True
     assert record["qa_sampled"] is False
-    assert "llm_disabled_risk_requires_human_review" in record["routing"][
-        "triggered_rules"
-    ]
+    assert "llm_disabled_risk_requires_human_review" in record["routing"]["triggered_rules"]
 
 
 def test_llm_disabled_allows_clean_low_risk_case_to_complete(
@@ -704,9 +663,7 @@ def test_llm_disabled_allows_clean_low_risk_case_to_complete(
         llm_assessment_enabled=False,
     )
 
-    result = workflow.invoke(
-        transaction_factory(transaction_id="txn-llm-disabled-clean")
-    )
+    result = workflow.invoke(transaction_factory(transaction_id="txn-llm-disabled-clean"))
 
     assert result.status is InvestigationStatus.COMPLETED
     assert result.requires_human_review is False
@@ -752,9 +709,7 @@ def test_qa_sample_rate_one_samples_every_eligible_case_without_rerouting(
     record = repository.records[0]
     assert record["qa_sampled"] is True
     assert record["routing"]["decision"] == "complete"
-    assert record["routing"]["triggered_rule"] == (
-        "automatic_completion_criteria_met"
-    )
+    assert record["routing"]["triggered_rule"] == ("automatic_completion_criteria_met")
     assert record["routing"]["triggered_rules"] == [
         "automatic_completion_criteria_met",
         "qa_sample",

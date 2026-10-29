@@ -201,9 +201,7 @@ def test_exact_policy_lookup_does_not_call_embedding_service() -> None:
         retrieval_mode=RetrievalMode.VECTOR,
     )
 
-    results = retriever.get_by_policy_ids(
-        ["POL-SIGNAL", "POL-UNKNOWN", "POL-SIGNAL"]
-    )
+    results = retriever.get_by_policy_ids(["POL-SIGNAL", "POL-UNKNOWN", "POL-SIGNAL"])
 
     assert [item.policy_id for item in results] == ["POL-SIGNAL"]
     assert results[0].text == chunks[0]["text"]
@@ -211,9 +209,7 @@ def test_exact_policy_lookup_does_not_call_embedding_service() -> None:
     assert service.calls == 0
 
 
-def test_ingestion_chunks_and_persists_a_portable_json_index(
-    policy_file, tmp_path
-) -> None:
+def test_ingestion_chunks_and_persists_a_portable_json_index(policy_file, tmp_path) -> None:
     index_path = tmp_path / "nested" / "index.json"
     service = LocalHashEmbeddingService(dimension=64)
     ingestor = PolicyIngestor(
@@ -233,9 +229,7 @@ def test_ingestion_chunks_and_persists_a_portable_json_index(
     assert all(len(chunk["embedding"]) == 64 for chunk in index["chunks"])
 
 
-def test_retrieval_returns_ranked_policy_sources_and_scores(
-    policy_file, tmp_path
-) -> None:
+def test_retrieval_returns_ranked_policy_sources_and_scores(policy_file, tmp_path) -> None:
     index_path = tmp_path / "index.json"
     service = LocalHashEmbeddingService(dimension=256)
     PolicyIngestor(service).ingest_file(policy_file, index_path)
@@ -258,9 +252,7 @@ def test_retriever_can_recreate_matching_local_embedder_from_metadata(
     policy_file, tmp_path
 ) -> None:
     index_path = tmp_path / "index.json"
-    PolicyIngestor(LocalHashEmbeddingService(dimension=96)).ingest_file(
-        policy_file, index_path
-    )
+    PolicyIngestor(LocalHashEmbeddingService(dimension=96)).ingest_file(policy_file, index_path)
 
     retriever = PolicyRetriever.from_index(index_path)
 
@@ -278,13 +270,9 @@ def test_retrieval_rejects_invalid_top_k(policy_file, tmp_path, top_k) -> None:
         retriever.retrieve("velocity", top_k=top_k)
 
 
-def test_loading_index_rejects_embedding_dimension_mismatch(
-    policy_file, tmp_path
-) -> None:
+def test_loading_index_rejects_embedding_dimension_mismatch(policy_file, tmp_path) -> None:
     index_path = tmp_path / "index.json"
-    PolicyIngestor(LocalHashEmbeddingService(dimension=64)).ingest_file(
-        policy_file, index_path
-    )
+    PolicyIngestor(LocalHashEmbeddingService(dimension=64)).ingest_file(policy_file, index_path)
 
     with pytest.raises(ValueError, match="dimension mismatch"):
         PolicyRetriever.from_index(

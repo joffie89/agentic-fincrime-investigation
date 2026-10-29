@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from copy import deepcopy
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from enum import Enum
 from typing import Any
 from uuid import UUID
@@ -107,9 +107,7 @@ def _as_dict(value: Any) -> dict[str, Any]:
 
 
 def _policy_references(record: dict[str, Any]) -> list[str]:
-    explicit = record.get("retrieved_policy_references") or record.get(
-        "policy_references"
-    )
+    explicit = record.get("retrieved_policy_references") or record.get("policy_references")
     if explicit:
         normalized = _plain_value(explicit)
         if isinstance(normalized, (list, tuple, set)):
@@ -219,8 +217,6 @@ class PostgresInvestigationRepository:
         return PersistenceResult(succeeded=True, backend=self.backend)
 
     def get(self, investigation_id: str) -> dict[str, Any] | None:
-        """Retrieve the complete JSON audit record by investigation ID."""
-
         if not investigation_id or not investigation_id.strip():
             return None
 
@@ -315,17 +311,14 @@ class PostgresInvestigationRepository:
                 ),
             )
         )
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         created_at = record.get("created_at") or record.get("timestamp") or now
         updated_at = record.get("updated_at") or now
-        status = record.get("status") or (
-            "PENDING_HUMAN_REVIEW" if human_review else "COMPLETED"
-        )
+        status = record.get("status") or ("PENDING_HUMAN_REVIEW" if human_review else "COMPLETED")
 
         return (
             str(record["investigation_id"]),
-            str(record.get("transaction_id") or transaction.get("transaction_id") or "")
-            or None,
+            str(record.get("transaction_id") or transaction.get("transaction_id") or "") or None,
             risk.get("risk_score", record.get("risk_score")),
             risk.get("risk_level", record.get("risk_level")),
             _json(risk.get("risk_reasons", record.get("risk_reasons", []))),

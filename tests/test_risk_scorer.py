@@ -1,6 +1,6 @@
 """Boundary tests for deterministic scoring and its domain contracts."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -440,7 +440,7 @@ def test_investigation_response_serializes_as_an_api_payload() -> None:
         requires_human_review=False,
         status="COMPLETED",
         persistence=PersistenceResult(succeeded=True, backend="memory"),
-        created_at=datetime(2025, 1, 2, 3, 4, 5, tzinfo=timezone.utc),
+        created_at=datetime(2025, 1, 2, 3, 4, 5, tzinfo=UTC),
     )
 
     payload = response.model_dump(mode="json")

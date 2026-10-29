@@ -28,10 +28,7 @@ def test_policy_ids_must_exactly_match_expected_ids(
     expected_policy_ids: list[str],
     expected_match: bool,
 ) -> None:
-    assert (
-        policy_ids_match_expected(cited_policy_ids, expected_policy_ids)
-        is expected_match
-    )
+    assert policy_ids_match_expected(cited_policy_ids, expected_policy_ids) is expected_match
 
 
 def test_policies_considered_do_not_count_as_grounding_references() -> None:
@@ -65,9 +62,7 @@ def test_evaluation_runs_against_synthetic_data(tmp_path: Path):
         metric = results[metric_name]
         assert metric["total"] > 0
         assert metric["correct"] <= metric["total"]
-        assert metric["accuracy"] == round(
-            metric["correct"] / metric["total"], 4
-        )
+        assert metric["accuracy"] == round(metric["correct"] / metric["total"], 4)
 
     assert len(results["risk_rule_correctness"]["cases"]) == 4
     assert len(results["retrieval_quality"]["cases"]) == 4
@@ -81,4 +76,3 @@ def test_evaluation_runs_against_synthetic_data(tmp_path: Path):
     clean_case = results["investigation_cases"][0]
     assert clean_case["expected_policy_ids"] == []
     assert clean_case["referenced_policy_ids"] == []
-

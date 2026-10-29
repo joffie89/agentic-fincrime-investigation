@@ -203,9 +203,7 @@ def test_openai_and_local_modes_use_separate_default_index_paths() -> None:
         resolve_policy_index_path(openai_settings, "data/policy_index.json")
 
 
-def test_openai_index_records_model_and_rejects_different_model(
-    policy_file, tmp_path
-) -> None:
+def test_openai_index_records_model_and_rejects_different_model(policy_file, tmp_path) -> None:
     index_path = tmp_path / "policy_index_openai.json"
     service = OpenAIEmbeddingService(
         client=FakeOpenAIClient(),
@@ -226,4 +224,3 @@ def test_openai_index_records_model_and_rejects_different_model(
     )
     with pytest.raises(ValueError, match="[Mm]odel mismatch"):
         PolicyRetriever.from_index(index_path, other_model)
-

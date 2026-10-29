@@ -32,9 +32,7 @@ def test_score_is_reproducible_across_independent_scorers(
 def test_typical_relationship_is_not_anomalous(
     typical_relationship: GraphAnalysisResult,
 ) -> None:
-    anomaly_score, is_anomalous = RelationshipAnomalyScorer().score(
-        typical_relationship
-    )
+    anomaly_score, is_anomalous = RelationshipAnomalyScorer().score(typical_relationship)
 
     assert isinstance(anomaly_score, float)
     assert is_anomalous is False

@@ -10,18 +10,13 @@ from app.evaluation.decision_eval import DecisionEvaluationDataset
 from app.models.domain import Recommendation, RiskLevel
 from app.services.risk_scorer import assess_transaction
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 TRAINING_CASES_PATH = PROJECT_ROOT / "evaluation" / "decision_cases.json"
-HOLDOUT_CASES_PATH = (
-    PROJECT_ROOT / "evaluation" / "decision_cases_holdout.json"
-)
+HOLDOUT_CASES_PATH = PROJECT_ROOT / "evaluation" / "decision_cases_holdout.json"
 
 
 def _load_dataset(path: Path) -> DecisionEvaluationDataset:
-    return DecisionEvaluationDataset.model_validate(
-        json.loads(path.read_text(encoding="utf-8"))
-    )
+    return DecisionEvaluationDataset.model_validate(json.loads(path.read_text(encoding="utf-8")))
 
 
 def _risk_signals(case) -> set[str]:
@@ -60,10 +55,7 @@ def test_holdout_dataset_is_new_and_has_requested_group_sizes() -> None:
     holdout = _load_dataset(HOLDOUT_CASES_PATH)
 
     assert len(holdout.cases) == 20
-    group_counts = Counter(
-        case.transaction.transaction_id.split("-")[1]
-        for case in holdout.cases
-    )
+    group_counts = Counter(case.transaction.transaction_id.split("-")[1] for case in holdout.cases)
     assert group_counts == {
         "clean": 5,
         "single": 6,
@@ -71,12 +63,8 @@ def test_holdout_dataset_is_new_and_has_requested_group_sizes() -> None:
         "boundary": 4,
     }
 
-    training_ids = {
-        case.transaction.transaction_id for case in training.cases
-    }
-    holdout_ids = [
-        case.transaction.transaction_id for case in holdout.cases
-    ]
+    training_ids = {case.transaction.transaction_id for case in training.cases}
+    holdout_ids = [case.transaction.transaction_id for case in holdout.cases]
     assert len(holdout_ids) == len(set(holdout_ids))
     assert training_ids.isdisjoint(holdout_ids)
 

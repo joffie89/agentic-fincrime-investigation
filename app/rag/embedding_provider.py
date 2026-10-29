@@ -37,8 +37,6 @@ def _reject_another_provider_default(
 
 
 def build_embedding_service(settings: EmbeddingSettings) -> EmbeddingService:
-    """Build the embedding implementation selected by application settings."""
-
     if settings.embedding_mode is EmbeddingMode.LOCAL:
         return LocalHashEmbeddingService()
     if settings.embedding_mode is EmbeddingMode.OPENAI:

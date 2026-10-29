@@ -63,9 +63,7 @@ class StaticRetriever:
 
     def get_by_policy_ids(self, policy_ids: list[str]):
         requested = set(policy_ids)
-        return [
-            policy for policy in self._policies() if policy.policy_id in requested
-        ]
+        return [policy for policy in self._policies() if policy.policy_id in requested]
 
 
 class RaisingService:
@@ -116,9 +114,7 @@ def service(
 
 def client_for(investigation_service) -> TestClient:
     settings = Settings(_env_file=None)
-    return TestClient(
-        create_app(settings=settings, investigation_service=investigation_service)
-    )
+    return TestClient(create_app(settings=settings, investigation_service=investigation_service))
 
 
 def test_api_key_setting_is_required(monkeypatch):
@@ -217,7 +213,8 @@ def test_openapi_documents_api_key_authentication():
     api_key_schemes = {
         name: definition
         for name, definition in security_schemes.items()
-        if definition == {
+        if definition
+        == {
             "type": "apiKey",
             "in": "header",
             "name": "X-API-Key",
@@ -231,29 +228,17 @@ def test_openapi_documents_api_key_authentication():
         assert {scheme_name: []} in operation["security"]
         assert operation["responses"]["401"] == {
             "description": "Invalid or missing API key",
-            "content": {
-                "application/json": {
-                    "example": {"detail": "Invalid or missing API key"}
-                }
-            },
+            "content": {"application/json": {"example": {"detail": "Invalid or missing API key"}}},
         }
     get_operation = schema["paths"]["/investigations/{investigation_id}"]["get"]
     assert {scheme_name: []} in get_operation["security"]
     assert get_operation["responses"]["401"] == {
         "description": "Invalid or missing API key",
-        "content": {
-            "application/json": {
-                "example": {"detail": "Invalid or missing API key"}
-            }
-        },
+        "content": {"application/json": {"example": {"detail": "Invalid or missing API key"}}},
     }
     assert get_operation["responses"]["404"] == {
         "description": "Investigation not found",
-        "content": {
-            "application/json": {
-                "example": {"detail": "Investigation not found"}
-            }
-        },
+        "content": {"application/json": {"example": {"detail": "Investigation not found"}}},
     }
     assert "security" not in schema["paths"]["/health"]["get"]
 
@@ -427,9 +412,7 @@ def test_investigate_returns_and_logs_mocked_llm_usage(api_key_headers):
         patch("app.middleware.logger.info") as log_info,
         patch("app.services.investigation_service.logger.info") as investigation_log,
     ):
-        response = client_for(
-            service(repository=repository, policy_assessor=assessor)
-        ).post(
+        response = client_for(service(repository=repository, policy_assessor=assessor)).post(
             "/investigate",
             json=transaction_payload(transaction_id="txn-api-llm-usage"),
             headers=api_key_headers,
@@ -442,9 +425,7 @@ def test_investigate_returns_and_logs_mocked_llm_usage(api_key_headers):
     assert usage["latency_ms"] >= 0
     assert usage["estimated_cost_usd"] == pytest.approx(0.00096)
     assert response.json()["policy_assessment"]["policy_references"] == []
-    assert response.json()["policy_assessment"]["policies_considered"] == [
-        "DEMO-AML-001"
-    ]
+    assert response.json()["policy_assessment"]["policies_considered"] == ["DEMO-AML-001"]
     log_info.assert_called_once()
     assert log_info.call_args.kwargs["extra"]["llm_usage"] == usage
     finished_log = next(
@@ -523,9 +504,7 @@ def test_reused_transaction_id_with_different_details_returns_409(api_key_header
     )
 
     assert response.status_code == 409
-    assert response.json() == {
-        "detail": "transaction_id already exists with different details"
-    }
+    assert response.json() == {"detail": "transaction_id already exists with different details"}
 
 
 def test_unknown_transaction_field_returns_422(api_key_headers):
@@ -540,9 +519,7 @@ def test_unknown_transaction_field_returns_422(api_key_headers):
 
 def test_postgres_failure_returns_sanitized_503(monkeypatch, api_key_headers):
     database_error = "connection to db.internal.example as admin_user refused"
-    fake_psycopg = SimpleNamespace(
-        connect=MagicMock(side_effect=RuntimeError(database_error))
-    )
+    fake_psycopg = SimpleNamespace(connect=MagicMock(side_effect=RuntimeError(database_error)))
     monkeypatch.setattr(postgres_module, "psycopg", fake_psycopg)
     repository = PostgresInvestigationRepository(
         "postgresql://admin_user:secret@db.internal.example/investigations"
