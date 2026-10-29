@@ -70,6 +70,8 @@ class InvestigationService:
                 "investigation_id": result.investigation_id,
                 "status": result.status.value,
                 "requires_human_review": result.requires_human_review,
+                "llm_disabled": result.llm_disabled,
+                "qa_sampled": result.qa_sampled,
                 "persistence_succeeded": result.persistence.succeeded,
                 "llm_usage": (
                     result.llm_usage.model_dump(mode="json")
@@ -87,6 +89,8 @@ class InvestigationService:
 
 
 def _build_policy_assessor(settings: Settings) -> PolicyAssessmentService:
+    if not settings.llm_assessment_enabled:
+        return DemoPolicyAssessmentService()
     if settings.service_mode is ServiceMode.LOCAL:
         return DemoPolicyAssessmentService()
     if settings.service_mode is ServiceMode.OPENAI:
@@ -156,5 +160,7 @@ def build_investigation_service(settings: Settings) -> InvestigationService:
         human_review_confidence_threshold=(
             settings.human_review_confidence_threshold
         ),
+        llm_assessment_enabled=settings.llm_assessment_enabled,
+        qa_sample_rate=settings.qa_sample_rate,
     )
     return InvestigationService(workflow)

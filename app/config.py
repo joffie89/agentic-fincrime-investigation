@@ -153,6 +153,7 @@ class Settings(EmbeddingSettings):
     app_env: str = "development"
     log_level: str = "INFO"
     service_mode: ServiceMode = ServiceMode.LOCAL
+    llm_assessment_enabled: bool = True
     retrieval_mode: RetrievalMode = Field(default_factory=_default_retrieval_mode)
     persistence_backend: PersistenceBackend = PersistenceBackend.MEMORY
     api_key: SecretStr = Field(repr=False, exclude=True)
@@ -161,6 +162,12 @@ class Settings(EmbeddingSettings):
     retrieval_top_k: int = Field(default=3, ge=1, le=20)
     retrieval_min_relevance_score: float = Field(default=0.05, ge=0.0, le=1.0)
     human_review_confidence_threshold: float = Field(default=0.70, ge=0.0, le=1.0)
+    qa_sample_rate: float = Field(
+        default=0.05,
+        ge=0.0,
+        le=1.0,
+        allow_inf_nan=False,
+    )
 
     azure_openai_chat_deployment: str | None = None
     openai_chat_model: str = "gpt-4.1-mini"
@@ -223,7 +230,11 @@ class Settings(EmbeddingSettings):
 
     @model_validator(mode="after")
     def validate_selected_backends(self) -> "Settings":
-        if self.service_mode is ServiceMode.OPENAI and not self.openai_api_key:
+        if (
+            self.llm_assessment_enabled
+            and self.service_mode is ServiceMode.OPENAI
+            and not self.openai_api_key
+        ):
             raise ValueError(
                 "OPENAI_API_KEY is required when SERVICE_MODE=openai"
             )
@@ -233,7 +244,7 @@ class Settings(EmbeddingSettings):
                 "DATABASE_URL is required when PERSISTENCE_BACKEND=postgres"
             )
 
-        if self.service_mode is ServiceMode.AZURE:
+        if self.llm_assessment_enabled and self.service_mode is ServiceMode.AZURE:
             common_required = {
                 "AZURE_OPENAI_ENDPOINT": self.azure_openai_endpoint,
                 "AZURE_OPENAI_API_KEY": self.azure_openai_api_key,
@@ -247,7 +258,8 @@ class Settings(EmbeddingSettings):
                     + ", ".join(missing)
                 )
         if (
-            self.service_mode is ServiceMode.AZURE
+            self.llm_assessment_enabled
+            and self.service_mode is ServiceMode.AZURE
             and not self.azure_openai_chat_deployment
         ):
             raise ValueError(

@@ -21,6 +21,7 @@ from app.services.policy_assessment import (
 )
 from app.services.risk_scorer import assess_transaction
 from app.workflow.investigation_workflow import InvestigationWorkflow
+from app.workflow.investigation_workflow import _should_qa_sample
 
 
 class StaticGraphAnalyzer:
@@ -97,6 +98,8 @@ def build_workflow(
     repository=None,
     threshold=0.6,
     anomaly_result=(-0.1, False),
+    llm_assessment_enabled=True,
+    qa_sample_rate=0.0,
 ):
     return InvestigationWorkflow(
         risk_assessor=assess_transaction,
@@ -106,6 +109,8 @@ def build_workflow(
         repository=repository or InMemoryInvestigationRepository(),
         retrieval_top_k=3,
         human_review_confidence_threshold=threshold,
+        llm_assessment_enabled=llm_assessment_enabled,
+        qa_sample_rate=qa_sample_rate,
         relationship_anomaly_scorer=StaticRelationshipAnomalyScorer(
             anomaly_result
         ),
@@ -153,6 +158,8 @@ def test_low_risk_routes_to_completed(
     assert result.relationship_anomaly.anomaly_score == -0.1
     assert result.relationship_anomaly.is_anomalous is False
     assert result.persistence.succeeded is True
+    assert result.llm_disabled is False
+    assert result.qa_sampled is False
     assert len(repository.records) == 1
 
 
@@ -212,6 +219,8 @@ def test_successful_investigation_persists_complete_audit_trail(
         "triggered_rules"
     ]
     assert record["llm_usage"] is None
+    assert record["llm_disabled"] is False
+    assert record["qa_sampled"] is False
     assert record["errors"] == []
     assert record["fallbacks"] == []
 
@@ -626,3 +635,164 @@ def test_persistence_failure_is_reported_truthfully(
     assert result.persistence.succeeded is False
     assert result.persistence.backend == "postgres"
     assert result.persistence.error == "database unavailable"
+
+
+@pytest.mark.parametrize(
+    ("transaction_id", "updates", "expected_risk_level"),
+    [
+        (
+            "txn-llm-disabled-medium",
+            {"amount": 600.0, "average_transaction_amount": 100.0},
+            "MEDIUM",
+        ),
+        (
+            "txn-llm-disabled-high",
+            {
+                "amount": 600.0,
+                "average_transaction_amount": 100.0,
+                "account_age_days": 10,
+                "new_payee": True,
+            },
+            "HIGH",
+        ),
+        (
+            "txn-llm-disabled-low-signal",
+            {"new_payee": True},
+            "LOW",
+        ),
+    ],
+)
+def test_llm_disabled_routes_nontrivial_risk_to_human_review(
+    transaction_factory,
+    clean_graph_result,
+    retrieved_policy,
+    transaction_id,
+    updates,
+    expected_risk_level,
+):
+    repository = InMemoryInvestigationRepository()
+    workflow = build_workflow(
+        graph_result=clean_graph_result,
+        policies=[retrieved_policy],
+        repository=repository,
+        llm_assessment_enabled=False,
+    )
+
+    result = workflow.invoke(
+        transaction_factory(transaction_id=transaction_id, **updates)
+    )
+
+    assert result.risk_assessment.risk_level.value == expected_risk_level
+    assert result.status is InvestigationStatus.PENDING_HUMAN_REVIEW
+    assert result.requires_human_review is True
+    assert result.llm_disabled is True
+    assert result.qa_sampled is False
+    record = repository.records[0]
+    assert record["llm_disabled"] is True
+    assert record["qa_sampled"] is False
+    assert "llm_disabled_risk_requires_human_review" in record["routing"][
+        "triggered_rules"
+    ]
+
+
+def test_llm_disabled_allows_clean_low_risk_case_to_complete(
+    transaction_factory, clean_graph_result, retrieved_policy
+):
+    workflow = build_workflow(
+        graph_result=clean_graph_result,
+        policies=[retrieved_policy],
+        llm_assessment_enabled=False,
+    )
+
+    result = workflow.invoke(
+        transaction_factory(transaction_id="txn-llm-disabled-clean")
+    )
+
+    assert result.status is InvestigationStatus.COMPLETED
+    assert result.requires_human_review is False
+    assert result.llm_disabled is True
+
+
+def test_qa_sample_rate_zero_never_samples_eligible_case(
+    transaction_factory, clean_graph_result, retrieved_policy
+):
+    repository = InMemoryInvestigationRepository()
+    workflow = build_workflow(
+        graph_result=clean_graph_result,
+        policies=[retrieved_policy],
+        repository=repository,
+        qa_sample_rate=0.0,
+    )
+
+    result = workflow.invoke(transaction_factory(transaction_id="txn-qa-none"))
+
+    assert result.status is InvestigationStatus.COMPLETED
+    assert result.qa_sampled is False
+    assert repository.records[0]["qa_sampled"] is False
+    assert "qa_sample" not in repository.records[0]["routing"]["triggered_rules"]
+
+
+def test_qa_sample_rate_one_samples_every_eligible_case_without_rerouting(
+    transaction_factory, clean_graph_result, retrieved_policy
+):
+    repository = InMemoryInvestigationRepository()
+    workflow = build_workflow(
+        graph_result=clean_graph_result,
+        policies=[retrieved_policy],
+        repository=repository,
+        qa_sample_rate=1.0,
+    )
+
+    result = workflow.invoke(transaction_factory(transaction_id="txn-qa-all"))
+
+    assert result.status is InvestigationStatus.COMPLETED
+    assert result.recommendation is Recommendation.CLEAR
+    assert result.requires_human_review is False
+    assert result.qa_sampled is True
+    record = repository.records[0]
+    assert record["qa_sampled"] is True
+    assert record["routing"]["decision"] == "complete"
+    assert record["routing"]["triggered_rule"] == (
+        "automatic_completion_criteria_met"
+    )
+    assert record["routing"]["triggered_rules"] == [
+        "automatic_completion_criteria_met",
+        "qa_sample",
+    ]
+
+
+def test_human_review_case_is_never_qa_sampled_even_at_rate_one(
+    transaction_factory, clean_graph_result, retrieved_policy
+):
+    repository = InMemoryInvestigationRepository()
+    workflow = build_workflow(
+        graph_result=clean_graph_result,
+        policies=[retrieved_policy],
+        repository=repository,
+        qa_sample_rate=1.0,
+    )
+
+    result = workflow.invoke(
+        transaction_factory(
+            transaction_id="txn-qa-human-review",
+            amount=600.0,
+            average_transaction_amount=100.0,
+            account_age_days=10,
+            new_payee=True,
+        )
+    )
+
+    assert result.status is InvestigationStatus.PENDING_HUMAN_REVIEW
+    assert result.requires_human_review is True
+    assert result.qa_sampled is False
+    assert repository.records[0]["qa_sampled"] is False
+    assert "qa_sample" not in repository.records[0]["routing"]["triggered_rules"]
+
+
+def test_qa_sampling_is_stable_for_same_investigation_id():
+    investigation_id = "inv-stable-qa-decision"
+
+    first = _should_qa_sample(investigation_id, 0.37)
+    repeated = [_should_qa_sample(investigation_id, 0.37) for _ in range(10)]
+
+    assert repeated == [first] * 10

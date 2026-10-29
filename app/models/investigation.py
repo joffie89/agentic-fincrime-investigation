@@ -171,6 +171,8 @@ class InvestigationResponse(DomainModel):
     retrieved_policies: list[RetrievedPolicy]
     policy_assessment: PolicyAssessment
     llm_usage: LLMUsage | None = None
+    llm_disabled: StrictBool = False
+    qa_sampled: StrictBool = False
     recommendation: Recommendation
     reasons: ReasonList
     requires_human_review: StrictBool
