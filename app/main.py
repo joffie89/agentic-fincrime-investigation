@@ -73,6 +73,14 @@ def create_app(
 
     resolved_settings = settings or get_settings()
     configure_logging(resolved_settings.log_level)
+    if not resolved_settings.llm_assessment_enabled:
+        logger.warning(
+            "llm_assessment_disabled",
+            extra={
+                "event": "llm_assessment_disabled",
+                "service_mode": resolved_settings.service_mode.value,
+            },
+        )
     service = investigation_service or build_investigation_service(resolved_settings)
 
     application = FastAPI(
@@ -88,11 +96,12 @@ def create_app(
     application.state.investigation_service = service
 
     @application.get("/health", tags=["operations"])
-    def health_check() -> dict[str, str]:
+    def health_check() -> dict[str, str | bool]:
         return {
             "status": "healthy",
             "mode": resolved_settings.service_mode.value,
             "persistence_backend": resolved_settings.persistence_backend.value,
+            "llm_assessment_enabled": resolved_settings.llm_assessment_enabled,
         }
 
     @application.post(

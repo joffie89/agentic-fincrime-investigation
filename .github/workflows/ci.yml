@@ -14,6 +14,8 @@ jobs:
     env:
       API_KEY: ci-test-api-key
       SERVICE_MODE: local
+      LLM_ASSESSMENT_ENABLED: "true"
+      QA_SAMPLE_RATE: "0.05"
       EMBEDDING_MODE: local
       PERSISTENCE_BACKEND: memory
       POSTGRES_PASSWORD: ci-local-only

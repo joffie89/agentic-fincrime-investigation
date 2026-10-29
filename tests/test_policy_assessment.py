@@ -343,6 +343,65 @@ def test_openai_service_mode_requires_api_key() -> None:
         )
 
 
+@pytest.mark.parametrize("service_mode", ["openai", "azure"])
+def test_llm_kill_switch_uses_demo_assessor_without_hosted_client(
+    service_mode: str,
+) -> None:
+    settings = Settings(
+        _env_file=None,
+        api_key="test-api-key",
+        service_mode=service_mode,
+        embedding_mode="local",
+        llm_assessment_enabled=False,
+        openai_api_key=None,
+        azure_openai_endpoint=None,
+        azure_openai_api_key=None,
+        azure_openai_chat_deployment=None,
+    )
+
+    with (
+        patch(
+            "app.services.investigation_service.OpenAIPolicyAssessmentService"
+        ) as openai_assessor,
+        patch(
+            "app.services.investigation_service._build_azure_client"
+        ) as azure_client,
+        patch("app.services.policy_assessment.OpenAI") as openai_client,
+    ):
+        assessor = _build_policy_assessor(settings)
+
+    assert isinstance(assessor, DemoPolicyAssessmentService)
+    openai_assessor.assert_not_called()
+    openai_client.assert_not_called()
+    azure_client.assert_not_called()
+
+
+def test_operational_control_settings_have_safe_defaults() -> None:
+    settings = Settings(
+        _env_file=None,
+        api_key="test-api-key",
+        service_mode="local",
+        embedding_mode="local",
+    )
+
+    assert settings.llm_assessment_enabled is True
+    assert settings.qa_sample_rate == 0.05
+
+
+@pytest.mark.parametrize("qa_sample_rate", [-0.01, 1.01])
+def test_qa_sample_rate_rejects_values_outside_unit_interval(
+    qa_sample_rate: float,
+) -> None:
+    with pytest.raises(ValidationError):
+        Settings(
+            _env_file=None,
+            api_key="test-api-key",
+            service_mode="local",
+            embedding_mode="local",
+            qa_sample_rate=qa_sample_rate,
+        )
+
+
 def test_openai_pricing_settings_have_positive_defaults(monkeypatch) -> None:
     monkeypatch.delenv("OPENAI_INPUT_PRICE_PER_1M", raising=False)
     monkeypatch.delenv("OPENAI_OUTPUT_PRICE_PER_1M", raising=False)

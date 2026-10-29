@@ -94,7 +94,8 @@ FastAPI request -> Pydantic validation -> compiled LangGraph
 - Request IDs are generated or propagated in `X-Request-ID`, with one structured status, timing, and optional LLM-usage log for each HTTP request.
 - The full workflow persists a complete or partial audit trail and exposes it through the protected `GET /investigations/{investigation_id}` endpoint.
 - OpenAI structured assessment has an application-enforced decision floor, deterministic citations, safe fallbacks, and recorded rejected model identifiers.
-- A network-free suite of 208 unit, workflow, persistence, evaluation, and API tests runs locally and in CI.
+- Operational controls provide a hosted-LLM kill switch and deterministic QA sampling of auto-completed cases.
+- A network-free suite of 222 unit, workflow, persistence, evaluation, and API tests runs locally and in CI.
 - Docker/Compose packaging and GitHub Actions CI are included.
 
 ## What problem it demonstrates
@@ -132,7 +133,7 @@ Financial-crime investigations often need several kinds of evidence at once: tra
 │   ├── retrieval_cases.json             # 60 labelled retrieval queries
 │   ├── decision_cases.json              # 50 in-sample decision cases
 │   └── decision_cases_holdout.json      # 20 held-out decision cases
-├── tests/                               # 208 network-free tests
+├── tests/                               # 222 network-free tests
 ├── docs/azure-deployment-design.md      # design only; not deployed
 ├── Dockerfile
 ├── docker-compose.yml
@@ -265,6 +266,7 @@ Open `http://127.0.0.1:8000/docs` for the generated OpenAPI UI. Protected endpoi
 | `LOG_LEVEL` | `INFO` | Root JSON log level |
 | `API_KEY` | none; required | Key accepted in `X-API-Key` on protected endpoints |
 | `SERVICE_MODE` | `local` | `local` rule-based, `openai` OpenAI, or `azure` Azure OpenAI assessment |
+| `LLM_ASSESSMENT_ENABLED` | `true` | Set `false` to replace hosted assessment with the rules-based assessor and apply conservative routing |
 | `EMBEDDING_MODE` | `local` | `local` lexical baseline, `openai` OpenAI embeddings, or `azure` Azure OpenAI embeddings |
 | `PERSISTENCE_BACKEND` | `memory` | `memory` or `postgres` |
 | `DATABASE_URL` | unset | Required for PostgreSQL mode |
@@ -273,20 +275,26 @@ Open `http://127.0.0.1:8000/docs` for the generated OpenAPI UI. Protected endpoi
 | `RETRIEVAL_TOP_K` | `3` | Returned semantic policy chunk count before signal-required additions |
 | `RETRIEVAL_MIN_RELEVANCE_SCORE` | `0.05` | Minimum cosine score for vector results and hybrid vector candidates |
 | `HUMAN_REVIEW_CONFIDENCE_THRESHOLD` | `0.70` | General conditional-route threshold |
-| `OPENAI_API_KEY` | unset | Required when `SERVICE_MODE=openai` or `EMBEDDING_MODE=openai`; never committed |
+| `QA_SAMPLE_RATE` | `0.05` | Deterministic fraction from 0 to 1 of auto-completed cases marked for QA |
+| `OPENAI_API_KEY` | unset | Required for OpenAI embeddings, or for OpenAI assessment while the LLM switch is enabled; never committed |
 | `OPENAI_CHAT_MODEL` | `gpt-4.1-mini` | OpenAI model used for structured policy assessment |
 | `OPENAI_ASSESSMENT_TEMPERATURE` | `0` | OpenAI assessment sampling temperature |
 | `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | OpenAI embedding model recorded in the generated index |
 | `OPENAI_INPUT_PRICE_PER_1M` | `0.40` | Input-token USD rate used only for cost estimates; check current model pricing |
 | `OPENAI_OUTPUT_PRICE_PER_1M` | `1.60` | Output-token USD rate used only for cost estimates; check current model pricing |
-| `AZURE_OPENAI_ENDPOINT` | unset | Required when an Azure service or embedding mode is selected |
-| `AZURE_OPENAI_API_KEY` | unset | Required when an Azure service or embedding mode is selected; never committed |
-| `AZURE_OPENAI_CHAT_DEPLOYMENT` | unset | Required when `SERVICE_MODE=azure` |
+| `AZURE_OPENAI_ENDPOINT` | unset | Required for Azure embeddings, or for Azure assessment while the LLM switch is enabled |
+| `AZURE_OPENAI_API_KEY` | unset | Required for Azure embeddings, or for Azure assessment while the LLM switch is enabled; never committed |
+| `AZURE_OPENAI_CHAT_DEPLOYMENT` | unset | Required when `SERVICE_MODE=azure` and the LLM switch is enabled |
 | `AZURE_OPENAI_EMBEDDING_DEPLOYMENT` | unset | Required when `EMBEDDING_MODE=azure` |
 | `AZURE_OPENAI_EMBEDDING_DIMENSIONS` | `1536` | Expected Azure embedding vector size |
 | `AZURE_OPENAI_API_VERSION` | `2024-10-21` | Azure API version |
 
 `Settings` always requires `API_KEY` and conditionally validates credentials for the selected hosted assessment or embedding mode at startup. No credentials are hard-coded, and `.env` is ignored by Git and Docker. Local embedding and assessment remain the defaults for development, tests, and CI.
+
+## Operational controls
+
+- `LLM_ASSESSMENT_ENABLED=false` prevents construction or use of a hosted chat assessor even when `SERVICE_MODE` is `openai` or `azure`, and uses the deterministic `DemoPolicyAssessmentService` instead. Only `LOW`-risk cases with zero risk signals may complete automatically in this mode; the API records `llm_disabled`, exposes the switch in `/health`, and logs one startup warning.
+- `QA_SAMPLE_RATE` marks a deterministic share of cases that completed without human review by hashing `investigation_id`; `0` disables sampling and `1` samples every eligible case. Sampling records `qa_sampled` and the audit routing rule `qa_sample` without changing status or recommendation, and human-review cases are never eligible.
 
 ## API examples
 
@@ -333,7 +341,7 @@ Run the complete network-free suite:
 python -m pytest -q
 ```
 
-The suite contains 208 tests covering rule boundaries, validation, graph metrics, vector/BM25/hybrid retrieval, mocked OpenAI and Azure embeddings, mocked structured LLM output, rubric enforcement, LangGraph routes, complete and partial audit persistence, API-key authentication, request correlation/logging, and evaluation execution. It requires no hosted-provider credentials or paid API calls.
+The suite contains 222 tests covering rule boundaries, validation, graph metrics, vector/BM25/hybrid retrieval, mocked OpenAI and Azure embeddings, mocked structured LLM output, rubric enforcement, LangGraph routes, operational controls, complete and partial audit persistence, API-key authentication, request correlation/logging, and evaluation execution. It requires no hosted-provider credentials or paid API calls.
 
 Run the small workflow regression evaluation:
 
@@ -441,10 +449,10 @@ An intended Azure topology is documented separately in [`docs/azure-deployment-d
 | Graph | In-process NetworkX over synthetic relationships | Live graph store, entity resolution, temporal analytics |
 | ML anomaly signal | IsolationForest over graph features, fixed-seed synthetic training set, routes disagreements to human review | Training on real historical data, retraining, drift monitoring |
 | RAG | Synthetic corpus, local lexical-hash/OpenAI/Azure embeddings, BM25, RRF hybrid search, signal-based inclusion, provider-specific indexes, Top-K | Managed vector database, policy lifecycle and approval workflow |
-| AI | Rule-based local assessor; OpenAI and Azure structured adapters; safe fallbacks; OpenAI live evaluation on synthetic cases; mocked provider tests | Evaluation on real institution-labelled cases, production monitoring, prompt/version registry |
+| AI | Rule-based local assessor; OpenAI and Azure structured adapters; safe fallbacks; hosted-assessment kill switch with conservative routing; OpenAI live evaluation on synthetic cases; mocked provider tests | Evaluation on real institution-labelled cases, production monitoring, prompt/version registry |
 | Human review | Explicit pending status and fail-safe routing | Reviewer UI, assignment, approval and override audit events |
 | Persistence | Memory and PostgreSQL repositories; complete/partial JSON audit records; protected retrieval endpoint | Versioned migrations, pooling, retention, encryption policy, HA |
-| Operations | JSON logs with request IDs, timing and LLM usage; Docker/Compose; GitHub Actions CI | Actual Azure resources/deployment, observability backend |
+| Operations | JSON logs with request IDs, timing and LLM usage; deterministic QA sampling for auto-completed cases; Docker/Compose; GitHub Actions CI | Actual Azure resources/deployment, observability backend |
 
 ## Limitations
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import time
 from datetime import UTC, datetime
@@ -33,6 +34,22 @@ from app.services.relationship_anomaly_scorer import RelationshipAnomalyScorer
 from app.workflow.state import InvestigationState
 
 logger = logging.getLogger(__name__)
+
+
+def _should_qa_sample(investigation_id: str, sample_rate: float) -> bool:
+    """Return a stable sampling decision for one investigation identifier."""
+
+    if not 0.0 <= sample_rate <= 1.0:
+        raise ValueError("sample_rate must be between 0 and 1")
+    if sample_rate == 0.0:
+        return False
+    if sample_rate == 1.0:
+        return True
+
+    digest = hashlib.sha256(investigation_id.encode("utf-8")).digest()
+    value = int.from_bytes(digest[:8], byteorder="big", signed=False)
+    threshold = int(sample_rate * (1 << 64))
+    return value < threshold
 
 
 class GraphAnalyzerProtocol(Protocol):
@@ -68,12 +85,16 @@ class InvestigationWorkflow:
         repository: InvestigationRepositoryProtocol,
         retrieval_top_k: int = 3,
         human_review_confidence_threshold: float = 0.6,
+        llm_assessment_enabled: bool = True,
+        qa_sample_rate: float = 0.05,
         relationship_anomaly_scorer: RelationshipAnomalyScorerProtocol | None = None,
     ) -> None:
         if retrieval_top_k < 1:
             raise ValueError("retrieval_top_k must be at least 1")
         if not 0 <= human_review_confidence_threshold <= 1:
             raise ValueError("human_review_confidence_threshold must be between 0 and 1")
+        if not 0 <= qa_sample_rate <= 1:
+            raise ValueError("qa_sample_rate must be between 0 and 1")
         self._risk_assessor = risk_assessor
         self._graph_analyzer = graph_analyzer
         self._policy_retriever = policy_retriever
@@ -81,6 +102,8 @@ class InvestigationWorkflow:
         self._repository = repository
         self._retrieval_top_k = retrieval_top_k
         self._confidence_threshold = human_review_confidence_threshold
+        self._llm_disabled = not llm_assessment_enabled
+        self._qa_sample_rate = qa_sample_rate
         self._relationship_anomaly_scorer = (
             relationship_anomaly_scorer
             if relationship_anomaly_scorer is not None
@@ -125,6 +148,10 @@ class InvestigationWorkflow:
             "finalize",
             self._timed_node("finalize", self._finalize_node),
         )
+        builder.add_node(
+            "qa_sampling",
+            self._timed_node("qa_sampling", self._qa_sampling_node),
+        )
         builder.add_node("persist", self._persistence_node)
 
         builder.add_edge(START, "risk_assessment")
@@ -142,7 +169,8 @@ class InvestigationWorkflow:
             },
         )
         builder.add_edge("human_review_required", "persist")
-        builder.add_edge("finalize", "persist")
+        builder.add_edge("finalize", "qa_sampling")
+        builder.add_edge("qa_sampling", "persist")
         builder.add_edge("persist", END)
         return builder.compile()
 
@@ -449,6 +477,12 @@ class InvestigationWorkflow:
 
         if risk.risk_level is RiskLevel.HIGH:
             add_rule("high_risk_requires_human_review")
+        if self._llm_disabled and (
+            risk.risk_level is not RiskLevel.LOW
+            or bool(risk.risk_reasons)
+            or graph.suspicious
+        ):
+            add_rule("llm_disabled_risk_requires_human_review")
         if risk.risk_level is RiskLevel.MEDIUM:
             if assessment.recommendation is not Recommendation.CLEAR:
                 add_rule("medium_risk_assessment_not_clear")
@@ -551,6 +585,27 @@ class InvestigationWorkflow:
             "requires_human_review": False,
             "status": InvestigationStatus.COMPLETED,
             "audit_events": [*state.get("audit_events", []), "investigation_completed"],
+        }
+
+    def _qa_sampling_node(self, state: InvestigationState) -> dict[str, Any]:
+        """Mark eligible auto-completed cases for deterministic QA review."""
+
+        sampled = _should_qa_sample(
+            state["investigation_id"],
+            self._qa_sample_rate,
+        )
+        routing = dict(state["routing"])
+        audit_events = [*state.get("audit_events", []), "qa_sampling_completed"]
+        if sampled:
+            triggered_rules = list(routing.get("triggered_rules", []))
+            if "qa_sample" not in triggered_rules:
+                triggered_rules.append("qa_sample")
+            routing["triggered_rules"] = triggered_rules
+            audit_events.append("qa_sample_selected")
+        return {
+            "qa_sampled": sampled,
+            "routing": routing,
+            "audit_events": audit_events,
         }
 
     def _persistence_node(self, state: InvestigationState) -> dict[str, Any]:
@@ -747,6 +802,8 @@ class InvestigationWorkflow:
                 if state.get("llm_usage") is not None
                 else None
             ),
+            "llm_disabled": state.get("llm_disabled", False),
+            "qa_sampled": state.get("qa_sampled", False),
             "workflow_steps": state.get("workflow_steps", {}),
             "persistence": (
                 persistence.model_dump(mode="json")
@@ -779,6 +836,8 @@ class InvestigationWorkflow:
             "investigation_id": str(uuid4()),
             "created_at": datetime.now(UTC),
             "transaction": transaction,
+            "llm_disabled": self._llm_disabled,
+            "qa_sampled": False,
             "audit_events": ["investigation_started"],
             "errors": [],
             "fallbacks": [],
@@ -795,6 +854,8 @@ class InvestigationWorkflow:
             retrieved_policies=final_state.get("retrieved_policies", []),
             policy_assessment=final_state["policy_assessment"],
             llm_usage=final_state.get("llm_usage"),
+            llm_disabled=final_state.get("llm_disabled", False),
+            qa_sampled=final_state.get("qa_sampled", False),
             recommendation=recommendation.recommendation,
             reasons=recommendation.reasons,
             requires_human_review=final_state["requires_human_review"],

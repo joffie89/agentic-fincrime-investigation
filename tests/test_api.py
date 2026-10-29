@@ -108,6 +108,7 @@ def service(
         repository=repository or InMemoryInvestigationRepository(),
         retrieval_top_k=3,
         human_review_confidence_threshold=0.6,
+        qa_sample_rate=0.0,
         relationship_anomaly_scorer=StaticRelationshipAnomalyScorer(),
     )
     return InvestigationService(workflow)
@@ -140,7 +141,35 @@ def test_health_endpoint_works_without_api_key():
         "status": "healthy",
         "mode": "local",
         "persistence_backend": "memory",
+        "llm_assessment_enabled": True,
     }
+
+
+def test_disabled_llm_switch_is_reported_and_warned_once_at_startup():
+    settings = Settings(
+        _env_file=None,
+        api_key="test-api-key",
+        service_mode="openai",
+        embedding_mode="local",
+        llm_assessment_enabled=False,
+        openai_api_key=None,
+    )
+
+    with patch("app.main.logger.warning") as warning:
+        application = create_app(
+            settings=settings,
+            investigation_service=service(),
+        )
+
+    warning.assert_called_once_with(
+        "llm_assessment_disabled",
+        extra={
+            "event": "llm_assessment_disabled",
+            "service_mode": "openai",
+        },
+    )
+    response = TestClient(application).get("/health")
+    assert response.json()["llm_assessment_enabled"] is False
 
 
 def test_response_has_generated_request_id():
@@ -362,6 +391,8 @@ def test_investigate_low_risk_executes_workflow(api_key_headers):
         "is_anomalous": False,
     }
     assert body["llm_usage"] is None
+    assert body["llm_disabled"] is False
+    assert body["qa_sampled"] is False
     assert log_info.call_args.kwargs["extra"]["llm_usage"] is None
 
 

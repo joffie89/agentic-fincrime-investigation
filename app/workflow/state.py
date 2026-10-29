@@ -32,6 +32,8 @@ class InvestigationState(TypedDict, total=False):
     policy_retrieval_sources: dict[str, list[str]]
     policy_assessment: PolicyAssessment
     llm_usage: LLMUsage | None
+    llm_disabled: bool
+    qa_sampled: bool
     recommendation: InvestigationRecommendation
     requires_human_review: bool
     status: InvestigationStatus
