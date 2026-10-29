@@ -54,7 +54,7 @@ function Set-ContainerAppSecret {
         )
 
         # Suppress all CLI output for the only call whose in-memory arguments contain a secret.
-        & az @SecretArguments *> $null
+        $prev = $ErrorActionPreference; $ErrorActionPreference = "Continue"; & az @SecretArguments *> $null; $ErrorActionPreference = $prev
         if ($LASTEXITCODE -ne 0) {
             throw "Failed to store Container Apps secret '$SecretName'."
         }
@@ -84,8 +84,50 @@ Invoke-AzureCli -Arguments @(
 $ApiKey = $null
 $OpenAiApiKey = $null
 try {
-    $ApiKey = Read-Host -Prompt "API_KEY" -AsSecureString
-    $OpenAiApiKey = Read-Host -Prompt "OPENAI_API_KEY" -AsSecureString
+    $ApiKeyPlain = $null
+    try {
+        Write-Host "Copy your API_KEY to the clipboard, then press Enter"
+        [void](Read-Host)
+        $ApiKeyPlain = ([string](Get-Clipboard -Raw)).Trim()
+        if ($ApiKeyPlain.Length -eq 0) {
+            $ApiKey = [System.Security.SecureString]::new()
+        }
+        else {
+            $ApiKey = ConvertTo-SecureString -String $ApiKeyPlain -AsPlainText -Force
+        }
+    }
+    finally {
+        try {
+            try { Set-Clipboard -Value " " } catch { Write-Warning "Could not clear the clipboard - copy something else to clear it." }
+        }
+        finally {
+            $ApiKeyPlain = $null
+        }
+    }
+
+    $OpenAiApiKeyPlain = $null
+    try {
+        Write-Host "Copy your OPENAI_API_KEY to the clipboard, then press Enter"
+        [void](Read-Host)
+        $OpenAiApiKeyPlain = ([string](Get-Clipboard -Raw)).Trim()
+        if ($OpenAiApiKeyPlain.Length -eq 0) {
+            $OpenAiApiKey = [System.Security.SecureString]::new()
+        }
+        else {
+            $OpenAiApiKey = ConvertTo-SecureString `
+                -String $OpenAiApiKeyPlain `
+                -AsPlainText `
+                -Force
+        }
+    }
+    finally {
+        try {
+            try { Set-Clipboard -Value " " } catch { Write-Warning "Could not clear the clipboard - copy something else to clear it." }
+        }
+        finally {
+            $OpenAiApiKeyPlain = $null
+        }
+    }
 
     if ($ApiKey.Length -lt 20 -or $OpenAiApiKey.Length -lt 20) {
         throw "Key looks too short - paste with right-click in a normal PowerShell window."
@@ -113,8 +155,7 @@ try {
             "EMBEDDING_MODE=local",
             "POLICY_INDEX_PATH=data/policy_index.json",
             "PERSISTENCE_BACKEND=memory",
-            "LLM_ASSESSMENT_ENABLED=false",
-            "--output", "none"
+            "LLM_ASSESSMENT_ENABLED=false"
         )
     }
     finally {
