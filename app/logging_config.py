@@ -5,9 +5,8 @@ from __future__ import annotations
 import json
 import logging
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
-
 
 _RESERVED_LOG_RECORD_FIELDS = frozenset(
     set(logging.makeLogRecord({}).__dict__)
@@ -28,9 +27,7 @@ class JsonFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, Any] = {
-            "timestamp": datetime.fromtimestamp(
-                record.created, tz=timezone.utc
-            ).isoformat(),
+            "timestamp": datetime.fromtimestamp(record.created, tz=UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -70,9 +67,3 @@ def configure_logging(log_level: str = "INFO") -> None:
         server_logger = logging.getLogger(logger_name)
         server_logger.handlers.clear()
         server_logger.propagate = True
-
-
-def get_logger(name: str) -> logging.Logger:
-    """Return a standard logger configured by :func:`configure_logging`."""
-
-    return logging.getLogger(name)

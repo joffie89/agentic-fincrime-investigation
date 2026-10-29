@@ -92,29 +92,23 @@ class EmbeddingSettings(BaseSettings):
         return normalized
 
     @model_validator(mode="after")
-    def validate_selected_embedding_provider(self) -> "EmbeddingSettings":
+    def validate_selected_embedding_provider(self) -> EmbeddingSettings:
         if self.embedding_mode is EmbeddingMode.AZURE:
             common_required = {
                 "AZURE_OPENAI_ENDPOINT": self.azure_openai_endpoint,
                 "AZURE_OPENAI_API_KEY": self.azure_openai_api_key,
             }
-            missing = [
-                name for name, value in common_required.items() if not value
-            ]
+            missing = [name for name, value in common_required.items() if not value]
             if missing:
                 raise ValueError(
-                    "An Azure provider requires these environment variables: "
-                    + ", ".join(missing)
+                    "An Azure provider requires these environment variables: " + ", ".join(missing)
                 )
             if not self.azure_openai_embedding_deployment:
                 raise ValueError(
-                    "AZURE_OPENAI_EMBEDDING_DEPLOYMENT is required when "
-                    "EMBEDDING_MODE=azure"
+                    "AZURE_OPENAI_EMBEDDING_DEPLOYMENT is required when EMBEDDING_MODE=azure"
                 )
         if self.embedding_mode is EmbeddingMode.OPENAI and not self.openai_api_key:
-            raise ValueError(
-                "OPENAI_API_KEY is required when EMBEDDING_MODE=openai"
-            )
+            raise ValueError("OPENAI_API_KEY is required when EMBEDDING_MODE=openai")
         return self
 
     @property
@@ -229,42 +223,33 @@ class Settings(EmbeddingSettings):
         return value
 
     @model_validator(mode="after")
-    def validate_selected_backends(self) -> "Settings":
+    def validate_selected_backends(self) -> Settings:
         if (
             self.llm_assessment_enabled
             and self.service_mode is ServiceMode.OPENAI
             and not self.openai_api_key
         ):
-            raise ValueError(
-                "OPENAI_API_KEY is required when SERVICE_MODE=openai"
-            )
+            raise ValueError("OPENAI_API_KEY is required when SERVICE_MODE=openai")
 
         if self.persistence_backend is PersistenceBackend.POSTGRES and not self.database_url:
-            raise ValueError(
-                "DATABASE_URL is required when PERSISTENCE_BACKEND=postgres"
-            )
+            raise ValueError("DATABASE_URL is required when PERSISTENCE_BACKEND=postgres")
 
         if self.llm_assessment_enabled and self.service_mode is ServiceMode.AZURE:
             common_required = {
                 "AZURE_OPENAI_ENDPOINT": self.azure_openai_endpoint,
                 "AZURE_OPENAI_API_KEY": self.azure_openai_api_key,
             }
-            missing = [
-                name for name, value in common_required.items() if not value
-            ]
+            missing = [name for name, value in common_required.items() if not value]
             if missing:
                 raise ValueError(
-                    "An Azure provider requires these environment variables: "
-                    + ", ".join(missing)
+                    "An Azure provider requires these environment variables: " + ", ".join(missing)
                 )
         if (
             self.llm_assessment_enabled
             and self.service_mode is ServiceMode.AZURE
             and not self.azure_openai_chat_deployment
         ):
-            raise ValueError(
-                "AZURE_OPENAI_CHAT_DEPLOYMENT is required when SERVICE_MODE=azure"
-            )
+            raise ValueError("AZURE_OPENAI_CHAT_DEPLOYMENT is required when SERVICE_MODE=azure")
         return self
 
     @property

@@ -152,9 +152,7 @@ def create_app(
                 detail="Investigation could not be completed",
             ) from exc
         request.state.llm_usage = (
-            result.llm_usage.model_dump(mode="json")
-            if result.llm_usage is not None
-            else None
+            result.llm_usage.model_dump(mode="json") if result.llm_usage is not None else None
         )
         if not result.persistence.succeeded:
             response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
@@ -198,4 +196,3 @@ def create_app(
 
 
 app = create_app()
-

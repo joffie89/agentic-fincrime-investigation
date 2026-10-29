@@ -66,15 +66,12 @@ class RiskAssessment(DomainModel):
 
         if self.risk_level is not expected_level:
             raise ValueError(
-                f"risk_level must be {expected_level.value} for score "
-                f"{self.risk_score}"
+                f"risk_level must be {expected_level.value} for score {self.risk_score}"
             )
 
         expected_investigate = expected_level is RiskLevel.HIGH
         if self.investigate is not expected_investigate:
-            raise ValueError(
-                "investigate must be true exactly when risk_level is HIGH"
-            )
+            raise ValueError("investigate must be true exactly when risk_level is HIGH")
         return self
 
 

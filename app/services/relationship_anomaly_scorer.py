@@ -8,7 +8,6 @@ from sklearn.ensemble import IsolationForest
 
 from app.models.domain import GraphAnalysisResult
 
-
 SYNTHETIC_TRAINING_SEED = 17_041
 MODEL_RANDOM_STATE = 17_041
 SYNTHETIC_TRAINING_ROWS = 512

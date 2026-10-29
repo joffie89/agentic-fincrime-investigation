@@ -5,8 +5,9 @@ from __future__ import annotations
 import hashlib
 import logging
 import time
+from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import Any, Callable, Protocol
+from typing import Any, Protocol
 from uuid import uuid4
 
 from langgraph.graph import END, START, StateGraph
@@ -195,9 +196,7 @@ class InvestigationWorkflow:
                     status="failed",
                     error=exc,
                 )
-                error = (
-                    f"{step_name} failed with {type(exc).__name__}: {exc}"
-                )
+                error = f"{step_name} failed with {type(exc).__name__}: {exc}"
                 failure_rule = f"{step_name}_failed"
                 failed_state: InvestigationState = {
                     **state,
@@ -299,9 +298,7 @@ class InvestigationWorkflow:
             query,
             top_k=self._retrieval_top_k,
         )
-        semantic_policy_ids = list(
-            dict.fromkeys(item.policy_id for item in semantic_policies)
-        )
+        semantic_policy_ids = list(dict.fromkeys(item.policy_id for item in semantic_policies))
         active_signals = _active_demo_policy_signals(
             state["transaction"],
             state["risk_assessment"],
@@ -313,9 +310,7 @@ class InvestigationWorkflow:
             if trigger_signals & active_signals
         ]
         missing_mapped_ids = [
-            policy_id
-            for policy_id in mapped_policy_ids
-            if policy_id not in semantic_policy_ids
+            policy_id for policy_id in mapped_policy_ids if policy_id not in semantic_policy_ids
         ]
         signal_policies = (
             self._policy_retriever.get_by_policy_ids(missing_mapped_ids)
@@ -324,16 +319,11 @@ class InvestigationWorkflow:
         )
 
         policies = list(
-            {
-                item.policy_id: item
-                for item in [*semantic_policies, *signal_policies]
-            }.values()
+            {item.policy_id: item for item in [*semantic_policies, *signal_policies]}.values()
         )
         combined_policy_ids = {item.policy_id for item in policies}
         signal_policy_ids = [
-            policy_id
-            for policy_id in mapped_policy_ids
-            if policy_id in combined_policy_ids
+            policy_id for policy_id in mapped_policy_ids if policy_id in combined_policy_ids
         ]
         return {
             "retrieved_policies": policies,
@@ -436,8 +426,7 @@ class InvestigationWorkflow:
                 ],
                 "errors": [
                     *state.get("errors", []),
-                    "policy_validation used fallback after "
-                    f"{fallback_reason}",
+                    f"policy_validation used fallback after {fallback_reason}",
                 ],
                 "fallbacks": [
                     *state.get("fallbacks", []),
@@ -456,9 +445,7 @@ class InvestigationWorkflow:
             "step": "policy_validation",
             "error_type": error_type,
             "message": message,
-            "fallback_reason": (
-                fallback_reason or f"{error_type}: {message}"
-            ),
+            "fallback_reason": (fallback_reason or f"{error_type}: {message}"),
             "occurred_at": datetime.now(UTC).isoformat(),
         }
 
@@ -478,9 +465,7 @@ class InvestigationWorkflow:
         if risk.risk_level is RiskLevel.HIGH:
             add_rule("high_risk_requires_human_review")
         if self._llm_disabled and (
-            risk.risk_level is not RiskLevel.LOW
-            or bool(risk.risk_reasons)
-            or graph.suspicious
+            risk.risk_level is not RiskLevel.LOW or bool(risk.risk_reasons) or graph.suspicious
         ):
             add_rule("llm_disabled_risk_requires_human_review")
         if risk.risk_level is RiskLevel.MEDIUM:
@@ -518,17 +503,12 @@ class InvestigationWorkflow:
         }
 
     def _route_after_policy_validation(self, state: InvestigationState) -> str:
-        return (
-            "human_review"
-            if state["routing"]["decision"] == "human_review"
-            else "complete"
-        )
+        return "human_review" if state["routing"]["decision"] == "human_review" else "complete"
 
     @staticmethod
     def _relationship_anomaly_disagreement(state: InvestigationState) -> bool:
         return (
-            state["risk_assessment"].risk_level
-            in {RiskLevel.LOW, RiskLevel.MEDIUM}
+            state["risk_assessment"].risk_level in {RiskLevel.LOW, RiskLevel.MEDIUM}
             and not state["graph_analysis"].suspicious
             and state["relationship_anomaly"].is_anomalous
         )
@@ -693,9 +673,7 @@ class InvestigationWorkflow:
             )
 
     def _repository_backend(self) -> str:
-        return str(
-            getattr(self._repository, "backend", type(self._repository).__name__)
-        )
+        return str(getattr(self._repository, "backend", type(self._repository).__name__))
 
     @staticmethod
     def _build_policy_query(state: InvestigationState) -> str:
@@ -721,9 +699,7 @@ class InvestigationWorkflow:
         policy_assessment = state.get("policy_assessment")
         recommendation = state.get("recommendation")
         persistence = state.get("persistence")
-        status_value = (
-            state["status"].value if state.get("status") is not None else None
-        )
+        status_value = state["status"].value if state.get("status") is not None else None
         retrieved_policies = [
             {
                 "policy_id": item.policy_id,
@@ -737,12 +713,8 @@ class InvestigationWorkflow:
             "investigation_id": state["investigation_id"],
             "transaction_id": transaction.transaction_id,
             "transaction": transaction.model_dump(mode="json"),
-            "risk_assessment": (
-                risk.model_dump(mode="json") if risk is not None else None
-            ),
-            "graph_analysis": (
-                graph.model_dump(mode="json") if graph is not None else None
-            ),
+            "risk_assessment": (risk.model_dump(mode="json") if risk is not None else None),
+            "graph_analysis": (graph.model_dump(mode="json") if graph is not None else None),
             "relationship_anomaly": (
                 relationship_anomaly.model_dump(mode="json")
                 if relationship_anomaly is not None
@@ -754,9 +726,7 @@ class InvestigationWorkflow:
                 {"semantic_search": [], "signal_mapping": []},
             ),
             "policy_assessment": (
-                policy_assessment.model_dump(mode="json")
-                if policy_assessment is not None
-                else None
+                policy_assessment.model_dump(mode="json") if policy_assessment is not None else None
             ),
             "original_llm_recommendation": (
                 policy_assessment.original_llm_recommendation.value
@@ -765,24 +735,16 @@ class InvestigationWorkflow:
                 else None
             ),
             "rubric_override": (
-                policy_assessment.rubric_override
-                if policy_assessment is not None
-                else False
+                policy_assessment.rubric_override if policy_assessment is not None else False
             ),
             "deterministic_citations": (
-                policy_assessment.deterministic_citations
-                if policy_assessment is not None
-                else []
+                policy_assessment.deterministic_citations if policy_assessment is not None else []
             ),
             "fallback_reason": (
-                policy_assessment.fallback_reason
-                if policy_assessment is not None
-                else None
+                policy_assessment.fallback_reason if policy_assessment is not None else None
             ),
             "rejected_citations": (
-                policy_assessment.rejected_citations
-                if policy_assessment is not None
-                else []
+                policy_assessment.rejected_citations if policy_assessment is not None else []
             ),
             "rejected_policies_considered": (
                 policy_assessment.rejected_policies_considered
@@ -791,9 +753,7 @@ class InvestigationWorkflow:
             ),
             "routing": state.get("routing"),
             "recommendation": (
-                recommendation.model_dump(mode="json")
-                if recommendation is not None
-                else None
+                recommendation.model_dump(mode="json") if recommendation is not None else None
             ),
             "requires_human_review": state.get("requires_human_review"),
             "status": status_value,
@@ -806,9 +766,7 @@ class InvestigationWorkflow:
             "qa_sampled": state.get("qa_sampled", False),
             "workflow_steps": state.get("workflow_steps", {}),
             "persistence": (
-                persistence.model_dump(mode="json")
-                if persistence is not None
-                else None
+                persistence.model_dump(mode="json") if persistence is not None else None
             ),
             "created_at": state["created_at"].isoformat(),
             "updated_at": datetime.now(UTC).isoformat(),
@@ -820,9 +778,7 @@ class InvestigationWorkflow:
             "risk_score": risk.risk_score if risk is not None else None,
             "risk_level": risk.risk_level.value if risk is not None else None,
             "risk_reasons": risk.risk_reasons if risk is not None else [],
-            "graph_signals": (
-                graph.model_dump(mode="json") if graph is not None else {}
-            ),
+            "graph_signals": (graph.model_dump(mode="json") if graph is not None else {}),
             "retrieved_policy_references": [
                 item.policy_id for item in state.get("retrieved_policies", [])
             ],
@@ -830,8 +786,6 @@ class InvestigationWorkflow:
         }
 
     def invoke(self, transaction: Transaction) -> InvestigationResponse:
-        """Invoke the compiled LangGraph and return the public response model."""
-
         initial_state: InvestigationState = {
             "investigation_id": str(uuid4()),
             "created_at": datetime.now(UTC),
@@ -865,6 +819,4 @@ class InvestigationWorkflow:
         )
 
     def get_investigation(self, investigation_id: str) -> dict[str, Any] | None:
-        """Return the persisted audit record for ``investigation_id``."""
-
         return self._repository.get(investigation_id)

@@ -14,4 +14,3 @@ def __getattr__(name: str) -> Any:
     value = import_module("app.evaluation.evaluate").run_evaluation
     globals()[name] = value
     return value
-

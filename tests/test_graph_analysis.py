@@ -59,9 +59,7 @@ def test_isolated_first_transfer_is_not_flagged_for_concentration_alone() -> Non
 
 
 def test_analysis_does_not_mutate_history_or_inflate_repeated_calls() -> None:
-    analyzer = GraphAnalyzer(
-        [AccountTransactionEdge("h-1", "acct-a", "acct-b", 100.0)]
-    )
+    analyzer = GraphAnalyzer([AccountTransactionEdge("h-1", "acct-a", "acct-b", 100.0)])
 
     first = analyzer.analyze(transaction())
     second = analyzer.analyze(transaction())

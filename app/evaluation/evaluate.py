@@ -103,8 +103,7 @@ def run_evaluation(
     for case in dataset.risk_cases:
         actual = assess_transaction(case.transaction)
         passed = (
-            actual.risk_score == case.expected_score
-            and actual.risk_level is case.expected_level
+            actual.risk_score == case.expected_score and actual.risk_level is case.expected_level
         )
         risk_correct += int(passed)
         risk_details.append(
@@ -118,9 +117,7 @@ def run_evaluation(
             }
         )
 
-    retriever = PolicyRetriever.from_index(
-        index_source, LocalHashEmbeddingService()
-    )
+    retriever = PolicyRetriever.from_index(index_source, LocalHashEmbeddingService())
     retrieval_correct = 0
     retrieval_details: list[dict[str, Any]] = []
     for case in dataset.retrieval_cases:
@@ -151,9 +148,7 @@ def run_evaluation(
     for case in dataset.investigation_cases:
         result = service.investigate(case.transaction)
         recommendation_passed = result.recommendation is case.expected_recommendation
-        escalation_passed = (
-            result.requires_human_review is case.expect_human_review
-        )
+        escalation_passed = result.requires_human_review is case.expect_human_review
         retrieved_ids = {item.policy_id for item in result.retrieved_policies}
         referenced_ids = set(result.policy_assessment.policy_references)
         expected_policy_ids = set(case.expected_policy_ids)
@@ -229,4 +224,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

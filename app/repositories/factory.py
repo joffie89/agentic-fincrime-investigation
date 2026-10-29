@@ -15,8 +15,6 @@ def build_repository(settings: Settings) -> InvestigationRepository:
         return InMemoryInvestigationRepository()
     if settings.persistence_backend is PersistenceBackend.POSTGRES:
         if not settings.database_url:  # Also guarded by Settings validation.
-            raise ValueError(
-                "DATABASE_URL is required when PERSISTENCE_BACKEND=postgres"
-            )
+            raise ValueError("DATABASE_URL is required when PERSISTENCE_BACKEND=postgres")
         return PostgresInvestigationRepository(settings.database_url)
     raise ValueError(f"Unsupported persistence backend: {settings.persistence_backend}")

@@ -1,0 +1,11 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+# Preserve the `str, Enum` stringification contract used by public models.
+ignore = ["UP042"]
+
+[tool.ruff.format]
+line-ending = "auto"

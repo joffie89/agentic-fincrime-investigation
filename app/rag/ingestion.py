@@ -71,9 +71,7 @@ class PolicyIngestor:
             policy_ids.add(policy_id)
 
             document_chunks = self._chunk_text(text)
-            evidence_chunks = [
-                f"{title}\n{chunk}" if title else chunk for chunk in document_chunks
-            ]
+            evidence_chunks = [f"{title}\n{chunk}" if title else chunk for chunk in document_chunks]
             vectors = self.embedding_service.embed_many(evidence_chunks)
             for position, (evidence, vector) in enumerate(
                 zip(evidence_chunks, vectors, strict=True),
@@ -137,8 +135,6 @@ class PolicyIngestor:
 
 
 def main() -> None:
-    """Build an index for the embedding provider selected by the environment."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--source",

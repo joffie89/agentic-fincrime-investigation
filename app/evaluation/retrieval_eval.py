@@ -181,8 +181,7 @@ def _print_results(results: dict[str, Any]) -> None:
     for mode in EVALUATION_MODES:
         metrics = results["modes"][mode.value]["metrics"]
         print(
-            f"{mode.value:<6}  {metrics['hit@1']:.4f}  "
-            f"{metrics['hit@3']:.4f}  {metrics['mrr']:.4f}"
+            f"{mode.value:<6}  {metrics['hit@1']:.4f}  {metrics['hit@3']:.4f}  {metrics['mrr']:.4f}"
         )
 
 

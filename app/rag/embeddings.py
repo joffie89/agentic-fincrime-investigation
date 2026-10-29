@@ -5,10 +5,16 @@ from __future__ import annotations
 import hashlib
 import math
 import re
-from collections.abc import Mapping
-from typing import Any, Protocol, Sequence
+from collections.abc import Mapping, Sequence
+from typing import Any, Protocol
 
 from openai import OpenAI
+
+
+def _read_field(value: object, name: str, default: Any = None) -> Any:
+    if isinstance(value, Mapping):
+        return value.get(name, default)
+    return getattr(value, name, default)
 
 
 class EmbeddingService(Protocol):
@@ -16,13 +22,13 @@ class EmbeddingService(Protocol):
 
     @property
     def dimension(self) -> int:
-        """Length of each returned vector."""
+        pass
 
     def embed(self, text: str) -> list[float]:
-        """Embed one text value."""
+        pass
 
     def embed_many(self, texts: Sequence[str]) -> list[list[float]]:
-        """Embed multiple text values."""
+        pass
 
 
 class LocalHashEmbeddingService:
@@ -53,7 +59,7 @@ class LocalHashEmbeddingService:
         tokens = self._TOKEN_PATTERN.findall(text.lower())
         vector = [0.0] * self.dimension
         features = tokens + [
-            f"{left}_{right}" for left, right in zip(tokens, tokens[1:])
+            f"{left}_{right}" for left, right in zip(tokens, tokens[1:], strict=False)
         ]
         for feature in features:
             digest = hashlib.blake2b(feature.encode("utf-8"), digest_size=8).digest()
@@ -141,28 +147,26 @@ class OpenAIEmbeddingService:
                 model=self.model,
                 input=batch,
             )
-            raw_data = self._read(response, "data")
+            raw_data = _read_field(response, "data")
             if not isinstance(raw_data, (list, tuple)) or len(raw_data) != len(batch):
                 raise ValueError("OpenAI returned an unexpected embedding count")
 
             indexed_items: list[tuple[int, object]] = []
             for item in raw_data:
-                raw_index = self._read(item, "index")
+                raw_index = _read_field(item, "index")
                 if isinstance(raw_index, bool):
                     raise ValueError("OpenAI returned a malformed embedding index")
                 try:
                     index = int(raw_index)
                 except (TypeError, ValueError) as exc:
-                    raise ValueError(
-                        "OpenAI returned a malformed embedding index"
-                    ) from exc
+                    raise ValueError("OpenAI returned a malformed embedding index") from exc
                 indexed_items.append((index, item))
             indexed_items.sort(key=lambda pair: pair[0])
             if [index for index, _ in indexed_items] != list(range(len(batch))):
                 raise ValueError("OpenAI returned malformed embedding indexes")
 
             for _, item in indexed_items:
-                raw_vector = self._read(item, "embedding")
+                raw_vector = _read_field(item, "embedding")
                 if not isinstance(raw_vector, (list, tuple)):
                     raise ValueError("OpenAI returned a malformed embedding")
                 try:
@@ -175,12 +179,6 @@ class OpenAIEmbeddingService:
                     raise ValueError("OpenAI returned an unexpected embedding dimension")
                 vectors.append(vector)
         return vectors
-
-    @staticmethod
-    def _read(value: object, name: str, default: Any = None) -> Any:
-        if isinstance(value, Mapping):
-            return value.get(name, default)
-        return getattr(value, name, default)
 
 
 class AzureOpenAIEmbeddingService:
@@ -224,29 +222,21 @@ class AzureOpenAIEmbeddingService:
             model=self.deployment,
             input=values,
         )
-        raw_data = self._read(response, "data")
+        raw_data = _read_field(response, "data")
         if not isinstance(raw_data, (list, tuple)) or len(raw_data) != len(values):
             raise ValueError("Azure OpenAI returned an unexpected embedding count")
 
         ordered = sorted(
             raw_data,
-            key=lambda item: int(self._read(item, "index", 0)),
+            key=lambda item: int(_read_field(item, "index", 0)),
         )
         vectors: list[list[float]] = []
         for item in ordered:
-            raw_vector = self._read(item, "embedding")
+            raw_vector = _read_field(item, "embedding")
             if not isinstance(raw_vector, (list, tuple)):
                 raise ValueError("Azure OpenAI returned a malformed embedding")
             vector = [float(value) for value in raw_vector]
-            if len(vector) != self.dimension or not all(
-                math.isfinite(value) for value in vector
-            ):
+            if len(vector) != self.dimension or not all(math.isfinite(value) for value in vector):
                 raise ValueError("Azure OpenAI returned an unexpected embedding dimension")
             vectors.append(vector)
         return vectors
-
-    @staticmethod
-    def _read(value: object, name: str, default: Any = None) -> Any:
-        if isinstance(value, Mapping):
-            return value.get(name, default)
-        return getattr(value, name, default)

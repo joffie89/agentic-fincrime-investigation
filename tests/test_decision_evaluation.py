@@ -165,9 +165,7 @@ def test_decision_metrics_cover_accuracy_escalations_latency_and_cost() -> None:
         "accuracy": 0.5,
     }
     assert metrics["llm_fallback_count"] == 1
-    assert metrics["llm_fallback_count_by_reason"] == {
-        "TimeoutError: assessment timed out": 1
-    }
+    assert metrics["llm_fallback_count_by_reason"] == {"TimeoutError: assessment timed out": 1}
     assert metrics["rubric_override_count"] == 0
     assert metrics["rubric_override_case_names"] == []
     assert metrics["deterministic_citation_case_count"] == 0
@@ -224,9 +222,7 @@ def test_decision_observation_records_diagnostics_and_failure_defaults() -> None
     assert completed["rubric_override"] is True
     assert completed["deterministic_citations"] == ["POL-A"]
     assert completed["evidence_sufficient"] is True
-    assert completed["routing_rule_fired"] == (
-        "medium_risk_assessment_not_clear"
-    )
+    assert completed["routing_rule_fired"] == ("medium_risk_assessment_not_clear")
     assert completed["policy_references"] == ["POL-A"]
     assert completed["policies_considered"] == ["POL-B"]
     assert completed["retrieved_policy_ids"] == ["POL-A", "POL-B"]
@@ -235,9 +231,7 @@ def test_decision_observation_records_diagnostics_and_failure_defaults() -> None
     assert completed["rejected_citations"] == ["POL-X"]
     assert completed["rejected_policies_considered"] == ["POL-Y"]
     assert completed["fallback_reason"] is None
-    assert completed["llm_reasons"] == [
-        "One risk signal needs supporting information."
-    ]
+    assert completed["llm_reasons"] == ["One risk signal needs supporting information."]
 
     failed = DecisionObservation(
         name="failed case",
@@ -303,9 +297,7 @@ def test_decision_diagnostics_read_current_audit_shape() -> None:
         "ValidationError: invalid structured response"
     )
     assert _rejected_citations(assessment, audit_record) == ["POL-INVENTED"]
-    assert _rejected_policies_considered(assessment, audit_record) == [
-        "POL-NOT-REVIEWED"
-    ]
+    assert _rejected_policies_considered(assessment, audit_record) == ["POL-NOT-REVIEWED"]
 
 
 def test_metrics_keep_llm_accuracy_visible_before_rubric_enforcement() -> None:
@@ -355,14 +347,10 @@ def test_metrics_keep_llm_accuracy_visible_before_rubric_enforcement() -> None:
         "accuracy": 0.5,
     }
     assert metrics["rubric_override_count"] == 1
-    assert metrics["rubric_override_case_names"] == [
-        "overridden escalation"
-    ]
+    assert metrics["rubric_override_case_names"] == ["overridden escalation"]
     assert metrics["deterministic_citation_case_count"] == 1
     assert metrics["deterministic_citation_count"] == 2
-    assert metrics["deterministic_citation_case_names"] == [
-        "overridden escalation"
-    ]
+    assert metrics["deterministic_citation_case_names"] == ["overridden escalation"]
 
 
 def test_metric_run_summary_reports_mean_and_min_max() -> None:
@@ -409,10 +397,13 @@ def test_case_set_specific_result_filename_preserves_default_name() -> None:
     assert _results_filename(Path("decision_cases.json"), "openai") == (
         "decision_results_openai.json"
     )
-    assert _results_filename(
-        Path("decision_cases_holdout.json"),
-        "openai",
-    ) == "decision_results_openai_holdout.json"
+    assert (
+        _results_filename(
+            Path("decision_cases_holdout.json"),
+            "openai",
+        )
+        == "decision_results_openai_holdout.json"
+    )
     assert _results_filename(Path("custom_set.json"), "local") == (
         "decision_results_local_custom_set.json"
     )
@@ -490,9 +481,7 @@ def test_repeated_evaluation_isolates_runs_and_writes_aggregates(
         "min": 10.0,
         "max": 20.0,
     }
-    assert Path(results["results_path"]).name == (
-        "decision_results_local_holdout.json"
-    )
+    assert Path(results["results_path"]).name == ("decision_results_local_holdout.json")
     assert Path(results["results_path"]).is_file()
 
 

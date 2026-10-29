@@ -8,9 +8,9 @@ because both incoming and outgoing relationships matter during an investigation.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from math import isfinite
-from typing import Iterable, Mapping
 
 import networkx as nx
 
@@ -71,9 +71,7 @@ class GraphAnalyzer:
         for relationship in source:
             edge = self._coerce_relationship(relationship)
             if edge.transaction_id in seen_transaction_ids:
-                raise ValueError(
-                    f"Duplicate historical transaction_id: {edge.transaction_id}"
-                )
+                raise ValueError(f"Duplicate historical transaction_id: {edge.transaction_id}")
             seen_transaction_ids.add(edge.transaction_id)
             self._add_relationship(edge)
 
@@ -84,8 +82,6 @@ class GraphAnalyzer:
         return self._graph.copy()
 
     def analyze(self, transaction: Transaction) -> GraphAnalysisResult:
-        """Analyze an investigation transaction against historical relationships."""
-
         current = self._transaction_edge(transaction)
         graph = self._graph.copy()
         existing = self._find_transaction(graph, current.transaction_id)
@@ -113,22 +109,14 @@ class GraphAnalyzer:
         shared_counterparty_count = len(shared)
 
         direct_edges = [
-            edge
-            for edge in origin_edges
-            if {edge[0], edge[1]} == {origin, destination}
+            edge for edge in origin_edges if {edge[0], edge[1]} == {origin, destination}
         ]
         repeated_transaction_count = len(direct_edges)
 
-        total_origin_amount = sum(
-            float(edge[3]["amount"]) for edge in origin_edges
-        )
-        direct_amount = sum(
-            float(edge[3]["amount"]) for edge in direct_edges
-        )
+        total_origin_amount = sum(float(edge[3]["amount"]) for edge in origin_edges)
+        direct_amount = sum(float(edge[3]["amount"]) for edge in direct_edges)
         concentration_ratio = (
-            round(direct_amount / total_origin_amount, 6)
-            if total_origin_amount > 0
-            else 0.0
+            round(direct_amount / total_origin_amount, 6) if total_origin_amount > 0 else 0.0
         )
 
         signals: list[str] = []
@@ -195,9 +183,7 @@ class GraphAnalyzer:
                 amount=float(transaction.amount),
             )
         except AttributeError as exc:
-            raise ValueError(
-                "Transaction must include transaction_id and amount"
-            ) from exc
+            raise ValueError("Transaction must include transaction_id and amount") from exc
         GraphAnalyzer._validate_edge(edge)
         return edge
 
@@ -270,6 +256,5 @@ class GraphAnalyzer:
         account_id: str,
     ) -> set[str]:
         return {
-            destination if origin == account_id else origin
-            for origin, destination, _, _ in edges
+            destination if origin == account_id else origin for origin, destination, _, _ in edges
         }
