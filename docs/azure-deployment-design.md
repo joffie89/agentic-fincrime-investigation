@@ -1,9 +1,51 @@
-# Azure deployment design — not implemented
+# Azure deployment design — prepared, not deployed
 
-This document describes a plausible production deployment direction for the
-portfolio prototype. No Azure resources, deployment pipeline, Terraform/Bicep,
-managed identities, private endpoints, or cloud monitoring were created or
-verified by this repository.
+This repository includes opt-in scripts for a small Azure Container Apps demo
+and describes a plausible production deployment direction for the portfolio
+prototype. No Azure resources were created or verified while preparing these
+files, and no automatic Azure deployment pipeline, Terraform/Bicep, managed
+identities, private endpoints, or cloud monitoring are included.
+
+## Demo deployment
+
+The manual deployment script uses resource group `fincrime-demo-rg` in
+`uksouth` and creates or updates the `fincrime-api` Container App from the
+prebuilt public image at
+`ghcr.io/joffie89/agentic-fincrime-investigation:latest`. It configures external
+ingress on port 8000, stores `API_KEY` and `OPENAI_API_KEY` as Container Apps
+secrets, and injects them through secret references. The app uses OpenAI
+assessment and embeddings with the bundled `data/policy_index_openai.json`
+index. Scaling is limited to zero or one replica.
+
+The `publish-image.yml` GitHub Actions workflow runs pytest before building and
+publishing `latest` and commit-SHA tags. Its Docker context excludes `.env` and
+`.env.*`. After the first publication, the GHCR package must be changed to
+**Public** once in GitHub package settings so Container Apps can pull it without
+registry credentials.
+
+Prerequisites are an Azure subscription and an authenticated Azure CLI session.
+From the repository root, run:
+
+```powershell
+.\scripts\deploy_azure.ps1
+```
+
+Pass `-Image ghcr.io/joffie89/agentic-fincrime-investigation:<commit-sha>` to
+deploy an immutable published build instead of `latest`.
+
+The prompts use secure input; the script does not echo secret values, write them
+to local files, or place them in command-history text. It prints the app URL
+after Azure has accepted the final configuration. To remove the demo resources,
+run:
+
+```powershell
+.\scripts\teardown_azure.ps1
+```
+
+The demo deliberately sets `PERSISTENCE_BACKEND=memory` and can scale to zero.
+Investigation and audit records therefore disappear whenever the replica stops
+or restarts, including scale-to-zero events. This low-cost demo profile is not
+the production topology described below.
 
 ## Intended topology
 
