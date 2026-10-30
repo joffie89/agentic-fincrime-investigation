@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -19,9 +20,33 @@ from app.evaluation.decision_eval import (
     _rejected_policies_considered,
     _results_filename,
     _retrieval_source_ids,
+    _wilson_score_interval,
     calculate_decision_metrics,
+    recompute_metrics_from_results,
     summarize_metric_runs,
 )
+
+
+@pytest.mark.parametrize(
+    ("successes", "total", "expected_lower", "expected_upper"),
+    [
+        (0, 7, 0.0, 0.35433043506668743),
+        (5, 10, 0.236593090512564, 0.7634069094874361),
+        (20, 20, 0.8388748419471806, 1.0),
+    ],
+)
+def test_wilson_score_interval(
+    successes: int,
+    total: int,
+    expected_lower: float,
+    expected_upper: float,
+) -> None:
+    interval = _wilson_score_interval(successes, total)
+
+    assert interval == {
+        "lower": pytest.approx(expected_lower),
+        "upper": pytest.approx(expected_upper),
+    }
 
 
 def test_decision_metrics_cover_accuracy_escalations_latency_and_cost() -> None:
@@ -130,11 +155,19 @@ def test_decision_metrics_cover_accuracy_escalations_latency_and_cost() -> None:
         "correct": 2,
         "total": 4,
         "accuracy": 0.5,
+        "confidence_interval_95": {
+            "lower": pytest.approx(0.15003898915214947),
+            "upper": pytest.approx(0.8499610108478506),
+        },
     }
     assert metrics["llm_recommendation_accuracy"] == {
         "correct": 0,
         "total": 0,
         "accuracy": 0.0,
+        "confidence_interval_95": {
+            "lower": 0.0,
+            "upper": 1.0,
+        },
     }
     assert metrics["recommendation_accuracy_excluding_fallbacks"] == {
         "correct": 2,
@@ -340,17 +373,88 @@ def test_metrics_keep_llm_accuracy_visible_before_rubric_enforcement() -> None:
         "correct": 2,
         "total": 2,
         "accuracy": 1.0,
+        "confidence_interval_95": {
+            "lower": pytest.approx(0.34238022750665303),
+            "upper": 1.0,
+        },
     }
     assert metrics["llm_recommendation_accuracy"] == {
         "correct": 1,
         "total": 2,
         "accuracy": 0.5,
+        "confidence_interval_95": {
+            "lower": pytest.approx(0.09453120573423074),
+            "upper": pytest.approx(0.9054687942657693),
+        },
     }
     assert metrics["rubric_override_count"] == 1
     assert metrics["rubric_override_case_names"] == ["overridden escalation"]
     assert metrics["deterministic_citation_case_count"] == 1
     assert metrics["deterministic_citation_count"] == 2
     assert metrics["deterministic_citation_case_names"] == ["overridden escalation"]
+
+
+def test_llm_only_escalation_counts_use_original_recommendation() -> None:
+    def observation(
+        name: str,
+        expected: str,
+        original: str,
+    ) -> DecisionObservation:
+        return DecisionObservation(
+            name=name,
+            expected_recommendation=expected,
+            actual_recommendation=expected,
+            original_llm_recommendation=original,
+            expected_requires_human_review=(expected == "ESCALATE_TO_HUMAN"),
+            actual_requires_human_review=(expected == "ESCALATE_TO_HUMAN"),
+            expected_policy_ids=[],
+            actual_policy_ids=[],
+            llm_fallback_used=False,
+            latency_ms=1.0,
+            estimated_cost_usd=0.0,
+            completed=True,
+        )
+
+    metrics = calculate_decision_metrics(
+        [
+            observation("llm miss", "ESCALATE_TO_HUMAN", "CLEAR"),
+            observation(
+                "llm request miss",
+                "ESCALATE_TO_HUMAN",
+                "REQUEST_MORE_INFO",
+            ),
+            observation(
+                "llm correct escalation",
+                "ESCALATE_TO_HUMAN",
+                "ESCALATE_TO_HUMAN",
+            ),
+            observation("llm over clear", "CLEAR", "ESCALATE_TO_HUMAN"),
+            observation(
+                "llm over request",
+                "REQUEST_MORE_INFO",
+                "ESCALATE_TO_HUMAN",
+            ),
+        ]
+    )
+
+    assert metrics["expected_escalation_count"] == 3
+    assert metrics["llm_only_missed_escalations"] == {
+        "count": 2,
+        "case_names": ["llm miss", "llm request miss"],
+    }
+    assert metrics["llm_only_unnecessary_escalations"] == {
+        "count": 2,
+        "case_names": ["llm over clear", "llm over request"],
+    }
+    assert metrics["llm_only_missed_escalation_rate"] == {
+        "count": 2,
+        "total": 3,
+        "rate": pytest.approx(2 / 3),
+        "confidence_interval_95": {
+            "lower": pytest.approx(0.2076596008020477),
+            "upper": pytest.approx(0.9385080552796037),
+        },
+    }
 
 
 def test_metric_run_summary_reports_mean_and_min_max() -> None:
@@ -529,6 +633,73 @@ def test_cli_accepts_cases_and_runs_options(
         "output_dir": tmp_path,
         "printed": expected_results,
     }
+
+
+def test_from_results_recomputes_fixture_without_running_workflow(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    observation = DecisionObservation(
+        name="offline-clear",
+        expected_recommendation="CLEAR",
+        actual_recommendation="CLEAR",
+        original_llm_recommendation="CLEAR",
+        expected_requires_human_review=False,
+        actual_requires_human_review=False,
+        expected_policy_ids=[],
+        actual_policy_ids=[],
+        llm_fallback_used=False,
+        latency_ms=4.0,
+        estimated_cost_usd=0.0,
+        completed=True,
+    ).model_dump(mode="json")
+    results_path = tmp_path / "saved-results.json"
+    results_path.write_text(
+        json.dumps(
+            {
+                "service_mode": "openai",
+                "case_count": 1,
+                "run_count": 1,
+                "total_case_evaluations": 1,
+                "metrics": {"stale": True},
+                "cases": [observation],
+                "metric_summary": {},
+                "run_results": [
+                    {
+                        "run": 1,
+                        "metrics": {"stale": True},
+                        "cases": [observation],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    recomputed = recompute_metrics_from_results(results_path)
+
+    assert recomputed["recomputed_from_results"] is True
+    assert recomputed["metrics"]["recommendation_accuracy"]["accuracy"] == 1.0
+    assert recomputed["metrics"]["llm_recommendation_accuracy"]["accuracy"] == 1.0
+
+    def fail_if_workflow_runs(*args: object, **kwargs: object) -> None:
+        del args, kwargs
+        pytest.fail("--from-results must not call run_decision_evaluation")
+
+    printed: dict[str, object] = {}
+    monkeypatch.setattr(decision_eval, "run_decision_evaluation", fail_if_workflow_runs)
+    monkeypatch.setattr(
+        decision_eval,
+        "_print_results",
+        lambda results: printed.update(results=results),
+    )
+
+    decision_eval.main(["--from-results", str(results_path)])
+
+    printed_results = printed["results"]
+    assert isinstance(printed_results, dict)
+    assert printed_results["recomputed_from_results"] is True
+    assert printed_results["metrics"]["recommendation_accuracy"]["accuracy"] == 1.0
 
 
 def test_repeated_report_includes_no_fallback_metrics_and_reasons(

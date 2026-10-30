@@ -94,11 +94,54 @@ class DecisionObservation(DomainModel):
     workflow_error: str | None = None
 
 
-def _accuracy(correct: int, total: int) -> dict[str, int | float]:
+def _wilson_score_interval(successes: int, total: int) -> dict[str, float]:
+    """Return the two-sided 95% Wilson score interval for a binomial rate."""
+
+    if total < 0 or successes < 0 or successes > total:
+        raise ValueError("successes and total must satisfy 0 <= successes <= total")
+    if total == 0:
+        return {"lower": 0.0, "upper": 1.0}
+
+    z = 1.959963984540054
+    observed = successes / total
+    z_squared = z * z
+    denominator = 1 + z_squared / total
+    center = (observed + z_squared / (2 * total)) / denominator
+    margin = (
+        z
+        * math.sqrt(observed * (1 - observed) / total + z_squared / (4 * total * total))
+        / denominator
+    )
     return {
+        "lower": max(0.0, center - margin),
+        "upper": min(1.0, center + margin),
+    }
+
+
+def _accuracy(
+    correct: int,
+    total: int,
+    *,
+    include_confidence_interval: bool = False,
+) -> dict[str, Any]:
+    result: dict[str, Any] = {
         "correct": correct,
         "total": total,
         "accuracy": correct / total if total else 0.0,
+    }
+    if include_confidence_interval:
+        result["confidence_interval_95"] = _wilson_score_interval(correct, total)
+    return result
+
+
+def _rate(count: int, total: int) -> dict[str, Any]:
+    """Return a count, denominator, rate, and two-sided 95% Wilson interval."""
+
+    return {
+        "count": count,
+        "total": total,
+        "rate": count / total if total else 0.0,
+        "confidence_interval_95": _wilson_score_interval(count, total),
     }
 
 
@@ -172,6 +215,32 @@ def calculate_decision_metrics(
         and not item.expected_requires_human_review
         and item.actual_requires_human_review is True
     ]
+    expected_escalations = [
+        item
+        for item in validated
+        if item.expected_recommendation is Recommendation.ESCALATE_TO_HUMAN
+    ]
+    system_recommendation_misses = [
+        item.name
+        for item in expected_escalations
+        if item.completed
+        and item.actual_recommendation is not None
+        and item.actual_recommendation is not Recommendation.ESCALATE_TO_HUMAN
+    ]
+    llm_only_misses = [
+        item.name
+        for item in expected_escalations
+        if item.completed
+        and item.original_llm_recommendation is not None
+        and item.original_llm_recommendation is not Recommendation.ESCALATE_TO_HUMAN
+    ]
+    llm_only_unnecessary = [
+        item.name
+        for item in validated
+        if item.completed
+        and item.expected_recommendation is not Recommendation.ESCALATE_TO_HUMAN
+        and item.original_llm_recommendation is Recommendation.ESCALATE_TO_HUMAN
+    ]
     latencies = [item.latency_ms for item in validated]
     total_cost = math.fsum(item.estimated_cost_usd for item in validated)
     expected_policy_count = 0
@@ -198,10 +267,15 @@ def calculate_decision_metrics(
 
     return {
         "case_count": total,
-        "recommendation_accuracy": _accuracy(recommendation_correct, total),
+        "recommendation_accuracy": _accuracy(
+            recommendation_correct,
+            total,
+            include_confidence_interval=True,
+        ),
         "llm_recommendation_accuracy": _accuracy(
             llm_recommendation_correct,
             len(llm_scored),
+            include_confidence_interval=True,
         ),
         "recommendation_accuracy_excluding_fallbacks": _accuracy(
             recommendation_correct_without_fallbacks,
@@ -219,6 +293,26 @@ def calculate_decision_metrics(
         "unnecessary_escalations": {
             "count": len(unnecessary),
             "case_names": unnecessary,
+        },
+        "expected_escalation_count": len(expected_escalations),
+        "system_missed_escalation_rate": {
+            **_rate(
+                len(system_recommendation_misses),
+                len(expected_escalations),
+            ),
+            "case_names": system_recommendation_misses,
+        },
+        "llm_only_missed_escalations": {
+            "count": len(llm_only_misses),
+            "case_names": llm_only_misses,
+        },
+        "llm_only_missed_escalation_rate": _rate(
+            len(llm_only_misses),
+            len(expected_escalations),
+        ),
+        "llm_only_unnecessary_escalations": {
+            "count": len(llm_only_unnecessary),
+            "case_names": llm_only_unnecessary,
         },
         "exact_citation_match_rate": _accuracy(citation_correct, total),
         "llm_fallback_count": sum(item.llm_fallback_used for item in validated),
@@ -643,6 +737,95 @@ def run_decision_evaluation(
     return results
 
 
+def recompute_metrics_from_results(results_path: str | Path) -> dict[str, Any]:
+    """Recompute metrics from saved case observations without running the workflow."""
+
+    source_path = Path(results_path)
+    try:
+        payload = json.loads(source_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"Unable to read decision evaluation results: {source_path}") from exc
+    if not isinstance(payload, Mapping):
+        raise ValueError("Decision evaluation results must contain a JSON object")
+
+    raw_runs = payload.get("run_results")
+    if isinstance(raw_runs, Sequence) and not isinstance(raw_runs, (str, bytes)) and raw_runs:
+        run_sources = list(raw_runs)
+    else:
+        run_sources = [{"run": 1, "cases": payload.get("cases")}]
+
+    recomputed_runs: list[dict[str, Any]] = []
+    for run_index, raw_run in enumerate(run_sources, start=1):
+        if not isinstance(raw_run, Mapping):
+            raise ValueError(f"Result run {run_index} must contain a JSON object")
+        raw_cases = raw_run.get("cases")
+        if (
+            not isinstance(raw_cases, Sequence)
+            or isinstance(raw_cases, (str, bytes))
+            or not raw_cases
+        ):
+            raise ValueError(f"Result run {run_index} does not contain any cases")
+
+        missing_original: list[str] = []
+        for case_index, raw_case in enumerate(raw_cases, start=1):
+            if not isinstance(raw_case, Mapping):
+                raise ValueError(
+                    f"Result run {run_index} case {case_index} must contain a JSON object"
+                )
+            if raw_case.get("original_llm_recommendation") is None:
+                name = raw_case.get("name")
+                missing_original.append(
+                    str(name) if isinstance(name, str) and name else f"case {case_index}"
+                )
+        if missing_original:
+            missing = ", ".join(missing_original)
+            raise ValueError(
+                f"Results file does not contain original_llm_recommendation for every case "
+                f"in run {run_index}: {missing}"
+            )
+
+        recomputed_run = dict(raw_run)
+        recomputed_run["run"] = int(raw_run.get("run", run_index))
+        recomputed_run["metrics"] = calculate_decision_metrics(raw_cases)
+        recomputed_run["cases"] = list(raw_cases)
+        recomputed_runs.append(recomputed_run)
+
+    first_run = recomputed_runs[0]
+    results = dict(payload)
+    results.update(
+        {
+            "case_count": len(first_run["cases"]),
+            "run_count": len(recomputed_runs),
+            "total_case_evaluations": sum(len(run["cases"]) for run in recomputed_runs),
+            "metrics": first_run["metrics"],
+            "cases": first_run["cases"],
+            "metric_summary": summarize_metric_runs([run["metrics"] for run in recomputed_runs]),
+            "run_results": recomputed_runs,
+            "results_path": str(source_path.resolve()),
+            "recomputed_from_results": True,
+        }
+    )
+    return results
+
+
+def _format_confidence_interval(metric: Mapping[str, Any]) -> str:
+    interval = metric["confidence_interval_95"]
+    return f"{float(interval['lower']):.1%} - {float(interval['upper']):.1%}"
+
+
+def _format_rate_with_interval(metric: Mapping[str, Any]) -> str:
+    return (
+        f"{metric['count']}/{metric['total']} ({float(metric['rate']):.1%}; "
+        f"95% CI {_format_confidence_interval(metric)})"
+    )
+
+
+def _results_location_label(results: Mapping[str, Any]) -> str:
+    if results.get("recomputed_from_results"):
+        return "Metrics recomputed from"
+    return "Results written to"
+
+
 def _print_results(results: Mapping[str, Any]) -> None:
     run_count = int(results.get("run_count", 1))
     if run_count > 1:
@@ -659,17 +842,21 @@ def _print_results(results: Mapping[str, Any]) -> None:
     retrieval = metrics["retrieval_recall"]
     latency = metrics["latency_ms"]
     cost = metrics["cost_usd"]
+    system_miss_rate = metrics["system_missed_escalation_rate"]
+    llm_miss_rate = metrics["llm_only_missed_escalation_rate"]
     rows = [
         (
             "Recommendation accuracy",
             f"{recommendation['correct']}/{recommendation['total']} "
-            f"({recommendation['accuracy']:.1%})",
+            f"({recommendation['accuracy']:.1%}; "
+            f"95% CI {_format_confidence_interval(recommendation)})",
         ),
         (
-            "LLM-own recommendation accuracy",
+            "LLM-only recommendation accuracy",
             f"{llm_recommendation['correct']}/"
             f"{llm_recommendation['total']} "
-            f"({llm_recommendation['accuracy']:.1%})",
+            f"({llm_recommendation['accuracy']:.1%}; "
+            f"95% CI {_format_confidence_interval(llm_recommendation)})",
         ),
         (
             "Recommendation accuracy (no fallbacks)",
@@ -687,10 +874,27 @@ def _print_results(results: Mapping[str, Any]) -> None:
             f"{routing_without_fallbacks['total']} "
             f"({routing_without_fallbacks['accuracy']:.1%})",
         ),
+        ("Expected escalation cases", str(metrics["expected_escalation_count"])),
         ("MISSED ESCALATIONS", str(metrics["missed_escalations"]["count"])),
+        (
+            "System recommendation miss rate",
+            _format_rate_with_interval(system_miss_rate),
+        ),
+        (
+            "LLM-only missed escalations",
+            str(metrics["llm_only_missed_escalations"]["count"]),
+        ),
+        (
+            "LLM-only miss rate",
+            _format_rate_with_interval(llm_miss_rate),
+        ),
         (
             "Unnecessary escalations",
             str(metrics["unnecessary_escalations"]["count"]),
+        ),
+        (
+            "LLM-only unnecessary escalations",
+            str(metrics["llm_only_unnecessary_escalations"]["count"]),
         ),
         (
             "Exact citation match rate",
@@ -726,7 +930,7 @@ def _print_results(results: Mapping[str, Any]) -> None:
         ),
     ]
     label_width = max(len(label) for label, _ in rows)
-    print(f"Decision evaluation ({results['service_mode']})")
+    print(f"Decision evaluation ({results.get('service_mode', 'unknown')})")
     print(f"Cases: {results['case_count']}")
     print()
     print(f"{'Metric':<{label_width}}  Result")
@@ -734,14 +938,14 @@ def _print_results(results: Mapping[str, Any]) -> None:
     for label, value in rows:
         print(f"{label:<{label_width}}  {value}")
     print()
-    print(f"Results written to: {results['results_path']}")
+    print(f"{_results_location_label(results)}: {results['results_path']}")
 
 
 _REPEATED_RESULT_ROWS = (
     ("recommendation_accuracy.accuracy", "Recommendation accuracy", "percent"),
     (
         "llm_recommendation_accuracy.accuracy",
-        "LLM-own recommendation accuracy",
+        "LLM-only recommendation accuracy",
         "percent",
     ),
     (
@@ -759,8 +963,34 @@ _REPEATED_RESULT_ROWS = (
         "Human-review routing accuracy (no fallbacks)",
         "percent",
     ),
+    ("expected_escalation_count", "Expected escalation cases", "number"),
     ("missed_escalations.count", "MISSED ESCALATIONS", "number"),
+    (
+        "system_missed_escalation_rate.count",
+        "System recommendation missed escalations",
+        "number",
+    ),
+    (
+        "system_missed_escalation_rate.rate",
+        "System recommendation miss rate",
+        "percent",
+    ),
+    (
+        "llm_only_missed_escalations.count",
+        "LLM-only missed escalations",
+        "number",
+    ),
+    (
+        "llm_only_missed_escalation_rate.rate",
+        "LLM-only miss rate",
+        "percent",
+    ),
     ("unnecessary_escalations.count", "Unnecessary escalations", "number"),
+    (
+        "llm_only_unnecessary_escalations.count",
+        "LLM-only unnecessary escalations",
+        "number",
+    ),
     (
         "exact_citation_match_rate.accuracy",
         "Exact citation match rate",
@@ -784,6 +1014,25 @@ _REPEATED_RESULT_ROWS = (
     ("latency_ms.p95", "End-to-end latency p95", "milliseconds"),
     ("cost_usd.total", "Total estimated LLM cost", "currency"),
     ("cost_usd.average_per_case", "Average LLM cost per case", "currency"),
+)
+
+_REPEATED_INTERVAL_ROWS = (
+    (
+        "recommendation_accuracy.confidence_interval_95",
+        "Recommendation accuracy 95% CI",
+    ),
+    (
+        "llm_recommendation_accuracy.confidence_interval_95",
+        "LLM-only recommendation accuracy 95% CI",
+    ),
+    (
+        "system_missed_escalation_rate.confidence_interval_95",
+        "System recommendation miss-rate 95% CI",
+    ),
+    (
+        "llm_only_missed_escalation_rate.confidence_interval_95",
+        "LLM-only miss-rate 95% CI",
+    ),
 )
 
 
@@ -811,6 +1060,15 @@ def _print_repeated_results(results: Mapping[str, Any]) -> None:
         maximum = _format_summary_value(float(values["max"]), style)
         rows.append((label, mean, f"{minimum} - {maximum}"))
 
+    for prefix, label in _REPEATED_INTERVAL_ROWS:
+        lower = summary.get(f"{prefix}.lower")
+        upper = summary.get(f"{prefix}.upper")
+        if not isinstance(lower, Mapping) or not isinstance(upper, Mapping):
+            continue
+        mean_interval = f"{float(lower['mean']):.1%} - {float(upper['mean']):.1%}"
+        full_range = f"{float(lower['min']):.1%} - {float(upper['max']):.1%}"
+        rows.append((label, mean_interval, full_range))
+
     fallback_prefix = "llm_fallback_count_by_reason."
     for path in sorted(summary):
         if not path.startswith(fallback_prefix):
@@ -829,7 +1087,7 @@ def _print_repeated_results(results: Mapping[str, Any]) -> None:
         )
 
     label_width = max(len(label) for label, _, _ in rows)
-    print(f"Decision evaluation ({results['service_mode']})")
+    print(f"Decision evaluation ({results.get('service_mode', 'unknown')})")
     print(
         f"Cases: {results['case_count']} x {results['run_count']} runs "
         f"= {results['total_case_evaluations']} evaluations"
@@ -840,16 +1098,22 @@ def _print_repeated_results(results: Mapping[str, Any]) -> None:
     for label, mean, value_range in rows:
         print(f"{label:<{label_width}}  {mean:>14}  {value_range}")
     print()
-    print(f"Results written to: {results['results_path']}")
+    print(f"{_results_location_label(results)}: {results['results_path']}")
 
 
 def main(argv: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
+    source_group = parser.add_mutually_exclusive_group()
+    source_group.add_argument(
         "--cases",
         type=Path,
         default=DEFAULT_CASES_PATH,
         help="Path to labelled decision evaluation cases",
+    )
+    source_group.add_argument(
+        "--from-results",
+        type=Path,
+        help="Recompute metrics from an existing results JSON without running cases",
     )
     parser.add_argument(
         "--output-dir",
@@ -864,6 +1128,14 @@ def main(argv: Sequence[str] | None = None) -> None:
         help="Number of independent repetitions (default: 1)",
     )
     arguments = parser.parse_args(argv)
+    if arguments.from_results is not None:
+        try:
+            results = recompute_metrics_from_results(arguments.from_results)
+        except ValueError as exc:
+            parser.error(str(exc))
+        _print_results(results)
+        return
+
     results = run_decision_evaluation(
         arguments.cases,
         runs=arguments.runs,
