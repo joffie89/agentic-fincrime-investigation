@@ -95,7 +95,7 @@ FastAPI request -> Pydantic validation -> compiled LangGraph
 - The full workflow persists a complete or partial audit trail and exposes it through the protected `GET /investigations/{investigation_id}` endpoint.
 - OpenAI structured assessment has an application-enforced decision floor, deterministic citations, safe fallbacks, and recorded rejected model identifiers.
 - Operational controls provide a hosted-LLM kill switch and deterministic QA sampling of auto-completed cases.
-- A network-free suite of 222 unit, workflow, persistence, evaluation, and API tests runs locally and in CI.
+- A network-free suite of 225 unit, workflow, persistence, evaluation, and API tests runs locally and in CI.
 - Docker/Compose packaging and GitHub Actions CI are included.
 
 ## What problem it demonstrates
@@ -127,7 +127,8 @@ Financial-crime investigations often need several kinds of evidence at once: tra
 │   └── evaluation/
 │       ├── evaluate.py                  # workflow regression evaluation
 │       ├── retrieval_eval.py            # vector/BM25/hybrid comparison
-│       └── decision_eval.py             # repeatable live decision evaluation
+│       ├── decision_eval.py             # repeatable live decision evaluation
+│       └── decision_regression_gate.py  # offline CI decision gate
 ├── data/
 │   ├── policies.json                    # 30 synthetic demo policy passages
 │   └── policy_index.json                # generated local vector index
@@ -135,8 +136,9 @@ Financial-crime investigations often need several kinds of evidence at once: tra
 │   ├── cases.json                       # small workflow regression cases
 │   ├── retrieval_cases.json             # 60 labelled retrieval queries
 │   ├── decision_cases.json              # 50 in-sample decision cases
-│   └── decision_cases_holdout.json      # 20 held-out decision cases
-├── tests/                               # 222 network-free tests
+│   ├── decision_cases_holdout.json      # 20 held-out decision cases
+│   └── decision_cases_adversarial.json  # 10 adversarial decision cases
+├── tests/                               # 225 network-free tests
 ├── docs/azure-deployment-design.md      # prepared Azure design; not deployed
 ├── scripts/
 │   ├── deploy_azure.ps1               # manual Container Apps deployment
@@ -347,7 +349,7 @@ Run the complete network-free suite:
 python -m pytest -q
 ```
 
-The suite contains 222 tests covering rule boundaries, validation, graph metrics, vector/BM25/hybrid retrieval, mocked OpenAI and Azure embeddings, mocked structured LLM output, rubric enforcement, LangGraph routes, operational controls, complete and partial audit persistence, API-key authentication, request correlation/logging, and evaluation execution. It requires no hosted-provider credentials or paid API calls.
+The suite contains 225 tests covering rule boundaries, validation, graph metrics, vector/BM25/hybrid retrieval, mocked OpenAI and Azure embeddings, mocked structured LLM output, rubric enforcement, LangGraph routes, operational controls, complete and partial audit persistence, API-key authentication, request correlation/logging, and evaluation execution. It requires no hosted-provider credentials or paid API calls.
 
 Run the small workflow regression evaluation:
 
@@ -356,6 +358,19 @@ python -m app.evaluation.evaluate
 ```
 
 It calculates deterministic-rule correctness, expected-policy-in-Top-K retrieval, recommendation agreement, exact reference grounding, and escalation behavior. The dataset is synthetic and intended as a regression signal, not evidence of real-world performance.
+
+The 10-case adversarial decision set covers prompt-injection text in an accepted
+transaction identifier, contradictory signals, exact rule boundaries, and a
+high-risk cross-border case. CI runs both the main and adversarial decision sets
+through the rules-based `LOCAL` assessor with no network access and fails if the
+system misses an escalation or routing accuracy falls below 100%:
+
+```powershell
+python -m app.evaluation.decision_regression_gate
+```
+
+The live OpenAI run on the adversarial set is reported separately from this
+deterministic CI gate.
 
 ### Live decision evaluation
 
@@ -376,7 +391,13 @@ python -m app.evaluation.decision_eval --cases evaluation/decision_cases.json --
 python -m app.evaluation.decision_eval --cases evaluation/decision_cases_holdout.json --runs 3
 ```
 
-The output filename includes the service mode and non-default case-set stem, producing `evaluation/decision_results_openai.json` and `evaluation/decision_results_openai_holdout.json` for these commands. They make paid network calls. The reported cost covers policy-assessment tokens only and excludes embedding API cost.
+Run the separately reported live adversarial evaluation with the same environment:
+
+```powershell
+python -m app.evaluation.decision_eval --cases evaluation/decision_cases_adversarial.json --runs 3
+```
+
+The output filename includes the service mode and non-default case-set stem, producing `evaluation/decision_results_openai.json`, `evaluation/decision_results_openai_holdout.json`, or `evaluation/decision_results_openai_adversarial.json` for these commands. They make paid network calls. The reported cost covers policy-assessment tokens only and excludes embedding API cost.
 
 ### Retrieval evaluation
 
@@ -469,7 +490,7 @@ demo configuration, limitations, and a separate production-oriented topology.
 
 ## CI/CD
 
-`.github/workflows/ci.yml` defines CI for pushes and pull requests. It installs dependencies, checks the environment, compiles the application, runs pytest, validates Compose, and builds the Docker image. It does not deploy anywhere.
+`.github/workflows/ci.yml` defines CI for pushes and pull requests. It installs dependencies, checks the environment, compiles the application, runs pytest, runs the offline decision regression gate, validates Compose, and builds the Docker image. It does not deploy anywhere.
 
 `.github/workflows/publish-image.yml` runs pytest and publishes `latest` and
 commit-SHA image tags to GHCR. It never deploys to Azure. The Azure scripts are
