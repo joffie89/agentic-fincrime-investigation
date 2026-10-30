@@ -12,10 +12,15 @@ All evaluation data is synthetic. On the 60-query retrieval set, moving from the
 
 | Metric | In-sample (50 cases x 3 runs) | Held-out (20 cases x 3 runs) |
 |---|---:|---:|
-| Missed escalations | 0 | 0 |
-| Unnecessary escalations | 0 | 2 |
-| System recommendation accuracy | 100% | 90% |
-| LLM-alone accuracy | 94% | 85% |
+| Escalation cases | 33 | 5 |
+| System missed escalations | 0 | 0 |
+| System miss rate (95% CI) | 0.0% (0.0%–10.4%) | 0.0% (0.0%–43.4%) |
+| LLM-only missed escalations | 3 | 1 |
+| LLM-only miss rate (95% CI) | 9.1% (3.1%–23.6%) | 20.0% (3.6%–62.4%) |
+| System unnecessary escalations | 0 | 2 |
+| LLM-only unnecessary escalations | 0 | 2 |
+| System recommendation accuracy (95% CI) | 100% (92.9%–100%) | 90% (69.9%–97.2%) |
+| LLM-only recommendation accuracy (95% CI) | 94% (83.8%–97.9%) | 85% (64.0%–94.8%) |
 | Routing accuracy | 100% | 90% |
 | Citation match | 100% | 100% |
 | Latency p50 | ~2.1 s | ~2.1 s |
@@ -23,11 +28,15 @@ All evaluation data is synthetic. On the 60-query retrieval set, moving from the
 
 Outcome metrics were identical across all 3 runs.
 
+Because the rubric floor can only raise recommendations, system-level missed escalations are near zero by design; LLM-only misses and over-escalations are the more informative measures.
+
 The rubric was written against the in-sample cases, so the held-out set is the fairer test. In 3 of 50 in-sample cases the LLM recommended a softer action than policy allows and the rubric floor raised it; in 7-8 of 50 it omitted a required citation and deterministic citations added it.
 
 The exact committed outputs are in [`evaluation/decision_results_openai.json`](evaluation/decision_results_openai.json) and [`evaluation/decision_results_openai_holdout.json`](evaluation/decision_results_openai_holdout.json).
 
 ### Held-out errors
+
+On the held-out set, the LLM alone missed 1 of the 5 required escalations; the rubric floor raised it, so the system missed none.
 
 Both held-out errors were single-signal velocity cases where the model escalated instead of requesting more information. This is stricter than the written policy rather than a missed escalation; whether velocity alone should escalate is a policy decision for the fraud team.
 
@@ -95,7 +104,7 @@ FastAPI request -> Pydantic validation -> compiled LangGraph
 - The full workflow persists a complete or partial audit trail and exposes it through the protected `GET /investigations/{investigation_id}` endpoint.
 - OpenAI structured assessment has an application-enforced decision floor, deterministic citations, safe fallbacks, and recorded rejected model identifiers.
 - Operational controls provide a hosted-LLM kill switch and deterministic QA sampling of auto-completed cases.
-- A network-free suite of 225 unit, workflow, persistence, evaluation, and API tests runs locally and in CI.
+- A network-free suite of 230 unit, workflow, persistence, evaluation, and API tests runs locally and in CI.
 - Docker/Compose packaging and GitHub Actions CI are included.
 
 ## What problem it demonstrates
@@ -138,7 +147,7 @@ Financial-crime investigations often need several kinds of evidence at once: tra
 │   ├── decision_cases.json              # 50 in-sample decision cases
 │   ├── decision_cases_holdout.json      # 20 held-out decision cases
 │   └── decision_cases_adversarial.json  # 10 adversarial decision cases
-├── tests/                               # 225 network-free tests
+├── tests/                               # 230 network-free tests
 ├── docs/azure-deployment-design.md      # prepared Azure design; not deployed
 ├── scripts/
 │   ├── deploy_azure.ps1               # manual Container Apps deployment
@@ -349,7 +358,7 @@ Run the complete network-free suite:
 python -m pytest -q
 ```
 
-The suite contains 225 tests covering rule boundaries, validation, graph metrics, vector/BM25/hybrid retrieval, mocked OpenAI and Azure embeddings, mocked structured LLM output, rubric enforcement, LangGraph routes, operational controls, complete and partial audit persistence, API-key authentication, request correlation/logging, and evaluation execution. It requires no hosted-provider credentials or paid API calls.
+The suite contains 230 tests covering rule boundaries, validation, graph metrics, vector/BM25/hybrid retrieval, mocked OpenAI and Azure embeddings, mocked structured LLM output, rubric enforcement, LangGraph routes, operational controls, complete and partial audit persistence, API-key authentication, request correlation/logging, adversarial cases, the offline decision regression gate, and evaluation execution. It requires no hosted-provider credentials or paid API calls.
 
 Run the small workflow regression evaluation:
 
