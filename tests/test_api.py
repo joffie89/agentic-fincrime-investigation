@@ -253,6 +253,20 @@ def test_openapi_documents_api_key_authentication():
     assert "security" not in schema["paths"]["/health"]["get"]
 
 
+def test_openapi_documents_country_code_constraints():
+    schema = client_for(service()).get("/openapi.json").json()
+    transaction_properties = schema["components"]["schemas"]["Transaction"]["properties"]
+
+    for field in ("origin_country", "destination_country"):
+        assert transaction_properties[field] == {
+            "type": "string",
+            "maxLength": 2,
+            "minLength": 2,
+            "pattern": "^[A-Z]{2}$",
+            "title": field.replace("_", " ").title(),
+        }
+
+
 @pytest.mark.parametrize("path", ["/assess-risk", "/investigate"])
 def test_missing_api_key_returns_401(path):
     response = client_for(service()).post(path, json=transaction_payload())
@@ -473,6 +487,37 @@ def test_invalid_transaction_returns_422(api_key_headers):
     response = client_for(service()).post(
         "/investigate",
         json=transaction_payload(amount=0.0),
+        headers=api_key_headers,
+    )
+
+    assert response.status_code == 422
+
+
+@pytest.mark.parametrize("endpoint", ["/assess-risk", "/investigate"])
+@pytest.mark.parametrize(
+    ("field", "invalid_value"),
+    [
+        ("origin_country", "gb"),
+        ("origin_country", "GBR"),
+        ("origin_country", "G1"),
+        ("origin_country", "ZZ"),
+        ("origin_country", " GB"),
+        ("destination_country", "gb"),
+        ("destination_country", "GBR"),
+        ("destination_country", "1B"),
+        ("destination_country", "ZZ"),
+        ("destination_country", "GB "),
+    ],
+)
+def test_invalid_country_code_returns_422(
+    api_key_headers,
+    endpoint: str,
+    field: str,
+    invalid_value: str,
+):
+    response = client_for(service()).post(
+        endpoint,
+        json=transaction_payload(**{field: invalid_value}),
         headers=api_key_headers,
     )
 
