@@ -2,31 +2,40 @@
 
 An AI assistant for UK bank fraud and AML teams that investigates a payment alert, recommends an action with cited policies, and is built so that high-risk and uncertain cases always go to a human reviewer.
 
-**Tech stack:** Python, FastAPI, Pydantic, LangGraph, OpenAI (gpt-4.1-mini, text-embedding-3-small), RAG (vector, BM25, hybrid), scikit-learn, NetworkX, PostgreSQL, Docker, GitHub Actions.
+**Tech stack:** Python, FastAPI, Pydantic, LangGraph, OpenAI (gpt-4.1-mini, text-embedding-3-small), RAG (vector, BM25, hybrid), scikit-learn, NetworkX, PostgreSQL, Docker, Azure Container Apps, GitHub Container Registry, GitHub Actions.
 
 **Scope:** a portfolio project on synthetic data. It recommends actions; it never blocks accounts, rejects payments, or claims a human reviewed a case.
+
+**Live API docs:** https://fincrime-api.icytree-54e1672f.uksouth.azurecontainerapps.io/docs (investigation endpoints require an API key; the first request after idle can take about 30 seconds while the app scales up from zero).
 
 ## Key results
 
 All evaluation data is synthetic. On the 60-query retrieval set, moving from the local lexical-hashing vector baseline to OpenAI `text-embedding-3-small` vector search improved hit@1 from **1.67% to 75.00%** and MRR from **0.1705 to 0.8469**.
 
-| Metric | In-sample (50 cases x 3 runs) | Held-out (20 cases x 3 runs) |
-|---|---:|---:|
-| Escalation cases | 33 | 5 |
-| System missed escalations | 0 | 0 |
-| System miss rate (95% CI) | 0.0% (0.0%–10.4%) | 0.0% (0.0%–43.4%) |
-| LLM-only missed escalations | 3 | 1 |
-| LLM-only miss rate (95% CI) | 9.1% (3.1%–23.6%) | 20.0% (3.6%–62.4%) |
-| System unnecessary escalations | 0 | 2 |
-| LLM-only unnecessary escalations | 0 | 2 |
-| System recommendation accuracy (95% CI) | 100% (92.9%–100%) | 90% (69.9%–97.2%) |
-| LLM-only recommendation accuracy (95% CI) | 94% (83.8%–97.9%) | 85% (64.0%–94.8%) |
-| Routing accuracy | 100% | 90% |
-| Citation match | 100% | 100% |
-| Latency p50 | ~2.1 s | ~2.1 s |
-| Cost per case | ~$0.0009 | ~$0.0009 |
+| Metric | In-sample (50 cases x 3 runs) | Held-out (20 cases x 3 runs) | Held-out v2 (100 cases x 3 runs) |
+|---|---:|---:|---:|
+| Escalation cases | 33 | 5 | 40 |
+| System missed escalations | 0 | 0 | 0 |
+| System miss rate (95% CI) | 0.0% (0.0%–10.4%) | 0.0% (0.0%–43.4%) | 0.0% (0.0%–8.8%) |
+| LLM-only missed escalations | 3 | 1 | 2.3 (2–3) |
+| LLM-only miss rate (95% CI) | 9.1% (3.1%–23.6%) | 20.0% (3.6%–62.4%) | 5.8% (1.8%–17.6%) |
+| System unnecessary escalations (routing) | 0 | 2 | 16.7 (16–17) |
+| LLM-only unnecessary escalations | 0 | 2 | 11.7 (11–12) |
+| System recommendation accuracy (95% CI) | 100% (92.9%–100%) | 90% (69.9%–97.2%) | 88.3% (80.6%–93.2%) |
+| LLM-only recommendation accuracy (95% CI) | 94% (83.8%–97.9%) | 85% (64.0%–94.8%) | 86.0% (77.9%–91.5%) |
+| Routing accuracy | 100% | 90% | 83.3% (83%–84%) |
+| Citation match | 100% | 100% | 100% |
+| Cases with deterministic citations added | 7.3 (7–8) | 4.3 (4–5) | 39 (37–42) |
+| Latency p50 | ~2.1 s | ~2.1 s | ~2.3 s |
+| Cost per case | ~$0.0009 | ~$0.0009 | ~$0.0009 |
 
-Outcome metrics were identical across all 3 runs.
+The larger set showed about 17 unnecessary human reviews per 100 cases: about 12 from LLM over-escalation and the rest from routing rules.
+
+The LLM omitted a required citation in about 39 of 100 cases, which code added.
+
+Fixes will be developed on the development set and checked on a new held-out set.
+
+Outcome metrics for the in-sample and original held-out sets were identical across all 3 runs.
 
 **Adversarial evaluation (10 cases x 3 runs, live OpenAI):** 0 missed escalations out of 4 escalation cases (95% CI 0%–49%), 1 unnecessary escalation, 0 rubric overrides, and 90% accuracy; results were identical across all 3 runs. This is a small evaluation set.
 
@@ -36,9 +45,9 @@ Because the rubric floor can only raise recommendations, system-level missed esc
 
 The rubric was written against the in-sample cases, so the held-out set is the fairer test. In 3 of 50 in-sample cases the LLM recommended a softer action than policy allows and the rubric floor raised it; in 7-8 of 50 it omitted a required citation and deterministic citations added it.
 
-The exact committed outputs are in [`evaluation/decision_results_openai.json`](evaluation/decision_results_openai.json) and [`evaluation/decision_results_openai_holdout.json`](evaluation/decision_results_openai_holdout.json).
+The exact committed outputs are in [`evaluation/decision_results_openai.json`](evaluation/decision_results_openai.json), [`evaluation/decision_results_openai_holdout.json`](evaluation/decision_results_openai_holdout.json), [`evaluation/decision_results_openai_holdout_v2.json`](evaluation/decision_results_openai_holdout_v2.json), and [`evaluation/decision_results_openai_adversarial.json`](evaluation/decision_results_openai_adversarial.json).
 
-### Held-out errors
+### Original 20-case held-out errors
 
 On the held-out set, the LLM alone missed 1 of the 5 required escalations; the rubric floor raised it, so the system missed none.
 
@@ -108,7 +117,7 @@ FastAPI request -> Pydantic validation -> compiled LangGraph
 - The full workflow persists a complete or partial audit trail and exposes it through the protected `GET /investigations/{investigation_id}` endpoint.
 - OpenAI structured assessment has an application-enforced decision floor, deterministic citations, safe fallbacks, and recorded rejected model identifiers.
 - Operational controls provide a hosted-LLM kill switch and deterministic QA sampling of auto-completed cases.
-- A network-free suite of 230 unit, workflow, persistence, evaluation, and API tests runs locally and in CI.
+- A network-free suite of 267 unit, workflow, persistence, evaluation, and API tests runs locally and in CI.
 - Docker/Compose packaging and GitHub Actions CI are included.
 
 ## What problem it demonstrates
@@ -150,9 +159,11 @@ Financial-crime investigations often need several kinds of evidence at once: tra
 │   ├── retrieval_cases.json             # 60 labelled retrieval queries
 │   ├── decision_cases.json              # 50 in-sample decision cases
 │   ├── decision_cases_holdout.json      # 20 held-out decision cases
-│   └── decision_cases_adversarial.json  # 10 adversarial decision cases
-├── tests/                               # 230 network-free tests
-├── docs/azure-deployment-design.md      # prepared Azure design; not deployed
+│   ├── decision_cases_holdout_v2.json   # 100 held-out v2 decision cases
+│   ├── decision_cases_adversarial.json  # 10 adversarial decision cases
+│   └── generate_decision_cases_holdout_v2.py  # fixed-seed v2 generator
+├── tests/                               # 267 network-free tests
+├── docs/azure-deployment-design.md      # Azure deployment design and topology
 ├── scripts/
 │   ├── deploy_azure.ps1               # manual Container Apps deployment
 │   └── teardown_azure.ps1             # confirmed demo resource cleanup
@@ -204,7 +215,7 @@ Ingestion and query are separate operations:
 2. `PolicyRetriever` loads that stored index at query time and ranks policy chunks with vector similarity, BM25 keyword matching, or hybrid search. Hybrid mode combines both rankings with Reciprocal Rank Fusion and returns deterministic Top-K chunks with `policy_id`, `chunk_id`, text, and relevance score.
 3. The workflow adds policies required by active deterministic or graph signals to the semantic result, de-duplicates them, and records which IDs came from `semantic_search` and which came from `signal_mapping`.
 
-The default `LocalHashEmbeddingService` is a deterministic lexical hashing baseline, not a semantic ML model. Its cosine similarity measures overlap in hashed lexical features rather than meaning. `EMBEDDING_MODE` can instead select the official OpenAI embeddings API or the Azure OpenAI adapter. Provider indexes are generated separately and record their embedding implementation and dimensions; OpenAI indexes also record the exact model. Load-time checks prevent an index from another provider or model being mixed with the selected service. The OpenAI adapter is covered by mocked unit tests and was also evaluated live on 50 in-sample and 20 held-out synthetic cases (3 runs each); the Azure adapter is covered by mocked unit tests only and has not been live-evaluated.
+The default `LocalHashEmbeddingService` is a deterministic lexical hashing baseline, not a semantic ML model. Its cosine similarity measures overlap in hashed lexical features rather than meaning. `EMBEDDING_MODE` can instead select the official OpenAI embeddings API or the Azure OpenAI adapter. Provider indexes are generated separately and record their embedding implementation and dimensions; OpenAI indexes also record the exact model. Load-time checks prevent an index from another provider or model being mixed with the selected service. The OpenAI adapter is covered by mocked unit tests and was also evaluated live on 50 in-sample, 20 held-out, 100 held-out v2, and 10 adversarial synthetic cases (3 runs each); the Azure adapter is covered by mocked unit tests only and has not been live-evaluated.
 
 ### Policy assessment, grounding, and enforcement
 
@@ -319,13 +330,15 @@ Open `http://127.0.0.1:8000/docs` for the generated OpenAPI UI. Protected endpoi
 
 ## API examples
 
+`GET /` redirects to `/docs` without requiring an API key.
+
 Health/liveness requires no API key:
 
 ```bash
 curl http://127.0.0.1:8000/health
 ```
 
-Use the value configured as `API_KEY` in the `X-API-Key` header for every other endpoint.
+Use the value configured as `API_KEY` in the `X-API-Key` header for every investigation endpoint.
 
 Legacy deterministic endpoint:
 
@@ -362,7 +375,7 @@ Run the complete network-free suite:
 python -m pytest -q
 ```
 
-The suite contains 230 tests covering rule boundaries, validation, graph metrics, vector/BM25/hybrid retrieval, mocked OpenAI and Azure embeddings, mocked structured LLM output, rubric enforcement, LangGraph routes, operational controls, complete and partial audit persistence, API-key authentication, request correlation/logging, adversarial cases, the offline decision regression gate, and evaluation execution. It requires no hosted-provider credentials or paid API calls.
+The suite contains 267 tests covering rule boundaries, validation, graph metrics, vector/BM25/hybrid retrieval, mocked OpenAI and Azure embeddings, mocked structured LLM output, rubric enforcement, LangGraph routes, operational controls, complete and partial audit persistence, API-key authentication, request correlation/logging, adversarial cases, the offline decision regression gate, and evaluation execution. It requires no hosted-provider credentials or paid API calls.
 
 Run the small workflow regression evaluation:
 
@@ -404,6 +417,7 @@ $env:POLICY_INDEX_PATH = "data/policy_index_openai.json"
 $env:OPENAI_ASSESSMENT_TEMPERATURE = "0"
 python -m app.evaluation.decision_eval --cases evaluation/decision_cases.json --runs 3
 python -m app.evaluation.decision_eval --cases evaluation/decision_cases_holdout.json --runs 3
+python -m app.evaluation.decision_eval --cases evaluation/decision_cases_holdout_v2.json --runs 3
 ```
 
 Run the separately reported live adversarial evaluation with the same environment:
@@ -412,7 +426,7 @@ Run the separately reported live adversarial evaluation with the same environmen
 python -m app.evaluation.decision_eval --cases evaluation/decision_cases_adversarial.json --runs 3
 ```
 
-The output filename includes the service mode and non-default case-set stem, producing `evaluation/decision_results_openai.json`, `evaluation/decision_results_openai_holdout.json`, or `evaluation/decision_results_openai_adversarial.json` for these commands. They make paid network calls. The reported cost covers policy-assessment tokens only and excludes embedding API cost.
+The output filename includes the service mode and non-default case-set stem, producing `evaluation/decision_results_openai.json`, `evaluation/decision_results_openai_holdout.json`, `evaluation/decision_results_openai_holdout_v2.json`, or `evaluation/decision_results_openai_adversarial.json` for these commands. They make paid network calls. The reported cost covers policy-assessment tokens only and excludes embedding API cost.
 
 ### Retrieval evaluation
 
@@ -534,17 +548,17 @@ manual and opt-in; neither workflow invokes them.
 | AI | Rule-based local assessor; OpenAI and Azure structured adapters; safe fallbacks; hosted-assessment kill switch with conservative routing; OpenAI live evaluation on synthetic cases; mocked provider tests | Evaluation on real institution-labelled cases, production monitoring, prompt/version registry |
 | Human review | Explicit pending status and fail-safe routing | Reviewer UI, assignment, approval and override audit events |
 | Persistence | Memory and PostgreSQL repositories; complete/partial JSON audit records; protected retrieval endpoint | Versioned migrations, pooling, retention, encryption policy, HA |
-| Operations | JSON logs with request IDs, timing and LLM usage; deterministic QA sampling for auto-completed cases; Docker/Compose; GitHub Actions CI | Actual Azure resources/deployment, observability backend |
+| Operations | JSON logs with request IDs, timing and LLM usage; deterministic QA sampling for auto-completed cases; Docker/Compose; GitHub Actions CI; Azure Container Apps deployment from a GHCR image | Observability backend |
 
 ## Limitations
 
 - The rules, graph thresholds, policy text, and evaluation expectations are demo choices, not regulator- or institution-approved controls.
-- The decision labels were written by the project author using an explicit rubric, not by fraud analysts; the OpenAI path was evaluated live only on synthetic in-sample and held-out cases.
-- The held-out set has 20 cases, and its two errors expose an unresolved policy choice about velocity-only alerts rather than proving production accuracy.
+- The decision labels were written by the project author using an explicit rubric, not by fraud analysts; the OpenAI path was evaluated live only on synthetic in-sample, held-out, and adversarial cases.
+- The 20-case and 100-case held-out sets are both rubric-labelled by the project author; the 100-case set showed about 17 unnecessary human reviews per 100 cases.
 - The local hash embedding is lexical and much weaker than a production semantic retrieval model.
 - The NetworkX graph is static, small, in-process, and has no entity resolution.
 - Local memory persistence is lost when the process exits.
 - PostgreSQL schema creation is convenient for the demo; production would use versioned migrations and a connection pool.
 - Azure adapters are mock-tested but have not been live-evaluated here; hosted modes require the user's credentials and compatible deployments.
 - Reported LLM cost uses configurable example prices, excludes embedding calls, and will drift unless those settings are kept current.
-- No role-based authorization, PII controls, sanctions data, case-management UI, human-review completion endpoint, or actual cloud deployment is included.
+- No role-based authorization, PII controls, sanctions data, case-management UI, or human-review completion endpoint is included.

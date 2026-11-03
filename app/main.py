@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, ConfigDict
 
 from app.auth import require_api_key
@@ -94,6 +95,13 @@ def create_app(
     application.add_middleware(HttpRequestLoggingMiddleware)
     application.state.settings = resolved_settings
     application.state.investigation_service = service
+
+    @application.get("/", include_in_schema=False)
+    def redirect_to_docs() -> RedirectResponse:
+        return RedirectResponse(
+            url="/docs",
+            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+        )
 
     @application.get("/health", tags=["operations"])
     def health_check() -> dict[str, str | bool]:

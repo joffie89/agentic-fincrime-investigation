@@ -141,6 +141,16 @@ def test_health_endpoint_works_without_api_key():
     }
 
 
+def test_root_redirects_to_docs_without_api_key_and_is_hidden_from_openapi():
+    client = client_for(service())
+
+    response = client.get("/", follow_redirects=False)
+
+    assert response.status_code == 307
+    assert response.headers["location"] == "/docs"
+    assert "/" not in client.get("/openapi.json").json()["paths"]
+
+
 def test_disabled_llm_switch_is_reported_and_warned_once_at_startup():
     settings = Settings(
         _env_file=None,
