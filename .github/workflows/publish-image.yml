@@ -67,3 +67,82 @@ jobs:
             ghcr.io/joffie89/agentic-fincrime-investigation:${{ github.sha }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+
+  deploy:
+    needs: test-and-publish
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AZURE_RESOURCE_GROUP: fincrime-demo-rg
+      AZURE_CONTAINER_APP: fincrime-api
+      IMAGE: ghcr.io/joffie89/agentic-fincrime-investigation:${{ github.sha }}
+
+    steps:
+      - name: Log in to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy commit image
+        shell: bash
+        run: |
+          revision_suffix="${GITHUB_SHA:0:7}"
+          az containerapp update \
+            --name "$AZURE_CONTAINER_APP" \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --image "$IMAGE" \
+            --revision-suffix "$revision_suffix"
+
+      - name: Wait for a healthy deployment
+        shell: bash
+        run: |
+          app_fqdn="$(az containerapp show \
+            --name "$AZURE_CONTAINER_APP" \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --query properties.configuration.ingress.fqdn \
+            --output tsv)"
+
+          if [[ -z "$app_fqdn" ]]; then
+            echo "The container app does not have an ingress FQDN."
+            exit 1
+          fi
+
+          health_url="https://${app_fqdn}/health"
+          deadline=$(( $(date +%s) + 120 ))
+          echo "Waiting up to 2 minutes for ${health_url}"
+
+          while true; do
+            now=$(date +%s)
+            remaining=$(( deadline - now ))
+            if (( remaining <= 0 )); then
+              break
+            fi
+
+            request_timeout=$(( remaining < 10 ? remaining : 10 ))
+            if response="$(curl \
+              --fail \
+              --silent \
+              --show-error \
+              --max-time "$request_timeout" \
+              "$health_url")" && \
+              jq -e '.status == "healthy"' <<<"$response" >/dev/null; then
+              echo "Container app is healthy."
+              exit 0
+            fi
+
+            now=$(date +%s)
+            remaining=$(( deadline - now ))
+            if (( remaining > 0 )); then
+              sleep_seconds=$(( remaining < 5 ? remaining : 5 ))
+              sleep "$sleep_seconds"
+            fi
+          done
+
+          echo "Container app did not become healthy within 2 minutes."
+          exit 1
