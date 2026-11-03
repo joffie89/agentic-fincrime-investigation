@@ -517,6 +517,18 @@ confirmed teardown script:
 See [`docs/azure-deployment-design.md`](docs/azure-deployment-design.md) for the
 demo configuration, limitations, and a separate production-oriented topology.
 
+## Monitoring
+
+The Azure Monitor Workbook in [`monitoring/workbook.json`](monitoring/workbook.json) shows hourly request volume and HTTP 5xx rate, p50/p95 request latency, and daily LLM token use, estimated cost, policy-assessment fallbacks, and rubric overrides from the Container Apps JSON console logs.
+
+The setup creates two scheduled query alerts. More than five HTTP 5xx responses in 15 minutes indicates a burst of server-side failures; p95 latency above 8 seconds over 15 minutes indicates sustained slow responses that warrant investigation. Run the setup after `az login`:
+
+```powershell
+.\scripts\setup_monitoring_azure.ps1
+```
+
+The script discovers the Log Analytics workspace connected to `fincrime-api-env`, prompts for the action-group email address at runtime, creates both alerts, and deploys the workbook. The email address is not stored in the repository.
+
 ## CI/CD
 
 `.github/workflows/ci.yml` defines CI for pushes and pull requests. It installs dependencies, checks the environment, compiles the application, runs pytest, runs the offline decision regression gate, validates Compose, and builds the Docker image. It does not deploy anywhere.

@@ -85,7 +85,7 @@ def create_app(
     service = investigation_service or build_investigation_service(resolved_settings)
 
     application = FastAPI(
-        title="Agentic Financial Crime Investigation Platform",
+        title="AI Fraud Investigation Assistant",
         version="1.0.0",
         description=(
             "Synthetic portfolio demo. Recommendations require appropriate human "

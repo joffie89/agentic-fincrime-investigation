@@ -1,0 +1,85 @@
+// Structured application logs are JSON objects in Log_s.
+// HTTP request fields: event="http_request", request_id, status_code,
+// duration_ms, and llm_usage.{input_tokens,output_tokens,latency_ms,
+// estimated_cost_usd}. Fallbacks and rubric overrides are separate events.
+
+// Requests per hour
+ContainerAppConsoleLogs_CL
+| where ContainerAppName_s == "fincrime-api"
+| extend LogEntry = parse_json(Log_s)
+| where tostring(LogEntry.event) == "http_request"
+| summarize Requests = count() by bin(TimeGenerated, 1h)
+| order by TimeGenerated asc
+
+
+// HTTP 5xx error rate per hour
+ContainerAppConsoleLogs_CL
+| where ContainerAppName_s == "fincrime-api"
+| extend LogEntry = parse_json(Log_s)
+| where tostring(LogEntry.event) == "http_request"
+| extend StatusCode = toint(LogEntry.status_code)
+| where isnotnull(StatusCode)
+| summarize
+    Requests = count(),
+    Http5xxResponses = countif(StatusCode >= 500 and StatusCode < 600)
+    by bin(TimeGenerated, 1h)
+| extend Http5xxErrorRatePercent = round(100.0 * Http5xxResponses / Requests, 2)
+| order by TimeGenerated asc
+
+
+// Request latency per hour (p50 and p95)
+ContainerAppConsoleLogs_CL
+| where ContainerAppName_s == "fincrime-api"
+| extend LogEntry = parse_json(Log_s)
+| where tostring(LogEntry.event) == "http_request"
+| extend DurationMs = todouble(LogEntry.duration_ms)
+| where isnotnull(DurationMs)
+| summarize
+    P50LatencyMs = percentile(DurationMs, 50),
+    P95LatencyMs = percentile(DurationMs, 95)
+    by bin(TimeGenerated, 1h)
+| order by TimeGenerated asc
+
+
+// LLM token use and estimated cost per day
+ContainerAppConsoleLogs_CL
+| where ContainerAppName_s == "fincrime-api"
+| extend LogEntry = parse_json(Log_s)
+| where tostring(LogEntry.event) == "http_request"
+| extend LlmUsage = todynamic(LogEntry.llm_usage)
+| extend
+    InputTokenCount = tolong(LlmUsage.input_tokens),
+    OutputTokenCount = tolong(LlmUsage.output_tokens),
+    EstimatedCost = todouble(LlmUsage.estimated_cost_usd)
+| where isnotnull(InputTokenCount)
+    or isnotnull(OutputTokenCount)
+    or isnotnull(EstimatedCost)
+| summarize
+    InputTokens = sum(InputTokenCount),
+    OutputTokens = sum(OutputTokenCount),
+    EstimatedCostUsd = sum(EstimatedCost)
+    by bin(TimeGenerated, 1d)
+| extend TotalTokens = InputTokens + OutputTokens
+| project TimeGenerated, InputTokens, OutputTokens, TotalTokens, EstimatedCostUsd
+| order by TimeGenerated asc
+
+
+// Policy-assessment fallbacks per day. The OpenAI adapter logs the first event;
+// the workflow logs the second message when an assessor raises PolicyAssessmentError.
+ContainerAppConsoleLogs_CL
+| where ContainerAppName_s == "fincrime-api"
+| extend LogEntry = parse_json(Log_s)
+| extend Event = tostring(LogEntry.event), Message = tostring(LogEntry.message)
+| where Event == "openai_policy_assessment_failed"
+    or Message == "policy_assessment_failed"
+| summarize Fallbacks = count() by bin(TimeGenerated, 1d)
+| order by TimeGenerated asc
+
+
+// Rubric overrides per day
+ContainerAppConsoleLogs_CL
+| where ContainerAppName_s == "fincrime-api"
+| extend LogEntry = parse_json(Log_s)
+| where tostring(LogEntry.event) == "openai_policy_assessment_rubric_override"
+| summarize RubricOverrides = count() by bin(TimeGenerated, 1d)
+| order by TimeGenerated asc
