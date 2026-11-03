@@ -1,0 +1,180 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspaceResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of the Log Analytics workspace used by the Container Apps environment."
+      }
+    },
+    "workbookDisplayName": {
+      "type": "string",
+      "defaultValue": "Fincrime API monitoring",
+      "metadata": {
+        "description": "Display name for the shared Azure Monitor Workbook."
+      }
+    }
+  },
+  "variables": {
+    "workbookName": "[guid(resourceGroup().id, parameters('workspaceResourceId'), parameters('workbookDisplayName'))]",
+    "workbookContent": {
+      "version": "Notebook/1.0",
+      "items": [
+        {
+          "type": 1,
+          "content": {
+            "json": "# AI Fraud Investigation Assistant\n\nOperational telemetry for `fincrime-api`. Charts use structured JSON application logs from `ContainerAppConsoleLogs_CL.Log_s` and show the last 30 days."
+          },
+          "name": "workbook-title"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "ContainerAppConsoleLogs_CL\n| where ContainerAppName_s == \"fincrime-api\"\n| extend LogEntry = parse_json(Log_s)\n| where tostring(LogEntry.event) == \"http_request\"\n| summarize Requests = count() by bin(TimeGenerated, 1h)\n| order by TimeGenerated asc",
+            "size": 0,
+            "title": "Requests per hour",
+            "timeContext": {
+              "durationMs": 2592000000
+            },
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "crossComponentResources": [
+              "[parameters('workspaceResourceId')]"
+            ],
+            "visualization": "timechart"
+          },
+          "customWidth": "50",
+          "name": "requests-per-hour"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "ContainerAppConsoleLogs_CL\n| where ContainerAppName_s == \"fincrime-api\"\n| extend LogEntry = parse_json(Log_s)\n| where tostring(LogEntry.event) == \"http_request\"\n| extend StatusCode = toint(LogEntry.status_code)\n| where isnotnull(StatusCode)\n| summarize\n    Requests = count(),\n    Http5xxResponses = countif(StatusCode >= 500 and StatusCode < 600)\n    by bin(TimeGenerated, 1h)\n| extend Http5xxErrorRatePercent = round(100.0 * Http5xxResponses / Requests, 2)\n| order by TimeGenerated asc",
+            "size": 0,
+            "title": "HTTP 5xx error rate per hour (%)",
+            "timeContext": {
+              "durationMs": 2592000000
+            },
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "crossComponentResources": [
+              "[parameters('workspaceResourceId')]"
+            ],
+            "visualization": "timechart"
+          },
+          "customWidth": "50",
+          "name": "http-5xx-error-rate"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "ContainerAppConsoleLogs_CL\n| where ContainerAppName_s == \"fincrime-api\"\n| extend LogEntry = parse_json(Log_s)\n| where tostring(LogEntry.event) == \"http_request\"\n| extend DurationMs = todouble(LogEntry.duration_ms)\n| where isnotnull(DurationMs)\n| summarize\n    P50LatencyMs = percentile(DurationMs, 50),\n    P95LatencyMs = percentile(DurationMs, 95)\n    by bin(TimeGenerated, 1h)\n| order by TimeGenerated asc",
+            "size": 0,
+            "title": "Request latency per hour (p50 and p95, ms)",
+            "timeContext": {
+              "durationMs": 2592000000
+            },
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "crossComponentResources": [
+              "[parameters('workspaceResourceId')]"
+            ],
+            "visualization": "timechart"
+          },
+          "customWidth": "50",
+          "name": "request-latency"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "ContainerAppConsoleLogs_CL\n| where ContainerAppName_s == \"fincrime-api\"\n| extend LogEntry = parse_json(Log_s)\n| where tostring(LogEntry.event) == \"http_request\"\n| extend LlmUsage = todynamic(LogEntry.llm_usage)\n| extend\n    InputTokenCount = tolong(LlmUsage.input_tokens),\n    OutputTokenCount = tolong(LlmUsage.output_tokens),\n    EstimatedCost = todouble(LlmUsage.estimated_cost_usd)\n| where isnotnull(InputTokenCount)\n    or isnotnull(OutputTokenCount)\n    or isnotnull(EstimatedCost)\n| summarize\n    InputTokens = sum(InputTokenCount),\n    OutputTokens = sum(OutputTokenCount),\n    EstimatedCostUsd = sum(EstimatedCost)\n    by bin(TimeGenerated, 1d)\n| extend TotalTokens = InputTokens + OutputTokens\n| project TimeGenerated, InputTokens, OutputTokens, TotalTokens, EstimatedCostUsd\n| order by TimeGenerated asc",
+            "size": 0,
+            "title": "LLM tokens and estimated cost per day (USD)",
+            "timeContext": {
+              "durationMs": 2592000000
+            },
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "crossComponentResources": [
+              "[parameters('workspaceResourceId')]"
+            ],
+            "visualization": "timechart"
+          },
+          "customWidth": "50",
+          "name": "llm-usage-and-cost"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "ContainerAppConsoleLogs_CL\n| where ContainerAppName_s == \"fincrime-api\"\n| extend LogEntry = parse_json(Log_s)\n| extend Event = tostring(LogEntry.event), Message = tostring(LogEntry.message)\n| where Event == \"openai_policy_assessment_failed\"\n    or Message == \"policy_assessment_failed\"\n| summarize Fallbacks = count() by bin(TimeGenerated, 1d)\n| order by TimeGenerated asc",
+            "size": 0,
+            "title": "Policy-assessment fallbacks per day",
+            "timeContext": {
+              "durationMs": 2592000000
+            },
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "crossComponentResources": [
+              "[parameters('workspaceResourceId')]"
+            ],
+            "visualization": "timechart"
+          },
+          "customWidth": "50",
+          "name": "fallbacks-per-day"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "ContainerAppConsoleLogs_CL\n| where ContainerAppName_s == \"fincrime-api\"\n| extend LogEntry = parse_json(Log_s)\n| where tostring(LogEntry.event) == \"openai_policy_assessment_rubric_override\"\n| summarize RubricOverrides = count() by bin(TimeGenerated, 1d)\n| order by TimeGenerated asc",
+            "size": 0,
+            "title": "Rubric overrides per day",
+            "timeContext": {
+              "durationMs": 2592000000
+            },
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "crossComponentResources": [
+              "[parameters('workspaceResourceId')]"
+            ],
+            "visualization": "timechart"
+          },
+          "customWidth": "50",
+          "name": "rubric-overrides-per-day"
+        }
+      ],
+      "isLocked": false,
+      "fallbackResourceIds": [
+        "[parameters('workspaceResourceId')]"
+      ]
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Insights/workbooks",
+      "apiVersion": "2022-04-01",
+      "name": "[variables('workbookName')]",
+      "location": "[resourceGroup().location]",
+      "kind": "shared",
+      "properties": {
+        "displayName": "[parameters('workbookDisplayName')]",
+        "serializedData": "[string(variables('workbookContent'))]",
+        "version": "1.0",
+        "sourceId": "[parameters('workspaceResourceId')]",
+        "category": "workbook"
+      }
+    }
+  ],
+  "outputs": {
+    "workbookResourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Insights/workbooks', variables('workbookName'))]"
+    }
+  }
+}
