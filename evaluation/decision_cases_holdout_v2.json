@@ -1,0 +1,2177 @@
+{
+  "cases": [
+    {
+      "name": "holdout v2 clean routine varied payment 001",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-001",
+        "amount": 40.94,
+        "account_age_days": 885,
+        "new_payee": false,
+        "average_transaction_amount": 60.0,
+        "transactions_last_24h": 9,
+        "origin_country": "CA",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_clean_origin_001",
+        "destination_account_id": "hv2_clean_destination_001"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 002",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-002",
+        "amount": 136.23,
+        "account_age_days": 2259,
+        "new_payee": false,
+        "average_transaction_amount": 95.0,
+        "transactions_last_24h": 10,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "hv2_clean_origin_002",
+        "destination_account_id": "hv2_clean_destination_002"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 003",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-003",
+        "amount": 1073.32,
+        "account_age_days": 3204,
+        "new_payee": false,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 3,
+        "origin_country": "US",
+        "destination_country": "US",
+        "origin_account_id": "hv2_clean_origin_003",
+        "destination_account_id": "hv2_clean_destination_003"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 004",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-004",
+        "amount": 516.44,
+        "account_age_days": 1370,
+        "new_payee": false,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 5,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_clean_origin_004",
+        "destination_account_id": "hv2_clean_destination_004"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 005",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-005",
+        "amount": 1862.9,
+        "account_age_days": 1947,
+        "new_payee": false,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 3,
+        "origin_country": "SG",
+        "destination_country": "JP",
+        "origin_account_id": "hv2_clean_origin_005",
+        "destination_account_id": "hv2_clean_destination_005"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 006",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-006",
+        "amount": 82.68,
+        "account_age_days": 392,
+        "new_payee": false,
+        "average_transaction_amount": 140.0,
+        "transactions_last_24h": 4,
+        "origin_country": "DE",
+        "destination_country": "NL",
+        "origin_account_id": "hv2_clean_origin_006",
+        "destination_account_id": "hv2_clean_destination_006"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 007",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-007",
+        "amount": 187.53,
+        "account_age_days": 554,
+        "new_payee": false,
+        "average_transaction_amount": 140.0,
+        "transactions_last_24h": 6,
+        "origin_country": "DE",
+        "destination_country": "NL",
+        "origin_account_id": "hv2_clean_origin_007",
+        "destination_account_id": "hv2_clean_destination_007"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 008",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-008",
+        "amount": 196.6,
+        "account_age_days": 619,
+        "new_payee": false,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 3,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "hv2_clean_origin_008",
+        "destination_account_id": "hv2_clean_destination_008"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 009",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-009",
+        "amount": 100.14,
+        "account_age_days": 535,
+        "new_payee": false,
+        "average_transaction_amount": 225.0,
+        "transactions_last_24h": 5,
+        "origin_country": "DE",
+        "destination_country": "DE",
+        "origin_account_id": "hv2_clean_origin_009",
+        "destination_account_id": "hv2_clean_destination_009"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 010",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-010",
+        "amount": 265.94,
+        "account_age_days": 1036,
+        "new_payee": false,
+        "average_transaction_amount": 140.0,
+        "transactions_last_24h": 7,
+        "origin_country": "GB",
+        "destination_country": "IE",
+        "origin_account_id": "hv2_clean_origin_010",
+        "destination_account_id": "hv2_clean_destination_010"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 011",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-011",
+        "amount": 79.33,
+        "account_age_days": 2516,
+        "new_payee": false,
+        "average_transaction_amount": 35.0,
+        "transactions_last_24h": 7,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_clean_origin_011",
+        "destination_account_id": "hv2_clean_destination_011"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 012",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-012",
+        "amount": 188.99,
+        "account_age_days": 3516,
+        "new_payee": false,
+        "average_transaction_amount": 95.0,
+        "transactions_last_24h": 2,
+        "origin_country": "SG",
+        "destination_country": "JP",
+        "origin_account_id": "hv2_clean_origin_012",
+        "destination_account_id": "hv2_clean_destination_012"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 013",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-013",
+        "amount": 2690.47,
+        "account_age_days": 536,
+        "new_payee": false,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 8,
+        "origin_country": "US",
+        "destination_country": "US",
+        "origin_account_id": "hv2_clean_origin_013",
+        "destination_account_id": "hv2_clean_destination_013"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 014",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-014",
+        "amount": 64.07,
+        "account_age_days": 2741,
+        "new_payee": false,
+        "average_transaction_amount": 60.0,
+        "transactions_last_24h": 2,
+        "origin_country": "AU",
+        "destination_country": "NZ",
+        "origin_account_id": "hv2_clean_origin_014",
+        "destination_account_id": "hv2_clean_destination_014"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 015",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-015",
+        "amount": 97.49,
+        "account_age_days": 325,
+        "new_payee": false,
+        "average_transaction_amount": 95.0,
+        "transactions_last_24h": 0,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_clean_origin_015",
+        "destination_account_id": "hv2_clean_destination_015"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 016",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-016",
+        "amount": 316.55,
+        "account_age_days": 1837,
+        "new_payee": false,
+        "average_transaction_amount": 140.0,
+        "transactions_last_24h": 0,
+        "origin_country": "CA",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_clean_origin_016",
+        "destination_account_id": "hv2_clean_destination_016"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 017",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-017",
+        "amount": 732.65,
+        "account_age_days": 2508,
+        "new_payee": false,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 3,
+        "origin_country": "DE",
+        "destination_country": "DE",
+        "origin_account_id": "hv2_clean_origin_017",
+        "destination_account_id": "hv2_clean_destination_017"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 018",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-018",
+        "amount": 792.46,
+        "account_age_days": 1921,
+        "new_payee": false,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 7,
+        "origin_country": "AU",
+        "destination_country": "NZ",
+        "origin_account_id": "hv2_clean_origin_018",
+        "destination_account_id": "hv2_clean_destination_018"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 019",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-019",
+        "amount": 743.2,
+        "account_age_days": 2052,
+        "new_payee": false,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 1,
+        "origin_country": "GB",
+        "destination_country": "IE",
+        "origin_account_id": "hv2_clean_origin_019",
+        "destination_account_id": "hv2_clean_destination_019"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 020",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-020",
+        "amount": 3270.71,
+        "account_age_days": 3145,
+        "new_payee": false,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 8,
+        "origin_country": "US",
+        "destination_country": "US",
+        "origin_account_id": "hv2_clean_origin_020",
+        "destination_account_id": "hv2_clean_destination_020"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 021",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-021",
+        "amount": 394.54,
+        "account_age_days": 327,
+        "new_payee": false,
+        "average_transaction_amount": 225.0,
+        "transactions_last_24h": 5,
+        "origin_country": "GB",
+        "destination_country": "IE",
+        "origin_account_id": "hv2_clean_origin_021",
+        "destination_account_id": "hv2_clean_destination_021"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 022",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-022",
+        "amount": 545.63,
+        "account_age_days": 1244,
+        "new_payee": false,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 9,
+        "origin_country": "FR",
+        "destination_country": "FR",
+        "origin_account_id": "hv2_clean_origin_022",
+        "destination_account_id": "hv2_clean_destination_022"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 023",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-023",
+        "amount": 3494.18,
+        "account_age_days": 577,
+        "new_payee": false,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 4,
+        "origin_country": "FR",
+        "destination_country": "FR",
+        "origin_account_id": "hv2_clean_origin_023",
+        "destination_account_id": "hv2_clean_destination_023"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 024",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-024",
+        "amount": 937.6,
+        "account_age_days": 90,
+        "new_payee": false,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 5,
+        "origin_country": "DE",
+        "destination_country": "DE",
+        "origin_account_id": "hv2_clean_origin_024",
+        "destination_account_id": "hv2_clean_destination_024"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 clean routine varied payment 025",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-clean-025",
+        "amount": 397.36,
+        "account_age_days": 1073,
+        "new_payee": false,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 2,
+        "origin_country": "DE",
+        "destination_country": "NL",
+        "origin_account_id": "hv2_clean_origin_025",
+        "destination_account_id": "hv2_clean_destination_025"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 single velocity 001",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-001",
+        "amount": 158.42,
+        "account_age_days": 3453,
+        "new_payee": false,
+        "average_transaction_amount": 225.0,
+        "transactions_last_24h": 37,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_single_origin_001",
+        "destination_account_id": "hv2_single_destination_001"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 single velocity 002",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-002",
+        "amount": 1569.65,
+        "account_age_days": 97,
+        "new_payee": false,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 23,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "hv2_single_origin_002",
+        "destination_account_id": "hv2_single_destination_002"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-002"
+      ]
+    },
+    {
+      "name": "holdout v2 single velocity 003",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-003",
+        "amount": 3411.86,
+        "account_age_days": 3197,
+        "new_payee": false,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 13,
+        "origin_country": "US",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_single_origin_003",
+        "destination_account_id": "hv2_single_destination_003"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 single velocity 004",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-004",
+        "amount": 1108.09,
+        "account_age_days": 405,
+        "new_payee": false,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 36,
+        "origin_country": "AU",
+        "destination_country": "AU",
+        "origin_account_id": "hv2_single_origin_004",
+        "destination_account_id": "hv2_single_destination_004"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-002"
+      ]
+    },
+    {
+      "name": "holdout v2 single velocity 005",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-005",
+        "amount": 334.76,
+        "account_age_days": 3626,
+        "new_payee": false,
+        "average_transaction_amount": 140.0,
+        "transactions_last_24h": 16,
+        "origin_country": "GB",
+        "destination_country": "IE",
+        "origin_account_id": "hv2_single_origin_005",
+        "destination_account_id": "hv2_single_destination_005"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 single velocity 006",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-006",
+        "amount": 2528.39,
+        "account_age_days": 768,
+        "new_payee": false,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 15,
+        "origin_country": "GB",
+        "destination_country": "IE",
+        "origin_account_id": "hv2_single_origin_006",
+        "destination_account_id": "hv2_single_destination_006"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 single velocity 007",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-007",
+        "amount": 3310.07,
+        "account_age_days": 3409,
+        "new_payee": false,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 18,
+        "origin_country": "SG",
+        "destination_country": "JP",
+        "origin_account_id": "hv2_single_origin_007",
+        "destination_account_id": "hv2_single_destination_007"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 single velocity 008",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-008",
+        "amount": 151.46,
+        "account_age_days": 2083,
+        "new_payee": false,
+        "average_transaction_amount": 225.0,
+        "transactions_last_24h": 43,
+        "origin_country": "DE",
+        "destination_country": "NL",
+        "origin_account_id": "hv2_single_origin_008",
+        "destination_account_id": "hv2_single_destination_008"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 single velocity 009",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-009",
+        "amount": 57.56,
+        "account_age_days": 3194,
+        "new_payee": false,
+        "average_transaction_amount": 35.0,
+        "transactions_last_24h": 15,
+        "origin_country": "DE",
+        "destination_country": "DE",
+        "origin_account_id": "hv2_single_origin_009",
+        "destination_account_id": "hv2_single_destination_009"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-002"
+      ]
+    },
+    {
+      "name": "holdout v2 single velocity 010",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-010",
+        "amount": 130.48,
+        "account_age_days": 1830,
+        "new_payee": false,
+        "average_transaction_amount": 140.0,
+        "transactions_last_24h": 14,
+        "origin_country": "US",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_single_origin_010",
+        "destination_account_id": "hv2_single_destination_010"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 single young 011",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-011",
+        "amount": 112.64,
+        "account_age_days": 19,
+        "new_payee": false,
+        "average_transaction_amount": 60.0,
+        "transactions_last_24h": 7,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "hv2_single_origin_011",
+        "destination_account_id": "hv2_single_destination_011"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ]
+    },
+    {
+      "name": "holdout v2 single young 012",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-012",
+        "amount": 193.43,
+        "account_age_days": 28,
+        "new_payee": false,
+        "average_transaction_amount": 95.0,
+        "transactions_last_24h": 4,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_single_origin_012",
+        "destination_account_id": "hv2_single_destination_012"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 single young 013",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-013",
+        "amount": 101.21,
+        "account_age_days": 3,
+        "new_payee": false,
+        "average_transaction_amount": 95.0,
+        "transactions_last_24h": 1,
+        "origin_country": "FR",
+        "destination_country": "FR",
+        "origin_account_id": "hv2_single_origin_013",
+        "destination_account_id": "hv2_single_destination_013"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ]
+    },
+    {
+      "name": "holdout v2 single young 014",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-014",
+        "amount": 74.8,
+        "account_age_days": 17,
+        "new_payee": false,
+        "average_transaction_amount": 60.0,
+        "transactions_last_24h": 1,
+        "origin_country": "AU",
+        "destination_country": "AU",
+        "origin_account_id": "hv2_single_origin_014",
+        "destination_account_id": "hv2_single_destination_014"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ]
+    },
+    {
+      "name": "holdout v2 single young 015",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-015",
+        "amount": 37.26,
+        "account_age_days": 23,
+        "new_payee": false,
+        "average_transaction_amount": 35.0,
+        "transactions_last_24h": 5,
+        "origin_country": "US",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_single_origin_015",
+        "destination_account_id": "hv2_single_destination_015"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 single new payee 016",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-016",
+        "amount": 723.22,
+        "account_age_days": 3161,
+        "new_payee": true,
+        "average_transaction_amount": 650.0,
+        "transactions_last_24h": 10,
+        "origin_country": "CA",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_single_origin_016",
+        "destination_account_id": "hv2_single_destination_016"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 single new payee 017",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-017",
+        "amount": 218.29,
+        "account_age_days": 1530,
+        "new_payee": true,
+        "average_transaction_amount": 140.0,
+        "transactions_last_24h": 8,
+        "origin_country": "US",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_single_origin_017",
+        "destination_account_id": "hv2_single_destination_017"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 single new payee 018",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-018",
+        "amount": 133.56,
+        "account_age_days": 756,
+        "new_payee": true,
+        "average_transaction_amount": 60.0,
+        "transactions_last_24h": 4,
+        "origin_country": "US",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_single_origin_018",
+        "destination_account_id": "hv2_single_destination_018"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 single new payee 019",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-019",
+        "amount": 1354.93,
+        "account_age_days": 1843,
+        "new_payee": true,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 6,
+        "origin_country": "US",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_single_origin_019",
+        "destination_account_id": "hv2_single_destination_019"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 single new payee 020",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-020",
+        "amount": 2876.76,
+        "account_age_days": 1554,
+        "new_payee": true,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 4,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "hv2_single_origin_020",
+        "destination_account_id": "hv2_single_destination_020"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 single unusual amount 021",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-021",
+        "amount": 6633.74,
+        "account_age_days": 3044,
+        "new_payee": false,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 2,
+        "origin_country": "AU",
+        "destination_country": "AU",
+        "origin_account_id": "hv2_single_origin_021",
+        "destination_account_id": "hv2_single_destination_021"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ]
+    },
+    {
+      "name": "holdout v2 single unusual amount 022",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-022",
+        "amount": 12874.77,
+        "account_age_days": 2393,
+        "new_payee": false,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 8,
+        "origin_country": "US",
+        "destination_country": "US",
+        "origin_account_id": "hv2_single_origin_022",
+        "destination_account_id": "hv2_single_destination_022"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ]
+    },
+    {
+      "name": "holdout v2 single unusual amount 023",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-023",
+        "amount": 3345.02,
+        "account_age_days": 1765,
+        "new_payee": false,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 8,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "hv2_single_origin_023",
+        "destination_account_id": "hv2_single_destination_023"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ]
+    },
+    {
+      "name": "holdout v2 single unusual amount 024",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-024",
+        "amount": 1546.9,
+        "account_age_days": 516,
+        "new_payee": false,
+        "average_transaction_amount": 225.0,
+        "transactions_last_24h": 5,
+        "origin_country": "DE",
+        "destination_country": "DE",
+        "origin_account_id": "hv2_single_origin_024",
+        "destination_account_id": "hv2_single_destination_024"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ]
+    },
+    {
+      "name": "holdout v2 single unusual amount 025",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-single-025",
+        "amount": 12986.58,
+        "account_age_days": 3235,
+        "new_payee": false,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 2,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_single_origin_025",
+        "destination_account_id": "hv2_single_destination_025"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee 001",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-001",
+        "amount": 178.79,
+        "account_age_days": 23,
+        "new_payee": true,
+        "average_transaction_amount": 140.0,
+        "transactions_last_24h": 8,
+        "origin_country": "GB",
+        "destination_country": "IE",
+        "origin_account_id": "hv2_multi_origin_001",
+        "destination_account_id": "hv2_multi_destination_001"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and unusual amount 002",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-002",
+        "amount": 7764.91,
+        "account_age_days": 8,
+        "new_payee": false,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 2,
+        "origin_country": "SG",
+        "destination_country": "JP",
+        "origin_account_id": "hv2_multi_origin_002",
+        "destination_account_id": "hv2_multi_destination_002"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and velocity 003",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-003",
+        "amount": 1084.62,
+        "account_age_days": 13,
+        "new_payee": false,
+        "average_transaction_amount": 650.0,
+        "transactions_last_24h": 13,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_multi_origin_003",
+        "destination_account_id": "hv2_multi_destination_003"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 multi new payee and unusual amount 004",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-004",
+        "amount": 8120.55,
+        "account_age_days": 94,
+        "new_payee": true,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 6,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_multi_origin_004",
+        "destination_account_id": "hv2_multi_destination_004"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi new payee and velocity 005",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-005",
+        "amount": 858.68,
+        "account_age_days": 2549,
+        "new_payee": true,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 15,
+        "origin_country": "CA",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_multi_origin_005",
+        "destination_account_id": "hv2_multi_destination_005"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi unusual amount and velocity 006",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-006",
+        "amount": 270.64,
+        "account_age_days": 3478,
+        "new_payee": false,
+        "average_transaction_amount": 35.0,
+        "transactions_last_24h": 48,
+        "origin_country": "FR",
+        "destination_country": "FR",
+        "origin_account_id": "hv2_multi_origin_006",
+        "destination_account_id": "hv2_multi_destination_006"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee and unusual amount 007",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-007",
+        "amount": 5406.07,
+        "account_age_days": 7,
+        "new_payee": true,
+        "average_transaction_amount": 650.0,
+        "transactions_last_24h": 7,
+        "origin_country": "US",
+        "destination_country": "US",
+        "origin_account_id": "hv2_multi_origin_007",
+        "destination_account_id": "hv2_multi_destination_007"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee and velocity 008",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-008",
+        "amount": 113.75,
+        "account_age_days": 20,
+        "new_payee": true,
+        "average_transaction_amount": 95.0,
+        "transactions_last_24h": 45,
+        "origin_country": "DE",
+        "destination_country": "NL",
+        "origin_account_id": "hv2_multi_origin_008",
+        "destination_account_id": "hv2_multi_destination_008"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and unusual amount and velocity 009",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-009",
+        "amount": 2546.15,
+        "account_age_days": 2,
+        "new_payee": false,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 29,
+        "origin_country": "DE",
+        "destination_country": "NL",
+        "origin_account_id": "hv2_multi_origin_009",
+        "destination_account_id": "hv2_multi_destination_009"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004",
+        "DEMO-AML-005"
+      ]
+    },
+    {
+      "name": "holdout v2 multi new payee and unusual amount and velocity 010",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-010",
+        "amount": 277.69,
+        "account_age_days": 179,
+        "new_payee": true,
+        "average_transaction_amount": 35.0,
+        "transactions_last_24h": 43,
+        "origin_country": "US",
+        "destination_country": "US",
+        "origin_account_id": "hv2_multi_origin_010",
+        "destination_account_id": "hv2_multi_destination_010"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee and unusual amount and velocity 011",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-011",
+        "amount": 2403.31,
+        "account_age_days": 4,
+        "new_payee": true,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 45,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_multi_origin_011",
+        "destination_account_id": "hv2_multi_destination_011"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee 012",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-012",
+        "amount": 857.8,
+        "account_age_days": 25,
+        "new_payee": true,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 10,
+        "origin_country": "US",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_multi_origin_012",
+        "destination_account_id": "hv2_multi_destination_012"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and unusual amount 013",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-013",
+        "amount": 343.56,
+        "account_age_days": 21,
+        "new_payee": false,
+        "average_transaction_amount": 35.0,
+        "transactions_last_24h": 10,
+        "origin_country": "AU",
+        "destination_country": "NZ",
+        "origin_account_id": "hv2_multi_origin_013",
+        "destination_account_id": "hv2_multi_destination_013"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and velocity 014",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-014",
+        "amount": 3228.79,
+        "account_age_days": 17,
+        "new_payee": false,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 32,
+        "origin_country": "DE",
+        "destination_country": "NL",
+        "origin_account_id": "hv2_multi_origin_014",
+        "destination_account_id": "hv2_multi_destination_014"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 multi new payee and unusual amount 015",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-015",
+        "amount": 315.36,
+        "account_age_days": 2145,
+        "new_payee": true,
+        "average_transaction_amount": 35.0,
+        "transactions_last_24h": 8,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_multi_origin_015",
+        "destination_account_id": "hv2_multi_destination_015"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi new payee and velocity 016",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-016",
+        "amount": 286.21,
+        "account_age_days": 1964,
+        "new_payee": true,
+        "average_transaction_amount": 140.0,
+        "transactions_last_24h": 12,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_multi_origin_016",
+        "destination_account_id": "hv2_multi_destination_016"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi unusual amount and velocity 017",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-017",
+        "amount": 3449.83,
+        "account_age_days": 1484,
+        "new_payee": false,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 44,
+        "origin_country": "DE",
+        "destination_country": "DE",
+        "origin_account_id": "hv2_multi_origin_017",
+        "destination_account_id": "hv2_multi_destination_017"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee and unusual amount 018",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-018",
+        "amount": 5686.99,
+        "account_age_days": 22,
+        "new_payee": true,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 2,
+        "origin_country": "FR",
+        "destination_country": "FR",
+        "origin_account_id": "hv2_multi_origin_018",
+        "destination_account_id": "hv2_multi_destination_018"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee and velocity 019",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-019",
+        "amount": 725.25,
+        "account_age_days": 23,
+        "new_payee": true,
+        "average_transaction_amount": 650.0,
+        "transactions_last_24h": 32,
+        "origin_country": "AU",
+        "destination_country": "AU",
+        "origin_account_id": "hv2_multi_origin_019",
+        "destination_account_id": "hv2_multi_destination_019"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and unusual amount and velocity 020",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-020",
+        "amount": 7984.98,
+        "account_age_days": 12,
+        "new_payee": false,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 33,
+        "origin_country": "US",
+        "destination_country": "US",
+        "origin_account_id": "hv2_multi_origin_020",
+        "destination_account_id": "hv2_multi_destination_020"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005"
+      ]
+    },
+    {
+      "name": "holdout v2 multi new payee and unusual amount and velocity 021",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-021",
+        "amount": 1180.08,
+        "account_age_days": 2189,
+        "new_payee": true,
+        "average_transaction_amount": 140.0,
+        "transactions_last_24h": 19,
+        "origin_country": "US",
+        "destination_country": "US",
+        "origin_account_id": "hv2_multi_origin_021",
+        "destination_account_id": "hv2_multi_destination_021"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee and unusual amount and velocity 022",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-022",
+        "amount": 5711.26,
+        "account_age_days": 15,
+        "new_payee": true,
+        "average_transaction_amount": 650.0,
+        "transactions_last_24h": 17,
+        "origin_country": "US",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_multi_origin_022",
+        "destination_account_id": "hv2_multi_destination_022"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee 023",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-023",
+        "amount": 110.02,
+        "account_age_days": 25,
+        "new_payee": true,
+        "average_transaction_amount": 140.0,
+        "transactions_last_24h": 0,
+        "origin_country": "CA",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_multi_origin_023",
+        "destination_account_id": "hv2_multi_destination_023"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and unusual amount 024",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-024",
+        "amount": 10078.57,
+        "account_age_days": 15,
+        "new_payee": false,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 9,
+        "origin_country": "SG",
+        "destination_country": "JP",
+        "origin_account_id": "hv2_multi_origin_024",
+        "destination_account_id": "hv2_multi_destination_024"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and velocity 025",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-025",
+        "amount": 2725.15,
+        "account_age_days": 1,
+        "new_payee": false,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 20,
+        "origin_country": "GB",
+        "destination_country": "IE",
+        "origin_account_id": "hv2_multi_origin_025",
+        "destination_account_id": "hv2_multi_destination_025"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 multi new payee and unusual amount 026",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-026",
+        "amount": 945.37,
+        "account_age_days": 786,
+        "new_payee": true,
+        "average_transaction_amount": 95.0,
+        "transactions_last_24h": 9,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_multi_origin_026",
+        "destination_account_id": "hv2_multi_destination_026"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi new payee and velocity 027",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-027",
+        "amount": 1061.64,
+        "account_age_days": 1630,
+        "new_payee": true,
+        "average_transaction_amount": 900.0,
+        "transactions_last_24h": 12,
+        "origin_country": "CA",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_multi_origin_027",
+        "destination_account_id": "hv2_multi_destination_027"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi unusual amount and velocity 028",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-028",
+        "amount": 1243.22,
+        "account_age_days": 1102,
+        "new_payee": false,
+        "average_transaction_amount": 225.0,
+        "transactions_last_24h": 23,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_multi_origin_028",
+        "destination_account_id": "hv2_multi_destination_028"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee and unusual amount 029",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-029",
+        "amount": 2565.37,
+        "account_age_days": 8,
+        "new_payee": true,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 9,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_multi_origin_029",
+        "destination_account_id": "hv2_multi_destination_029"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee and velocity 030",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-030",
+        "amount": 649.09,
+        "account_age_days": 8,
+        "new_payee": true,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 18,
+        "origin_country": "FR",
+        "destination_country": "FR",
+        "origin_account_id": "hv2_multi_origin_030",
+        "destination_account_id": "hv2_multi_destination_030"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and unusual amount and velocity 031",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-031",
+        "amount": 967.76,
+        "account_age_days": 25,
+        "new_payee": false,
+        "average_transaction_amount": 140.0,
+        "transactions_last_24h": 42,
+        "origin_country": "DE",
+        "destination_country": "NL",
+        "origin_account_id": "hv2_multi_origin_031",
+        "destination_account_id": "hv2_multi_destination_031"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004",
+        "DEMO-AML-005"
+      ]
+    },
+    {
+      "name": "holdout v2 multi new payee and unusual amount and velocity 032",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-032",
+        "amount": 13290.46,
+        "account_age_days": 3157,
+        "new_payee": true,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 34,
+        "origin_country": "DE",
+        "destination_country": "DE",
+        "origin_account_id": "hv2_multi_origin_032",
+        "destination_account_id": "hv2_multi_destination_032"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee and unusual amount and velocity 033",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-033",
+        "amount": 251.38,
+        "account_age_days": 4,
+        "new_payee": true,
+        "average_transaction_amount": 35.0,
+        "transactions_last_24h": 35,
+        "origin_country": "US",
+        "destination_country": "US",
+        "origin_account_id": "hv2_multi_origin_033",
+        "destination_account_id": "hv2_multi_destination_033"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee 034",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-034",
+        "amount": 2138.48,
+        "account_age_days": 26,
+        "new_payee": true,
+        "average_transaction_amount": 1500.0,
+        "transactions_last_24h": 7,
+        "origin_country": "AU",
+        "destination_country": "AU",
+        "origin_account_id": "hv2_multi_origin_034",
+        "destination_account_id": "hv2_multi_destination_034"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and unusual amount 035",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-035",
+        "amount": 369.45,
+        "account_age_days": 18,
+        "new_payee": false,
+        "average_transaction_amount": 60.0,
+        "transactions_last_24h": 1,
+        "origin_country": "AU",
+        "destination_country": "NZ",
+        "origin_account_id": "hv2_multi_origin_035",
+        "destination_account_id": "hv2_multi_destination_035"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and velocity 036",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-036",
+        "amount": 715.64,
+        "account_age_days": 26,
+        "new_payee": false,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 29,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_multi_origin_036",
+        "destination_account_id": "hv2_multi_destination_036"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 multi new payee and unusual amount 037",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-037",
+        "amount": 1798.39,
+        "account_age_days": 1903,
+        "new_payee": true,
+        "average_transaction_amount": 225.0,
+        "transactions_last_24h": 1,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "hv2_multi_origin_037",
+        "destination_account_id": "hv2_multi_destination_037"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi new payee and velocity 038",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-038",
+        "amount": 158.82,
+        "account_age_days": 2851,
+        "new_payee": true,
+        "average_transaction_amount": 140.0,
+        "transactions_last_24h": 29,
+        "origin_country": "DE",
+        "destination_country": "DE",
+        "origin_account_id": "hv2_multi_origin_038",
+        "destination_account_id": "hv2_multi_destination_038"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 multi unusual amount and velocity 039",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-039",
+        "amount": 530.08,
+        "account_age_days": 2981,
+        "new_payee": false,
+        "average_transaction_amount": 60.0,
+        "transactions_last_24h": 16,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_multi_origin_039",
+        "destination_account_id": "hv2_multi_destination_039"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 multi young and new payee and unusual amount 040",
+      "category": "high",
+      "transaction": {
+        "transaction_id": "holdout-v2-multi-040",
+        "amount": 2157.79,
+        "account_age_days": 20,
+        "new_payee": true,
+        "average_transaction_amount": 375.0,
+        "transactions_last_24h": 5,
+        "origin_country": "DE",
+        "destination_country": "DE",
+        "origin_account_id": "hv2_multi_origin_040",
+        "destination_account_id": "hv2_multi_destination_040"
+      },
+      "expected_recommendation": "ESCALATE_TO_HUMAN",
+      "expected_requires_human_review": true,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-005",
+        "DEMO-AML-006"
+      ]
+    },
+    {
+      "name": "holdout v2 boundary account age 29 001",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-boundary-001",
+        "amount": 90.0,
+        "account_age_days": 29,
+        "new_payee": false,
+        "average_transaction_amount": 100.0,
+        "transactions_last_24h": 3,
+        "origin_country": "GB",
+        "destination_country": "GB",
+        "origin_account_id": "hv2_boundary_origin_001",
+        "destination_account_id": "hv2_boundary_destination_001"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001"
+      ]
+    },
+    {
+      "name": "holdout v2 boundary account age 30 002",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-boundary-002",
+        "amount": 125.0,
+        "account_age_days": 30,
+        "new_payee": false,
+        "average_transaction_amount": 100.0,
+        "transactions_last_24h": 3,
+        "origin_country": "US",
+        "destination_country": "US",
+        "origin_account_id": "hv2_boundary_origin_002",
+        "destination_account_id": "hv2_boundary_destination_002"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 boundary transactions 10 003",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-boundary-003",
+        "amount": 180.0,
+        "account_age_days": 640,
+        "new_payee": false,
+        "average_transaction_amount": 150.0,
+        "transactions_last_24h": 10,
+        "origin_country": "CA",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_boundary_origin_003",
+        "destination_account_id": "hv2_boundary_destination_003"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 boundary transactions 11 004",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-boundary-004",
+        "amount": 210.0,
+        "account_age_days": 730,
+        "new_payee": false,
+        "average_transaction_amount": 175.0,
+        "transactions_last_24h": 11,
+        "origin_country": "AU",
+        "destination_country": "AU",
+        "origin_account_id": "hv2_boundary_origin_004",
+        "destination_account_id": "hv2_boundary_destination_004"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-002"
+      ]
+    },
+    {
+      "name": "holdout v2 boundary amount exactly 5x one 005",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-boundary-005",
+        "amount": 500.0,
+        "account_age_days": 900,
+        "new_payee": false,
+        "average_transaction_amount": 100.0,
+        "transactions_last_24h": 4,
+        "origin_country": "DE",
+        "destination_country": "DE",
+        "origin_account_id": "hv2_boundary_origin_005",
+        "destination_account_id": "hv2_boundary_destination_005"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    },
+    {
+      "name": "holdout v2 boundary amount exactly 5x two 006",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-boundary-006",
+        "amount": 1250.0,
+        "account_age_days": 1200,
+        "new_payee": false,
+        "average_transaction_amount": 250.0,
+        "transactions_last_24h": 5,
+        "origin_country": "FR",
+        "destination_country": "BE",
+        "origin_account_id": "hv2_boundary_origin_006",
+        "destination_account_id": "hv2_boundary_destination_006"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 boundary age 29 and transactions 10 007",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-boundary-007",
+        "amount": 75.0,
+        "account_age_days": 29,
+        "new_payee": false,
+        "average_transaction_amount": 125.0,
+        "transactions_last_24h": 10,
+        "origin_country": "GB",
+        "destination_country": "IE",
+        "origin_account_id": "hv2_boundary_origin_007",
+        "destination_account_id": "hv2_boundary_destination_007"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 boundary age 30 and transactions 11 008",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-boundary-008",
+        "amount": 320.0,
+        "account_age_days": 30,
+        "new_payee": false,
+        "average_transaction_amount": 200.0,
+        "transactions_last_24h": 11,
+        "origin_country": "US",
+        "destination_country": "CA",
+        "origin_account_id": "hv2_boundary_origin_008",
+        "destination_account_id": "hv2_boundary_destination_008"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-002",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 boundary age 29 and amount exactly 5x 009",
+      "category": "medium",
+      "transaction": {
+        "transaction_id": "holdout-v2-boundary-009",
+        "amount": 750.0,
+        "account_age_days": 29,
+        "new_payee": false,
+        "average_transaction_amount": 150.0,
+        "transactions_last_24h": 2,
+        "origin_country": "SG",
+        "destination_country": "JP",
+        "origin_account_id": "hv2_boundary_origin_009",
+        "destination_account_id": "hv2_boundary_destination_009"
+      },
+      "expected_recommendation": "REQUEST_MORE_INFO",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": [
+        "DEMO-AML-001",
+        "DEMO-AML-004"
+      ]
+    },
+    {
+      "name": "holdout v2 boundary age 30 transactions 10 amount exactly 5x 010",
+      "category": "clean",
+      "transaction": {
+        "transaction_id": "holdout-v2-boundary-010",
+        "amount": 2000.0,
+        "account_age_days": 30,
+        "new_payee": false,
+        "average_transaction_amount": 400.0,
+        "transactions_last_24h": 10,
+        "origin_country": "NZ",
+        "destination_country": "NZ",
+        "origin_account_id": "hv2_boundary_origin_010",
+        "destination_account_id": "hv2_boundary_destination_010"
+      },
+      "expected_recommendation": "CLEAR",
+      "expected_requires_human_review": false,
+      "expected_policy_ids": []
+    }
+  ]
+}

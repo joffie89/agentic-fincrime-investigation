@@ -391,6 +391,8 @@ For the decision evaluations below, counts and accuracy rates show the mean with
 
 `decision_eval` runs labelled cases through the full configured workflow. It reports system and LLM-alone recommendation accuracy, routing accuracy, missed and unnecessary escalations, exact citation match, expected-policy retrieval recall, fallback counts by safe reason, rubric overrides, deterministic citation additions, p50/p95 latency, and total/per-case LLM cost. Each case result records confidence, evidence sufficiency, routing rules, retrieved IDs and sources, citations, considered policies, reasons, rejected IDs, fallback details, and enforcement diagnostics.
 
+The 100-case `decision_cases_holdout_v2.json` labels come from the written rubric, so this set measures agreement with the documented policy, not analyst judgement.
+
 With a previously built OpenAI policy index and credentials set in the current PowerShell session, reproduce the committed three-run evaluations with:
 
 ```powershell
