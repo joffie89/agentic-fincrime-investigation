@@ -24,6 +24,10 @@ class DomainModel(BaseModel):
 
 
 Identifier = Annotated[StrictStr, Field(min_length=1, max_length=128)]
+AccountIdentifier = Annotated[
+    StrictStr,
+    Field(min_length=1, max_length=64, pattern=r"^[A-Za-z0-9_-]+$"),
+]
 ShortText = Annotated[StrictStr, Field(min_length=1, max_length=256)]
 LongText = Annotated[StrictStr, Field(min_length=1, max_length=50_000)]
 NonNegativeInt = Annotated[StrictInt, Field(ge=0)]

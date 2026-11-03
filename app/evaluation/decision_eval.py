@@ -13,7 +13,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import Field, StrictBool
+from pydantic import Field, StrictBool, ValidationError
 
 from app.config import PersistenceBackend, Settings
 from app.models.base import DomainModel, Identifier, ShortText, UnitInterval
@@ -54,10 +54,20 @@ class DecisionEvaluationCase(DomainModel):
     expected_policy_ids: list[Identifier]
 
 
+class DecisionValidationRejectionCase(DomainModel):
+    """One synthetic API payload expected to fail request-model validation."""
+
+    name: Identifier
+    category: Literal["clean", "high", "medium"]
+    transaction: dict[str, Any]
+    expected_http_status: Literal[422]
+
+
 class DecisionEvaluationDataset(DomainModel):
     """Validated collection of live workflow decision cases."""
 
     cases: list[DecisionEvaluationCase] = Field(min_length=1)
+    validation_rejection_cases: list[DecisionValidationRejectionCase] = Field(default_factory=list)
 
 
 class DecisionObservation(DomainModel):
@@ -544,6 +554,37 @@ def _recorded_assessment_value(
     return audit_record.get(field_name)
 
 
+def _evaluate_validation_rejection_case(
+    case: DecisionValidationRejectionCase,
+) -> dict[str, Any]:
+    """Record whether request-model validation rejects a labelled payload."""
+
+    try:
+        Transaction.model_validate(case.transaction)
+    except ValidationError as exc:
+        return {
+            "name": case.name,
+            "expected_http_status": case.expected_http_status,
+            "actual_http_status": 422,
+            "correct": True,
+            "validation_errors": [
+                {
+                    "location": [str(part) for part in error["loc"]],
+                    "type": error["type"],
+                }
+                for error in exc.errors()
+            ],
+        }
+
+    return {
+        "name": case.name,
+        "expected_http_status": case.expected_http_status,
+        "actual_http_status": 200,
+        "correct": False,
+        "validation_errors": [],
+    }
+
+
 def _evaluate_case(
     service: InvestigationService,
     case: DecisionEvaluationCase,
@@ -695,11 +736,20 @@ def run_decision_evaluation(
         # transaction IDs and a prior run would otherwise look like a replay.
         service = build_investigation_service(evaluation_settings)
         observations = [_evaluate_case(service, case) for case in dataset.cases]
+        validation_rejections = [
+            _evaluate_validation_rejection_case(case) for case in dataset.validation_rejection_cases
+        ]
+        metrics = calculate_decision_metrics(observations)
+        metrics["input_validation_rejection_accuracy"] = _accuracy(
+            sum(bool(item["correct"]) for item in validation_rejections),
+            len(validation_rejections),
+        )
         run_results.append(
             {
                 "run": run_number,
-                "metrics": calculate_decision_metrics(observations),
+                "metrics": metrics,
                 "cases": [observation.model_dump(mode="json") for observation in observations],
+                "validation_rejection_cases": validation_rejections,
             }
         )
 
@@ -716,15 +766,19 @@ def run_decision_evaluation(
         "embedding_mode": evaluation_settings.embedding_mode.value,
         "retrieval_mode": evaluation_settings.retrieval_mode.value,
         "openai_assessment_temperature": (evaluation_settings.openai_assessment_temperature),
-        "case_count": len(dataset.cases),
+        "case_count": len(dataset.cases) + len(dataset.validation_rejection_cases),
+        "decision_case_count": len(dataset.cases),
+        "validation_rejection_case_count": len(dataset.validation_rejection_cases),
         "run_count": runs,
-        "total_case_evaluations": len(dataset.cases) * runs,
+        "total_case_evaluations": (len(dataset.cases) + len(dataset.validation_rejection_cases))
+        * runs,
         "cost_scope": ("Policy-assessment LLM usage only; embedding API cost is not included."),
         # Keep the original single-run fields for existing analysis scripts.
         # For repeated evaluations these are the first run; all runs and their
         # aggregate statistics are available in the fields below.
         "metrics": first_run["metrics"],
         "cases": first_run["cases"],
+        "validation_rejection_cases": first_run["validation_rejection_cases"],
         "metric_summary": metric_summary,
         "run_results": run_results,
     }

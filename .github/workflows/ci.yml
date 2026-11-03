@@ -47,6 +47,9 @@ jobs:
       - name: Run tests
         run: python -m pytest -q
 
+      - name: Run offline decision regression gate
+        run: python -m app.evaluation.decision_regression_gate
+
       - name: Validate Compose configuration
         run: docker compose config --quiet
 

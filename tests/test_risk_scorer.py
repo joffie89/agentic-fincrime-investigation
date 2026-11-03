@@ -162,7 +162,7 @@ def test_transaction_preserves_original_payload_and_optional_ids() -> None:
     enriched = make_transaction(
         transaction_id="  txn-002  ",
         origin_country="  GB ",
-        origin_account_id="  acct-origin  ",
+        origin_account_id="acct-origin",
         destination_account_id="acct-destination",
     )
 
@@ -172,6 +172,15 @@ def test_transaction_preserves_original_payload_and_optional_ids() -> None:
     assert enriched.origin_country == "GB"
     assert enriched.origin_account_id == "acct-origin"
     assert enriched.destination_account_id == "acct-destination"
+
+
+@pytest.mark.parametrize("field", ["origin_account_id", "destination_account_id"])
+def test_transaction_accepts_max_length_account_identifiers(field: str) -> None:
+    account_id = "A_" + ("a" * 61) + "-"
+
+    transaction = Transaction(**transaction_data(**{field: account_id}))
+
+    assert getattr(transaction, field) == account_id
 
 
 @pytest.mark.parametrize(
@@ -194,6 +203,18 @@ def test_transaction_preserves_original_payload_and_optional_ids() -> None:
         ("origin_country", ""),
         ("destination_country", "   "),
         ("origin_account_id", "  "),
+        ("origin_account_id", " acct-origin"),
+        ("origin_account_id", "acct-origin "),
+        ("origin_account_id", "account id"),
+        ("origin_account_id", "account/id"),
+        ("origin_account_id", "acct-é"),
+        ("origin_account_id", "a" * 65),
+        ("destination_account_id", "account id"),
+        ("destination_account_id", " acct-destination"),
+        ("destination_account_id", "acct-destination "),
+        ("destination_account_id", "account/id"),
+        ("destination_account_id", "acct-é"),
+        ("destination_account_id", "a" * 65),
     ],
 )
 def test_transaction_rejects_invalid_or_coerced_values(
