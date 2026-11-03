@@ -28,6 +28,10 @@ All evaluation data is synthetic. On the 60-query retrieval set, moving from the
 
 Outcome metrics were identical across all 3 runs.
 
+**Adversarial evaluation (10 cases x 3 runs, live OpenAI):** 0 missed escalations out of 4 escalation cases (95% CI 0%–49%), 1 unnecessary escalation, 0 rubric overrides, and 90% accuracy; results were identical across all 3 runs. This is a small evaluation set.
+
+Input validation now rejects free text in ID fields; the live adversarial run above was recorded before this change, when the LLM itself resisted the injection.
+
 Because the rubric floor can only raise recommendations, system-level missed escalations are near zero by design; LLM-only misses and over-escalations are the more informative measures.
 
 The rubric was written against the in-sample cases, so the held-out set is the fairer test. In 3 of 50 in-sample cases the LLM recommended a softer action than policy allows and the rubric floor raised it; in 7-8 of 50 it omitted a required citation and deterministic citations added it.

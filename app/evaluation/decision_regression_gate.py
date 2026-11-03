@@ -29,12 +29,20 @@ def _regression_failures(dataset_name: str, metrics: dict[str, Any]) -> list[str
     routing_correct = int(routing["correct"])
     routing_total = int(routing["total"])
     routing_misses = int(metrics["missed_escalations"]["count"])
+    validation = metrics["input_validation_rejection_accuracy"]
+    validation_correct = int(validation["correct"])
+    validation_total = int(validation["total"])
 
     if routing_misses > 0:
         failures.append(f"{dataset_name}: system missed escalations = {routing_misses}, expected 0")
     if routing_correct != routing_total:
         failures.append(
             f"{dataset_name}: routing accuracy = {routing_correct}/{routing_total}, expected 100%"
+        )
+    if validation_correct != validation_total:
+        failures.append(
+            f"{dataset_name}: input validation rejections = "
+            f"{validation_correct}/{validation_total}, expected 100%"
         )
     return failures
 
@@ -69,10 +77,13 @@ def run_regression_gate() -> None:
             metrics = results["metrics"]
             failures.extend(_regression_failures(cases_path.name, metrics))
             routing = metrics["human_review_routing_accuracy"]
+            validation = metrics["input_validation_rejection_accuracy"]
             print(
                 f"{cases_path.name}: routing "
                 f"{routing['correct']}/{routing['total']}; "
-                f"missed escalations {metrics['missed_escalations']['count']}"
+                f"missed escalations {metrics['missed_escalations']['count']}; "
+                f"input validation rejections "
+                f"{validation['correct']}/{validation['total']}"
             )
 
     if failures:

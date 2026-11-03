@@ -1,14 +1,19 @@
 """Transaction input model."""
 
-from pydantic import StrictBool, model_validator
+import re
+
+from pydantic import StrictBool, field_validator, model_validator
 
 from app.models.base import (
+    AccountIdentifier,
     DomainModel,
     Identifier,
     NonNegativeInt,
     PositiveFiniteFloat,
     ShortText,
 )
+
+_ACCOUNT_IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
 
 class Transaction(DomainModel):
@@ -22,8 +27,20 @@ class Transaction(DomainModel):
     transactions_last_24h: NonNegativeInt
     origin_country: ShortText
     destination_country: ShortText
-    origin_account_id: Identifier | None = None
-    destination_account_id: Identifier | None = None
+    origin_account_id: AccountIdentifier | None = None
+    destination_account_id: AccountIdentifier | None = None
+
+    @field_validator("origin_account_id", "destination_account_id", mode="before")
+    @classmethod
+    def validate_account_identifier_characters(cls, value: object) -> object:
+        """Reject whitespace and free text before global string trimming runs."""
+
+        if isinstance(value, str) and _ACCOUNT_IDENTIFIER_PATTERN.fullmatch(value) is None:
+            raise ValueError(
+                "account identifiers may contain only letters, digits, hyphens, "
+                "and underscores, with a maximum length of 64 characters"
+            )
+        return value
 
     @model_validator(mode="after")
     def validate_distinct_accounts(self) -> "Transaction":
