@@ -151,7 +151,7 @@ def test_country_fields_do_not_change_the_legacy_score() -> None:
     domestic = make_transaction(origin_country="GB", destination_country="GB")
     cross_border = make_transaction(
         origin_country="GB",
-        destination_country="Synthetic Jurisdiction",
+        destination_country="FR",
     )
 
     assert score_transaction(domestic) == score_transaction(cross_border)
@@ -161,7 +161,7 @@ def test_transaction_preserves_original_payload_and_optional_ids() -> None:
     original = make_transaction()
     enriched = make_transaction(
         transaction_id="  txn-002  ",
-        origin_country="  GB ",
+        origin_country="GB",
         origin_account_id="acct-origin",
         destination_account_id="acct-destination",
     )
@@ -172,6 +172,17 @@ def test_transaction_preserves_original_payload_and_optional_ids() -> None:
     assert enriched.origin_country == "GB"
     assert enriched.origin_account_id == "acct-origin"
     assert enriched.destination_account_id == "acct-destination"
+
+
+@pytest.mark.parametrize("country_code", ["GB", "US", "AQ", "BQ"])
+@pytest.mark.parametrize("field", ["origin_country", "destination_country"])
+def test_transaction_accepts_assigned_iso_country_codes(
+    field: str,
+    country_code: str,
+) -> None:
+    transaction = Transaction(**transaction_data(**{field: country_code}))
+
+    assert getattr(transaction, field) == country_code
 
 
 @pytest.mark.parametrize("field", ["origin_account_id", "destination_account_id"])
@@ -201,7 +212,17 @@ def test_transaction_accepts_max_length_account_identifiers(field: str) -> None:
         ("new_payee", "false"),
         ("transaction_id", "   "),
         ("origin_country", ""),
+        ("origin_country", "gb"),
+        ("origin_country", "GBR"),
+        ("origin_country", "G1"),
+        ("origin_country", "ZZ"),
+        ("origin_country", " GB"),
         ("destination_country", "   "),
+        ("destination_country", "gb"),
+        ("destination_country", "GBR"),
+        ("destination_country", "G1"),
+        ("destination_country", "ZZ"),
+        ("destination_country", "GB "),
         ("origin_account_id", "  "),
         ("origin_account_id", " acct-origin"),
         ("origin_account_id", "acct-origin "),
