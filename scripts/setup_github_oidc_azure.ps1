@@ -52,7 +52,7 @@ function Invoke-AzureCliJson {
     }
 
     try {
-        return $OutputText | ConvertFrom-Json
+        return ($OutputText | ConvertFrom-Json | ForEach-Object { $_ })
     }
     catch {
         throw "Azure CLI returned invalid JSON: $($_.Exception.Message)"
