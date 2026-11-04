@@ -488,8 +488,30 @@ and commit-SHA tags. The Docker build context excludes `.env` and `.env.*`.
 
 After the first successful publication, open the package settings on GitHub and
 change the GHCR package visibility to **Public** once. Azure Container Apps can
-then pull it without registry credentials. After installing the Azure CLI,
-selecting the intended subscription, and running `az login`, execute:
+then pull it without registry credentials.
+
+For one-time passwordless continuous-deployment setup, install Azure CLI 2.91,
+select the intended subscription, run `az login`, and execute:
+
+```powershell
+.\scripts\setup_github_oidc_azure.ps1
+```
+
+The setup creates or reuses the `fincrime-github-deploy` Microsoft Entra
+application and service principal, adds a federated credential limited to this
+repository's `main` branch, and grants Container Apps Contributor only at the
+`fincrime-demo-rg` resource-group scope. Add the three values it prints as
+GitHub repository secrets named `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and
+`AZURE_SUBSCRIPTION_ID`. OIDC uses these identifiers without storing an Azure
+password or client secret in GitHub.
+
+After that setup, each push to `main` publishes the image and deploys its
+immutable commit-SHA tag to `fincrime-api`; the resulting Container Apps
+revision suffix uses the short SHA. The workflow polls `/health` and fails if
+the new deployment is not healthy within two minutes. Manual workflow
+dispatches publish the image but do not deploy it.
+
+For an optional manual deployment, after `az login` execute:
 
 ```powershell
 .\scripts\deploy_azure.ps1
@@ -534,8 +556,15 @@ The script discovers the Log Analytics workspace connected to `fincrime-api-env`
 `.github/workflows/ci.yml` defines CI for pushes and pull requests. It installs dependencies, checks the environment, compiles the application, runs pytest, runs the offline decision regression gate, validates Compose, and builds the Docker image. It does not deploy anywhere.
 
 `.github/workflows/publish-image.yml` runs pytest and publishes `latest` and
-commit-SHA image tags to GHCR. It never deploys to Azure. The Azure scripts are
-manual and opt-in; neither workflow invokes them.
+commit-SHA image tags to GHCR. On pushes to `main`, its dependent deploy job
+uses GitHub's OIDC token and the `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and
+`AZURE_SUBSCRIPTION_ID` repository secrets to authenticate without an Azure
+password or client secret. It updates `fincrime-api` to the commit-SHA image,
+uses the short SHA as the revision suffix, and requires `/health` to succeed
+within two minutes. Manual dispatches publish without deploying. Run
+`scripts/setup_github_oidc_azure.ps1` once to create the branch-scoped federated
+identity and its resource-group-scoped role assignment; the manual deployment
+and teardown scripts remain opt-in.
 
 ## Responsible AI
 
