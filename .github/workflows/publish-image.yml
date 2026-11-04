@@ -97,7 +97,15 @@ jobs:
             --name "$AZURE_CONTAINER_APP" \
             --resource-group "$AZURE_RESOURCE_GROUP" \
             --image "$IMAGE" \
-            --revision-suffix "$revision_suffix"
+            --revision-suffix "$revision_suffix" \
+            --output none
+
+          az containerapp show \
+            --name "$AZURE_CONTAINER_APP" \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --query properties.latestRevisionName \
+            --output tsv \
+            --only-show-errors
 
       - name: Wait for a healthy deployment
         shell: bash

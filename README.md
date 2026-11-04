@@ -498,12 +498,17 @@ select the intended subscription, run `az login`, and execute:
 ```
 
 The setup creates or reuses the `fincrime-github-deploy` Microsoft Entra
-application and service principal, adds a federated credential limited to this
-repository's `main` branch, and grants Container Apps Contributor only at the
-`fincrime-demo-rg` resource-group scope. Add the three values it prints as
+application and service principal, adds two federated credentials limited to
+this repository's `main` branch, and grants Container Apps Contributor only at
+the `fincrime-demo-rg` resource-group scope. Add the three values it prints as
 GitHub repository secrets named `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and
 `AZURE_SUBSCRIPTION_ID`. OIDC uses these identifiers without storing an Azure
 password or client secret in GitHub.
+
+The credentials support GitHub's name-based subject
+`repo:joffie89/agentic-fincrime-investigation:ref:refs/heads/main` and immutable
+ID-based subject
+`repo:joffie89@54671870/agentic-fincrime-investigation@1379635336:ref:refs/heads/main`.
 
 After that setup, each push to `main` publishes the image and deploys its
 immutable commit-SHA tag to `fincrime-api`; the resulting Container Apps
