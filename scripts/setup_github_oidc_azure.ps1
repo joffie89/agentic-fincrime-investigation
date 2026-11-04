@@ -9,6 +9,9 @@ $FederatedCredentialName = "github-main"
 $FederatedCredentialIssuer = "https://token.actions.githubusercontent.com"
 $FederatedCredentialSubject = `
     "repo:joffie89/agentic-fincrime-investigation:ref:refs/heads/main"
+$ImmutableFederatedCredentialName = "github-main-immutable"
+$ImmutableFederatedCredentialSubject = `
+    "repo:joffie89@54671870/agentic-fincrime-investigation@1379635336:ref:refs/heads/main"
 $FederatedCredentialAudience = "api://AzureADTokenExchange"
 $ResourceGroup = "fincrime-demo-rg"
 $RoleName = "Container Apps Contributor"
@@ -56,6 +59,113 @@ function Invoke-AzureCliJson {
     }
     catch {
         throw "Azure CLI returned invalid JSON: $($_.Exception.Message)"
+    }
+}
+
+function Ensure-FederatedCredential {
+    param(
+        [Parameter(Mandatory)]
+        [string] $ApplicationId,
+
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [object[]] $ExistingCredentials,
+
+        [Parameter(Mandatory)]
+        [string] $Name,
+
+        [Parameter(Mandatory)]
+        [string] $Issuer,
+
+        [Parameter(Mandatory)]
+        [string] $Subject,
+
+        [Parameter(Mandatory)]
+        [string] $Audience,
+
+        [Parameter(Mandatory)]
+        [string] $Description
+    )
+
+    $MatchingCredentials = @(
+        $ExistingCredentials | Where-Object {
+            $Audiences = @($_.audiences)
+            [string]::Equals(
+                [string] $_.name,
+                $Name,
+                [StringComparison]::Ordinal
+            ) -and
+            [string]::Equals(
+                [string] $_.issuer,
+                $Issuer,
+                [StringComparison]::Ordinal
+            ) -and
+            [string]::Equals(
+                [string] $_.subject,
+                $Subject,
+                [StringComparison]::Ordinal
+            ) -and
+            $Audiences.Count -eq 1 -and
+            [string]::Equals(
+                [string] $Audiences[0],
+                $Audience,
+                [StringComparison]::Ordinal
+            )
+        }
+    )
+
+    if ($MatchingCredentials.Count -gt 0) {
+        Write-Host "Reusing the GitHub Actions federated credential '$Name'."
+        return
+    }
+
+    $ConflictingCredentials = @(
+        $ExistingCredentials | Where-Object {
+            [string]::Equals(
+                [string] $_.name,
+                $Name,
+                [StringComparison]::Ordinal
+            )
+        }
+    )
+    if ($ConflictingCredentials.Count -gt 0) {
+        throw "Federated credential '$Name' exists with different trust settings."
+    }
+
+    Write-Host "Creating the GitHub Actions federated credential '$Name'..."
+    $FederatedCredential = @{
+        name = $Name
+        issuer = $Issuer
+        subject = $Subject
+        description = $Description
+        audiences = @($Audience)
+    }
+    $FederatedCredentialJson = $FederatedCredential | ConvertTo-Json -Depth 4 -Compress
+    $FederatedCredentialFile = Join-Path `
+        ([IO.Path]::GetTempPath()) `
+        ("fincrime-github-oidc-{0}.json" -f [Guid]::NewGuid().ToString("N"))
+    try {
+        # A temporary JSON file avoids Windows PowerShell 5.1 stripping the
+        # JSON quotes while marshalling arguments to the native az process.
+        [IO.File]::WriteAllText(
+            $FederatedCredentialFile,
+            $FederatedCredentialJson,
+            (New-Object Text.UTF8Encoding($false))
+        )
+        [void](Invoke-AzureCliJson -Arguments @(
+            "ad", "app", "federated-credential", "create",
+            "--id", $ApplicationId,
+            "--parameters", $FederatedCredentialFile,
+            "--output", "json"
+        ))
+    }
+    finally {
+        if (Test-Path -LiteralPath $FederatedCredentialFile -PathType Leaf) {
+            Remove-Item -LiteralPath $FederatedCredentialFile -Force
+        }
+        $FederatedCredentialFile = $null
+        $FederatedCredentialJson = $null
+        $FederatedCredential = $null
     }
 }
 
@@ -146,81 +256,23 @@ $FederatedCredentials = @(Invoke-AzureCliJson -Arguments @(
     "--id", $ClientId,
     "--output", "json"
 ))
-$MatchingFederatedCredentials = @(
-    $FederatedCredentials | Where-Object {
-        $Audiences = @($_.audiences)
-        [string]::Equals(
-            [string] $_.issuer,
-            $FederatedCredentialIssuer,
-            [StringComparison]::Ordinal
-        ) -and
-        [string]::Equals(
-            [string] $_.subject,
-            $FederatedCredentialSubject,
-            [StringComparison]::Ordinal
-        ) -and
-        $Audiences.Count -eq 1 -and
-        [string]::Equals(
-            [string] $Audiences[0],
-            $FederatedCredentialAudience,
-            [StringComparison]::Ordinal
-        )
-    }
-)
+Ensure-FederatedCredential `
+    -ApplicationId $ClientId `
+    -ExistingCredentials $FederatedCredentials `
+    -Name $FederatedCredentialName `
+    -Issuer $FederatedCredentialIssuer `
+    -Subject $FederatedCredentialSubject `
+    -Audience $FederatedCredentialAudience `
+    -Description "GitHub Actions deployment from the repository name and main branch"
 
-if ($MatchingFederatedCredentials.Count -eq 0) {
-    $ConflictingCredential = @(
-        $FederatedCredentials | Where-Object {
-            [string]::Equals(
-                [string] $_.name,
-                $FederatedCredentialName,
-                [StringComparison]::Ordinal
-            )
-        }
-    )
-    if ($ConflictingCredential.Count -gt 0) {
-        throw "Federated credential '$FederatedCredentialName' exists with different trust settings."
-    }
-
-    Write-Host "Creating the GitHub Actions federated credential..."
-    $FederatedCredential = @{
-        name = $FederatedCredentialName
-        issuer = $FederatedCredentialIssuer
-        subject = $FederatedCredentialSubject
-        description = "GitHub Actions deployment from the main branch only"
-        audiences = @($FederatedCredentialAudience)
-    }
-    $FederatedCredentialJson = $FederatedCredential | ConvertTo-Json -Depth 4 -Compress
-    $FederatedCredentialFile = Join-Path `
-        ([IO.Path]::GetTempPath()) `
-        ("fincrime-github-oidc-{0}.json" -f [Guid]::NewGuid().ToString("N"))
-    try {
-        # A temporary JSON file avoids Windows PowerShell 5.1 stripping the
-        # JSON quotes while marshalling arguments to the native az process.
-        [IO.File]::WriteAllText(
-            $FederatedCredentialFile,
-            $FederatedCredentialJson,
-            (New-Object Text.UTF8Encoding($false))
-        )
-        [void](Invoke-AzureCliJson -Arguments @(
-            "ad", "app", "federated-credential", "create",
-            "--id", $ClientId,
-            "--parameters", $FederatedCredentialFile,
-            "--output", "json"
-        ))
-    }
-    finally {
-        if (Test-Path -LiteralPath $FederatedCredentialFile -PathType Leaf) {
-            Remove-Item -LiteralPath $FederatedCredentialFile -Force
-        }
-        $FederatedCredentialFile = $null
-        $FederatedCredentialJson = $null
-        $FederatedCredential = $null
-    }
-}
-else {
-    Write-Host "Reusing the GitHub Actions federated credential."
-}
+Ensure-FederatedCredential `
+    -ApplicationId $ClientId `
+    -ExistingCredentials $FederatedCredentials `
+    -Name $ImmutableFederatedCredentialName `
+    -Issuer $FederatedCredentialIssuer `
+    -Subject $ImmutableFederatedCredentialSubject `
+    -Audience $FederatedCredentialAudience `
+    -Description "GitHub Actions deployment from immutable repository IDs and main branch"
 
 $ResourceGroupScope = "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup"
 $RoleAssignments = @(Invoke-AzureCliJson -Arguments @(
